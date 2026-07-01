@@ -218,10 +218,12 @@ const firebaseUploadLocalToFirebase = (onSuccess, onError) => {
 // 5. Connection Status Badge UI helper
 const appendStatusBadge = (sidebarSelector, isDark = false) => {
     const active = isFirebaseActive();
-    const text = active ? "Firebase Connected" : "Using LocalStorage";
-    const color = active ? "#10b981" : "#eab308";
-    const bg = active ? "rgba(16, 185, 129, 0.15)" : "rgba(234, 179, 8, 0.15)";
-    const dot = active ? "🟢" : "🟡";
+    if (!active) return; // Do not show badge if Firebase is inactive
+
+    const text = "Firebase Connected";
+    const color = "#10b981";
+    const bg = "rgba(16, 185, 129, 0.15)";
+    const dot = "🟢";
 
     const badgeHtml = `
         <div id="firebase-status-badge" style="
