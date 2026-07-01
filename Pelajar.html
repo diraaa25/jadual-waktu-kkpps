@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ms" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Pelajar - Kolej Komuniti Papar</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS Browser Tool -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @variant dark (&:where(.dark, .dark *));
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            #printable-area, #printable-area * { visibility: visible; }
+            #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+    <!-- Header Navigation -->
+    <header class="bg-gradient-to-r from-blue-900 via-indigo-950 to-teal-800 text-white shadow-lg no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-white/10 p-2.5 rounded-xl border border-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 height-7 text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 10v6M2 10l10-5 10 5-10 5z"></path>
+                        <path d="M6 12v5c0 2 2 3 6 3s6-1 6-3v-5"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">PORTAL PELAJAR</h1>
+                    <p class="text-xs text-slate-300 font-medium">Sistem Semakan Jadual Waktu & Pendaftaran Repeat</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="firebase-status-badge-container"></div>
+                <a href="index.html" class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Utama Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Controls & Class Selector -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
+            <!-- Selector Card -->
+            <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
+                <label for="pilihKelas" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="9" cy="7" r="4"></circle>
+                    </svg>
+                    Pilih Kelas / Kumpulan Anda:
+                </label>
+                <select id="pilihKelas" onchange="tukarKelas()" class="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition font-medium">
+                    <option value="">-- Sila Pilih Kelas --</option>
+                    <!-- Options populated dynamically -->
+                </select>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col justify-center gap-3">
+                <button onclick="window.print()" id="btnCetak" disabled class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition cursor-not-allowed opacity-50">
+                    🖨️ Cetak Jadual
+                </button>
+                <button onclick="bukaModal()" id="btnTambahRepeat" disabled class="w-full bg-blue-900 hover:bg-blue-800 text-white font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 shadow-sm transition cursor-not-allowed opacity-50">
+                    ➕ Daftar Subjek Repeat
+                </button>
+            </div>
+        </div>
+
+        <!-- Schedule & Summary Area -->
+        <div id="kawasanPaparan" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-8">
+            
+            <!-- Printable / Timetable Grid Section -->
+            <div id="printable-area" class="lg:col-span-3">
+                <!-- Timetable Header Card -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                📅 JADUAL WAKTU KELAS
+                            </h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Jadual waktu mingguan rasmi beserta subjek repeat berdaftar</p>
+                        </div>
+                        <span class="bg-blue-900/10 text-blue-900 dark:bg-blue-400/20 dark:text-blue-300 font-extrabold text-sm px-4 py-1.5 rounded-full border border-blue-900/20" id="labelKelasTerpilih">
+                            -
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Timetable Grid Table Container -->
+                <div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
+                    <div class="min-w-[800px]" id="jadualGridWrap">
+                        <!-- Dynamic Grid generated via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Side Summary Panel -->
+            <div class="lg:col-span-1 flex flex-col gap-6 no-print">
+                <!-- Repeat Subjects Panel -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
+                    <h3 class="font-bold text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                        <span class="w-2.5 h-2.5 bg-teal-500 rounded-full"></span>
+                        Subjek Repeat Berdaftar
+                    </h3>
+                    <div id="senaraiRepeat" class="flex flex-col gap-3">
+                        <!-- Populated via JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Legend / Info Panel -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 text-xs text-slate-500 dark:text-slate-400">
+                    <h4 class="font-bold text-slate-700 dark:text-slate-300 mb-3 uppercase tracking-wider">Penunjuk Warna</h4>
+                    <div class="space-y-2.5">
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 bg-blue-50 dark:bg-blue-950/40 border-l-4 border-blue-600 rounded"></span>
+                            <span>Jadual Kelas Biasa</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 bg-teal-50 dark:bg-teal-950/40 border-l-4 border-teal-600 rounded"></span>
+                            <span>Jadual Subjek Repeat</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <span class="w-3.5 h-3.5 bg-red-50 dark:bg-red-950/40 border border-red-500 rounded ring-1 ring-red-500/50"></span>
+                            <span>Pertindihan Jadual (Clash) ⚠️</span>
+                        </div>
+                    </div>
+                    <p class="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800 leading-relaxed">
+                        Jadual ini memaparkan maklumat aktif yang dimasukkan oleh pihak pentadbir Kolej Komuniti Papar. Sebarang pertindihan subjek repeat hendaklah diselesaikan bersama Penyelaras Kursus.
+                    </p>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Empty State Placeholder -->
+        <div id="empty-state" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-12 text-center max-w-xl mx-auto mt-12 no-print">
+            <div class="w-16 h-16 bg-blue-50 dark:bg-blue-950/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-blue-100 dark:border-blue-900/40">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-blue-600 dark:text-blue-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Pilih Kelas untuk Bermula</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">Sila pilih kelas/kumpulan program anda di menu dropdown bahagian atas bagi melihat paparan jadual waktu mingguan dan melakukan pendaftaran subjek repeat.</p>
+        </div>
+
+        <!-- Unverified / Not Confirmed State Placeholder -->
+        <div id="unverified-state" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-12 text-center max-w-xl mx-auto mt-12 hidden no-print">
+            <div class="w-16 h-16 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100 dark:border-amber-900/40">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Jadual Belum Diterbitkan</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                Jadual waktu bagi semester ini sedang dikemas kini oleh pihak pentadbir dan **belum disahkan/diterbitkan**. Sila semak semula seketika lagi.
+            </p>
+        </div>
+
+    </main>
+
+    <!-- Modal Borang Tambah Subjek Repeat -->
+    <div id="modalTambah" class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 no-print">
+        <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-lg rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300">
+            <!-- Header Modal -->
+            <div class="bg-gradient-to-r from-blue-900 to-indigo-900 text-white px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold">Pendaftaran Subjek Repeat</h3>
+                    <p class="text-xs text-blue-200">Pilih subjek dan daftar ke seksyen/jadual yang tersedia</p>
+                </div>
+                <button onclick="tutupModal()" class="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <!-- Body Modal -->
+            <div class="p-6">
+                <!-- Dropdown Pilih Subjek -->
+                <div class="mb-5">
+                    <label for="subjekRepeatSelect" class="block text-sm font-semibold text-slate-700 dark:text-slate-300 mb-2">
+                        Pilih Subjek yang mahu Diulang:
+                    </label>
+                    <select id="subjekRepeatSelect" onchange="loadPilihanJadual()" class="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none transition font-medium">
+                        <option value="">-- Sila Pilih Subjek --</option>
+                        <!-- Dynamic list -->
+                    </select>
+                </div>
+
+                <!-- Display Available Sections / Schedules -->
+                <div class="mb-6">
+                    <h4 class="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                        Pilihan Seksyen & Jadual Tersedia:
+                    </h4>
+                    <!-- Message status placeholder -->
+                    <div id="statusJadualEmpty" class="text-slate-500 dark:text-slate-400 text-sm bg-slate-50 dark:bg-slate-950/30 p-4 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl text-center">
+                        Sila pilih subjek di atas untuk memaparkan senarai jadual aktif daripada pihak pentadbiran.
+                    </div>
+                    <!-- Selection Container -->
+                    <div id="senaraiPilihanJadual" class="hidden flex flex-col gap-3 max-h-60 overflow-y-auto pr-1">
+                        <!-- Radio options dynamically loaded here -->
+                    </div>
+                </div>
+
+                <!-- Modal Actions -->
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
+                    <button type="button" onclick="tutupModal()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold px-4 py-2.5 rounded-xl transition">
+                        Batal
+                    </button>
+                    <button type="button" id="btnSahkanPilihan" onclick="simpanSubjekRepeat()" disabled class="bg-blue-900 hover:bg-blue-800 text-white font-semibold px-5 py-2.5 rounded-xl transition shadow-sm cursor-not-allowed opacity-50">
+                        Sahkan Pendaftaran
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none no-print"></div>
+
+    <!-- Firebase Compat SDK and services -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+    <script>
+        appendStatusBadge('#firebase-status-badge-container');
+    </script>
+
+    <!-- JavaScript Logik Portal -->
+    <script>
+        // Database key
+        const KEY = 'jadualSistemV3';
+        
+        // Helper function to normalize class name
+        function normalizeClassName(name) {
+            return name ? name.replace(/\s+/g, '').toUpperCase() : '';
+        }
+        
+        // High quality default seed data to populate database if empty
+        const defaultDB = {
+            isConfirmed: true,
+            subjek: [
+                { nama: "DAILY BINTI TAYOK", singkatan: "DT", namaPembantu: "-", singkatanPembantu: "-", subjek: "Pengaturcaraan Web", kod: "STM3012", jam: 3 },
+                { nama: "DARNI BINTI MOHAMED YUSOFF", singkatan: "DMY", namaPembantu: "-", singkatanPembantu: "-", subjek: "Pangkalan Data", kod: "STM3113", jam: 3 },
+                { nama: "MOHD AZLAN BIN HASHIM", singkatan: "MAH", namaPembantu: "-", singkatanPembantu: "-", subjek: "Sistem Pengoperasian", kod: "STM2103", jam: 3 },
+                { nama: "PUTERI NOR ARYSHA BINTI ARIFIN", singkatan: "PNA", namaPembantu: "-", singkatanPembantu: "-", subjek: "Penghayatan Etika dan Peradaban", kod: "MPU2162", jam: 2 },
+                { nama: "TIFFANY THU PEI YING", singkatan: "TPY", namaPembantu: "-", singkatanPembantu: "-", subjek: "Pengajian Islam", kod: "MPU2312", jam: 2 },
+                { nama: "JUSDY BIN JUWAIT", singkatan: "JBJ", namaPembantu: "-", singkatanPembantu: "-", subjek: "Matematik Diskrit", kod: "STM2043", jam: 3 }
+            ],
+            slot: [
+                // STM 1A slots
+                { kod: "STM3012", kelas: "STM 1A", lokasi: "MAKMAL PENGATURCARAAN 1", hari: "Isnin", mula: "08:00", tamat: "10:00", singkatan: "DT", singkatanPembantu: "-", subjek: "Pengaturcaraan Web", nama: "DAILY BINTI TAYOK", namaPembantu: "-" },
+                { kod: "STM3113", kelas: "STM 1A", lokasi: "MAKMAL PENGATURCARAAN 2", hari: "Rabu", mula: "10:00", tamat: "12:00", singkatan: "DMY", singkatanPembantu: "-", subjek: "Pangkalan Data", nama: "DARNI BINTI MOHAMED YUSOFF", namaPembantu: "-" },
+                
+                // STM 1B slots (for repeat options)
+                { kod: "STM3012", kelas: "STM 1B", lokasi: "MAKMAL MULTIMEDIA", hari: "Isnin", mula: "10:00", tamat: "12:00", singkatan: "DT", singkatanPembantu: "-", subjek: "Pengaturcaraan Web", nama: "DAILY BINTI TAYOK", namaPembantu: "-" },
+                { kod: "STM3012", kelas: "STM 1C", lokasi: "MAKMAL RANGKAIAN", hari: "Selasa", mula: "14:00", tamat: "16:00", singkatan: "DT", singkatanPembantu: "-", subjek: "Pengaturcaraan Web", nama: "DAILY BINTI TAYOK", namaPembantu: "-" },
+                
+                // MPU2162 slots (for repeat options)
+                { kod: "MPU2162", kelas: "SLK 1A", lokasi: "DEWAN KULIAH", hari: "Khamis", mula: "08:00", tamat: "10:00", singkatan: "PNA", singkatanPembantu: "-", subjek: "Penghayatan Etika dan Peradaban", nama: "PUTERI NOR ARYSHA BINTI ARIFIN", namaPembantu: "-" },
+                { kod: "MPU2162", kelas: "SLK 1B", lokasi: "DEWAN KULIAH", hari: "Khamis", mula: "10:00", tamat: "12:00", singkatan: "PNA", singkatanPembantu: "-", subjek: "Penghayatan Etika dan Peradaban", nama: "PUTERI NOR ARYSHA BINTI ARIFIN", namaPembantu: "-" }
+            ]
+        };
+
+        // App States
+        let DB = { subjek: [], slot: [] };
+        let selectedClass = "";
+        let repeatSlots = [];
+
+        // Run on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            syncTheme();
+            initDatabase();
+            if (!isFirebaseActive()) {
+                populateClassDropdown();
+                loadStudentState();
+            }
+        });
+
+        // Toggle stylesheet according to dashboard settings
+        function syncTheme() {
+            const isDark = localStorage.getItem("kkpapar_dark_mode") === "true";
+            if (isDark) {
+                document.documentElement.classList.add("dark");
+                document.body.classList.add("bg-slate-950", "text-slate-100");
+                document.body.classList.remove("bg-slate-50", "text-slate-900");
+            } else {
+                document.documentElement.classList.remove("dark");
+                document.body.classList.add("bg-slate-50", "text-slate-900");
+                document.body.classList.remove("bg-slate-950", "text-slate-100");
+            }
+        }
+
+        // Initialize and load Database
+        function initDatabase() {
+            if (isFirebaseActive()) {
+                firebaseWatchTimetable(data => {
+                    if (data) {
+                        DB = data;
+                        // Clean up any corrupt slots
+                        if (DB && DB.slot) {
+                            DB.slot.forEach(s => {
+                                if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
+                                    const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
+                                    s.kod = foundSub ? foundSub.kod : 'STM3012';
+                                }
+                            });
+                        }
+                        populateClassDropdown();
+                        loadStudentState();
+                        tukarKelas();
+                    }
+                });
+            } else {
+                const stored = localStorage.getItem(KEY);
+                if (stored) {
+                    DB = JSON.parse(stored);
+                    // Clean up any corrupt slots from localStorage
+                    if (DB && DB.slot) {
+                        let changed = false;
+                        DB.slot.forEach(s => {
+                            if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
+                                const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
+                                s.kod = foundSub ? foundSub.kod : 'STM3012';
+                                changed = true;
+                            }
+                        });
+                        if (changed) {
+                            localStorage.setItem(KEY, JSON.stringify(DB));
+                        }
+                    }
+                } else {
+                    DB = defaultDB;
+                    localStorage.setItem(KEY, JSON.stringify(DB));
+                }
+                populateClassDropdown();
+                loadStudentState();
+            }
+        }
+
+        // Populate dropdown with active scheduled classes
+        function populateClassDropdown() {
+            const defaultClasses = [
+                "STM 1A", "STM 1B", "STM 1C",
+                "STM 2A", "STM 2B", "STM 2C",
+                "STM 3A", "STM 3B", "STM 3C",
+                "SLK 1A", "SLK 1B",
+                "SLK 2A", "SLK 2B",
+                "SLK 3A", "SLK 3B"
+            ];
+            const activeClasses = DB.slot.map(s => s.kelas).filter(Boolean);
+            const classes = [...new Set([...activeClasses, ...defaultClasses])].sort();
+
+            const select = document.getElementById("pilihKelas");
+            // Clear existing options
+            select.innerHTML = '<option value="">-- Sila Pilih Kelas --</option>';
+            classes.forEach(cls => {
+                const opt = document.createElement("option");
+                opt.value = cls;
+                opt.textContent = cls;
+                select.appendChild(opt);
+            });
+        }
+
+        // Retrieve student state from local storage
+        function loadStudentState() {
+            const savedClass = localStorage.getItem("pelajar_kelas");
+            if (savedClass) {
+                selectedClass = savedClass;
+                document.getElementById("pilihKelas").value = selectedClass;
+                
+                const savedRepeat = localStorage.getItem(`pelajar_repeat_slots_${normalizeClassName(selectedClass)}`);
+                if (savedRepeat) {
+                    repeatSlots = JSON.parse(savedRepeat);
+                } else {
+                    repeatSlots = [];
+                }
+                
+                tukarKelas();
+            }
+        }
+
+        // Save student selection states
+        function saveStudentState() {
+            localStorage.setItem("pelajar_kelas", selectedClass);
+            localStorage.setItem(`pelajar_repeat_slots_${normalizeClassName(selectedClass)}`, JSON.stringify(repeatSlots));
+        }
+
+        // Function fired when student selects a class
+        function tukarKelas() {
+            selectedClass = document.getElementById("pilihKelas").value;
+            
+            const printBtn = document.getElementById("btnCetak");
+            const repeatBtn = document.getElementById("btnTambahRepeat");
+            const viewArea = document.getElementById("kawasanPaparan");
+            const emptyArea = document.getElementById("empty-state");
+            const unverifiedArea = document.getElementById("unverified-state");
+            const labelKelas = document.getElementById("labelKelasTerpilih");
+
+            if (selectedClass) {
+                // If schedule is not published by admin, hide table and show warning
+                if (!DB.isConfirmed) {
+                    printBtn.disabled = true;
+                    printBtn.classList.add("cursor-not-allowed", "opacity-50");
+                    repeatBtn.disabled = true;
+                    repeatBtn.classList.add("cursor-not-allowed", "opacity-50");
+                    viewArea.classList.add("hidden");
+                    emptyArea.classList.add("hidden");
+                    unverifiedArea.classList.remove("hidden");
+                    return;
+                }
+
+                unverifiedArea.classList.add("hidden");
+
+                // Fetch saved repeat slots for this particular class
+                const savedRepeat = localStorage.getItem(`pelajar_repeat_slots_${normalizeClassName(selectedClass)}`);
+                repeatSlots = savedRepeat ? JSON.parse(savedRepeat) : [];
+
+                labelKelas.textContent = selectedClass;
+
+                // Toggle elements
+                printBtn.disabled = false;
+                printBtn.classList.remove("cursor-not-allowed", "opacity-50");
+                repeatBtn.disabled = false;
+                repeatBtn.classList.remove("cursor-not-allowed", "opacity-50");
+                viewArea.classList.remove("hidden");
+                emptyArea.classList.add("hidden");
+
+                renderAll();
+                saveStudentState();
+            } else {
+                printBtn.disabled = true;
+                printBtn.classList.add("cursor-not-allowed", "opacity-50");
+                repeatBtn.disabled = true;
+                repeatBtn.classList.add("cursor-not-allowed", "opacity-50");
+                viewArea.classList.add("hidden");
+                unverifiedArea.classList.add("hidden");
+                emptyArea.classList.remove("hidden");
+                
+                repeatSlots = [];
+            }
+        }
+
+        // Helper time conversion
+        function toMin(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        // Determine if two slots overlap
+        function isOverlapping(s1, s2) {
+            return s1.hari === s2.hari && 
+                   toMin(s1.mula) < toMin(s2.tamat) && 
+                   toMin(s2.mula) < toMin(s1.tamat);
+        }
+
+        // Check if a specific slot clashes with any other slot in the student's combined schedule
+        function checkClash(slot, combinedSchedule) {
+            return combinedSchedule.some(other => {
+                // Ensure we don't compare the slot against itself
+                const sameSlot = other.kod === slot.kod && 
+                                 other.kelas === slot.kelas && 
+                                 other.hari === slot.hari && 
+                                 other.mula === slot.mula;
+                if (sameSlot) return false;
+                return isOverlapping(slot, other);
+            });
+        }
+
+        // Render Timetable Grid & Repeated List
+        function renderAll() {
+            const combinedSchedule = [];
+
+            // 1. Regular class slots
+            const regularSlots = DB.slot.filter(s => normalizeClassName(s.kelas) === normalizeClassName(selectedClass));
+            regularSlots.forEach(s => {
+                combinedSchedule.push({ ...s, isRepeat: false });
+            });
+
+            // 2. Repeat slots
+            repeatSlots.forEach(s => {
+                combinedSchedule.push({ ...s, isRepeat: true });
+            });
+
+            // --- RENDER VISUAL TIMETABLE GRID ---
+            const hari = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
+            const jam = [];
+            for (let h = 8; h <= 17; h++) {
+                jam.push({
+                    mula: `${String(h).padStart(2, '0')}:00`,
+                    tamat: `${String(h + 1).padStart(2, '0')}:00`
+                });
+            }
+
+            const gridContainer = document.getElementById("jadualGridWrap");
+            
+            let gridHtml = `
+                <table class="w-full border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                            <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
+                            ${hari.map(h => `<th class="p-3 text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0">${h}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            jam.forEach(j => {
+                const bMula = toMin(j.mula);
+                const bTamat = toMin(j.tamat);
+
+                gridHtml += `
+                    <tr class="border-b border-slate-150 dark:border-slate-850 hover:bg-slate-50/50 dark:hover:bg-slate-900/20">
+                        <td class="p-3 text-center font-bold bg-slate-50 dark:bg-slate-950/40 text-slate-500 dark:text-slate-450 border-r border-slate-200 dark:border-slate-800 select-none">
+                            ${j.mula} – ${j.tamat}
+                        </td>
+                `;
+
+                hari.forEach(h => {
+                    // Find slots overlapping with this hour block
+                    const matchingSlots = combinedSchedule.filter(s => 
+                        s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
+                    );
+
+                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]">`;
+
+                    if (matchingSlots.length > 0) {
+                        matchingSlots.forEach(s => {
+                            const isClashed = checkClash(s, combinedSchedule);
+                            
+                            let cardStyle = "";
+                            let tagLabel = "";
+                            let deleteBtn = "";
+
+                            if (isClashed) {
+                                cardStyle = "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-800 ring-2 ring-red-500/30";
+                                tagLabel = `<span class="bg-red-500 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-sm inline-flex items-center gap-1 animate-pulse">⚠️ CLASH</span>`;
+                            } else if (s.isRepeat) {
+                                cardStyle = "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-800 shadow-sm";
+                                tagLabel = `<span class="bg-teal-600 text-white font-bold text-[9px] px-1.5 py-0.5 rounded shadow-sm">REPEAT</span>`;
+                            } else {
+                                cardStyle = "bg-blue-50/70 text-blue-900 border-l-4 border-blue-600 dark:bg-blue-950/20 dark:text-blue-200 dark:border-blue-800 shadow-sm";
+                            }
+
+                            if (s.isRepeat) {
+                                // Find repeat index to delete
+                                const repIdx = repeatSlots.findIndex(r => r.kod === s.kod && r.hari === s.hari && r.mula === s.mula);
+                                deleteBtn = `
+                                    <button onclick="padamRepeat(${repIdx})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-950/50 dark:hover:bg-red-900/70 p-1 rounded transition no-print shadow-sm" title="Padam subjek repeat">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                                        </svg>
+                                    </button>
+                                `;
+                            }
+
+                            gridHtml += `
+                                <div class="relative p-2.5 rounded-xl text-left ${cardStyle} mb-2 last:mb-0 transition hover:shadow-md">
+                                    ${deleteBtn}
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                        ${tagLabel}
+                                    </div>
+                                    <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                        <div class="flex items-center gap-1">👤 <span>${s.singkatan}</span></div>
+                                        <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
+                                        <div class="flex items-center gap-1">⏱️ <span>${s.mula} – ${s.tamat}</span></div>
+                                        ${s.isRepeat ? `<div class="flex items-center gap-1 text-teal-600 dark:text-teal-400">🏫 <span>Asal: ${s.kelas}</span></div>` : ''}
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    gridHtml += `</td>`;
+                });
+
+                gridHtml += `</tr>`;
+            });
+
+            gridHtml += `</tbody></table>`;
+            gridContainer.innerHTML = gridHtml;
+
+            // --- RENDER SIDEBAR REPEAT LIST ---
+            const repeatList = document.getElementById("senaraiRepeat");
+            repeatList.innerHTML = "";
+
+            if (repeatSlots.length === 0) {
+                repeatList.innerHTML = `
+                    <div class="text-slate-400 dark:text-slate-500 text-xs text-center py-6 border border-dashed border-slate-200 dark:border-slate-800 rounded-xl">
+                        Tiada subjek repeat didaftarkan.
+                    </div>
+                `;
+            } else {
+                repeatSlots.forEach((s, idx) => {
+                    const isClashed = checkClash(s, combinedSchedule);
+                    const clashClass = isClashed ? "border-red-300 dark:border-red-900 bg-red-50/30" : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20";
+                    
+                    const card = document.createElement("div");
+                    card.className = `p-3 rounded-xl border ${clashClass} flex flex-col justify-between gap-3 relative transition hover:shadow-sm`;
+                    card.innerHTML = `
+                        <div>
+                            <div class="flex justify-between items-start gap-2">
+                                <span class="font-extrabold text-teal-600 dark:text-teal-400 text-xs">${s.kod}</span>
+                                ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1 py-0.5 rounded shadow-sm">PERTINDIHAN ⚠️</span>` : ''}
+                            </div>
+                            <div class="font-bold text-xs leading-tight text-slate-850 dark:text-slate-200 mt-1">${s.subjek}</div>
+                            <div class="text-[10px] text-slate-500 mt-2 space-y-0.5 font-medium">
+                                <div>📅 <b>${s.hari}</b> (${s.mula} - ${s.tamat})</div>
+                                <div>📍 ${s.lokasi}</div>
+                                <div>👤 ${s.nama} (${s.singkatan})</div>
+                                <div class="text-teal-600 dark:text-teal-400">🏫 Kumpulan Asal: ${s.kelas}</div>
+                            </div>
+                        </div>
+                        <button onclick="padamRepeat(${idx})" class="w-full bg-red-500/10 hover:bg-red-500 hover:text-white text-red-600 font-bold py-1.5 px-3 rounded-lg text-[10px] transition text-center flex items-center justify-center gap-1 shadow-sm">
+                            Hapus Pendaftaran
+                        </button>
+                    `;
+                    repeatList.appendChild(card);
+                });
+            }
+        }
+
+        // Open modal
+        function bukaModal() {
+            document.getElementById("modalTambah").classList.remove("hidden");
+            const select = document.getElementById("subjekRepeatSelect");
+            
+            // Populate subjects
+            select.innerHTML = '<option value="">-- Sila Pilih Subjek --</option>';
+            DB.subjek.forEach(s => {
+                const opt = document.createElement("option");
+                opt.value = s.kod;
+                opt.textContent = `${s.kod} - ${s.subjek}`;
+                select.appendChild(opt);
+            });
+
+            // Reset slot container
+            document.getElementById("statusJadualEmpty").classList.remove("hidden");
+            document.getElementById("statusJadualEmpty").innerHTML = "Sila pilih subjek di atas untuk memaparkan senarai jadual aktif daripada pihak pentadbiran.";
+            const container = document.getElementById("senaraiPilihanJadual");
+            container.classList.add("hidden");
+            container.innerHTML = "";
+            
+            const submitBtn = document.getElementById("btnSahkanPilihan");
+            submitBtn.disabled = true;
+            submitBtn.classList.add("cursor-not-allowed", "opacity-50");
+        }
+
+        // Close modal
+        function tutupModal() {
+            document.getElementById("modalTambah").classList.add("hidden");
+        }
+
+        // Triggered when student selects a subject to repeat
+        function loadPilihanJadual() {
+            const kod = document.getElementById("subjekRepeatSelect").value;
+            const container = document.getElementById("senaraiPilihanJadual");
+            const statusEmpty = document.getElementById("statusJadualEmpty");
+            const submitBtn = document.getElementById("btnSahkanPilihan");
+
+            container.innerHTML = "";
+
+            if (!kod) {
+                statusEmpty.classList.remove("hidden");
+                statusEmpty.innerHTML = "Sila pilih subjek di atas untuk memaparkan senarai jadual aktif daripada pihak pentadbiran.";
+                container.classList.add("hidden");
+                
+                submitBtn.disabled = true;
+                submitBtn.classList.add("cursor-not-allowed", "opacity-50");
+                return;
+            }
+
+            // Find all active slots for this subject registered by admin
+            // Ensure we filter out slots that belong to the student's current class
+            const matchingSlots = DB.slot.filter(s => s.kod === kod && normalizeClassName(s.kelas) !== normalizeClassName(selectedClass));
+
+            if (matchingSlots.length === 0) {
+                statusEmpty.classList.remove("hidden");
+                statusEmpty.innerHTML = `<span class="text-red-500 dark:text-red-400 font-semibold block">❌ Tiada jadual aktif didaftarkan oleh admin bagi subjek ini.</span><span class="text-xs text-slate-400 mt-1 block">Pihak pentadbir kolej belum menambah slot pengajaran untuk subjek repeat ini.</span>`;
+                container.classList.add("hidden");
+                
+                submitBtn.disabled = true;
+                submitBtn.classList.add("cursor-not-allowed", "opacity-50");
+            } else {
+                statusEmpty.classList.add("hidden");
+                container.classList.remove("hidden");
+
+                // Render slots as beautiful option list items
+                matchingSlots.forEach((s, idx) => {
+                    const card = document.createElement("label");
+                    card.className = "flex items-start gap-3 p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950/20 hover:bg-blue-50/30 hover:border-blue-300 dark:hover:bg-blue-950/10 dark:hover:border-blue-900 cursor-pointer transition relative";
+                    card.innerHTML = `
+                        <input type="radio" name="pilihanSlotRadio" value="${idx}" class="mt-1 w-4 h-4 text-blue-600 focus:ring-blue-500 border-slate-350" required onchange="enableSubmitBtn()">
+                        <div class="flex-1 text-xs">
+                            <div class="flex justify-between items-center gap-2 mb-1">
+                                <span class="font-extrabold text-blue-900 dark:text-blue-300">Kelas Seksyen: ${s.kelas}</span>
+                                <span class="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold px-2 py-0.5 rounded">📍 ${s.lokasi}</span>
+                            </div>
+                            <div class="font-bold text-slate-800 dark:text-slate-200 mb-1">⏱️ ${s.hari}, ${s.mula} - ${s.tamat}</div>
+                            <div class="text-slate-450 dark:text-slate-400">Pengajar: 👤 ${s.nama} (${s.singkatan})</div>
+                        </div>
+                    `;
+                    // Store slot object JSON directly as data attribute
+                    card.setAttribute("data-slot", JSON.stringify(s));
+                    container.appendChild(card);
+                });
+            }
+        }
+
+        // Enable Submit button once a radio is selected
+        function enableSubmitBtn() {
+            const submitBtn = document.getElementById("btnSahkanPilihan");
+            submitBtn.disabled = false;
+            submitBtn.classList.remove("cursor-not-allowed", "opacity-50");
+        }
+
+        // Save selected repeat subject to schedule
+        function simpanSubjekRepeat() {
+            const radios = document.getElementsByName("pilihanSlotRadio");
+            let selectedIdx = -1;
+            for (let i = 0; i < radios.length; i++) {
+                if (radios[i].checked) {
+                    selectedIdx = radios[i].value;
+                    break;
+                }
+            }
+
+            if (selectedIdx === -1) {
+                showToast("Sila pilih salah satu pilihan jadual terlebih dahulu.", "danger");
+                return;
+            }
+
+            const selectedLabel = document.querySelectorAll("#senaraiPilihanJadual label")[selectedIdx];
+            const slotObj = JSON.parse(selectedLabel.getAttribute("data-slot"));
+
+            // Check if slot has already been registered by student
+            const exists = repeatSlots.some(s => s.kod === slotObj.kod && s.hari === slotObj.hari && s.mula === slotObj.mula);
+            if (exists) {
+                showToast("Subjek repeat ini pada seksyen dan slot tersebut sudah didaftarkan.", "danger");
+                tutupModal();
+                return;
+            }
+
+            // Push repeat slot
+            repeatSlots.push(slotObj);
+            
+            // Save & reload
+            saveStudentState();
+            renderAll();
+            tutupModal();
+
+            // Combined schedule to check for overlap warning
+            const combinedSchedule = [];
+            DB.slot.filter(s => s.kelas === selectedClass).forEach(s => combinedSchedule.push({ ...s, isRepeat: false }));
+            repeatSlots.forEach(s => combinedSchedule.push({ ...s, isRepeat: true }));
+
+            if (checkClash(slotObj, combinedSchedule)) {
+                showToast("Daftar berjaya! Amaran: Berlaku pertindihan jadual.", "danger");
+            } else {
+                showToast("Subjek repeat berjaya didaftarkan ke jadual anda!", "success");
+            }
+        }
+
+        // Drop / remove repeat subject slot
+        function padamRepeat(idx) {
+            if (confirm("Adakah anda pasti mahu memadam pendaftaran subjek repeat ini?")) {
+                repeatSlots.splice(idx, 1);
+                saveStudentState();
+                renderAll();
+                showToast("Pendaftaran subjek repeat telah dipadam.", "success");
+            }
+        }
+
+        // Toast message engine
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            
+            // Styling based on type
+            const baseClass = "p-4 rounded-xl shadow-lg border text-sm font-semibold pointer-events-auto flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0";
+            let typeClass = "";
+            let iconSvg = "";
+
+            if (type === "success") {
+                typeClass = "bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-900";
+                iconSvg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                `;
+            } else {
+                typeClass = "bg-red-50 text-red-900 border-red-200 dark:bg-red-950/20 dark:text-red-300 dark:border-red-900";
+                iconSvg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                `;
+            }
+
+            toast.className = `${baseClass} ${typeClass}`;
+            toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+            container.appendChild(toast);
+
+            // Trigger animation
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            }, 10);
+
+            // Hide and remove toast
+            setTimeout(() => {
+                toast.classList.add("translate-y-2", "opacity-0");
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

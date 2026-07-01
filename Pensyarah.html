@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html lang="ms" class="">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Portal Pensyarah - Kolej Komuniti Papar</title>
+    <!-- Google Fonts Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS Browser Tool -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @variant dark (&:where(.dark, .dark *));
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        @media print {
+            body * { visibility: hidden; }
+            body.print-personal #printable-area, body.print-personal #printable-area * { visibility: visible; }
+            body.print-personal #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
+            body.print-location #kawasanLokasi, body.print-location #kawasanLokasi * { visibility: visible; }
+            body.print-location #kawasanLokasi { position: absolute; left: 0; top: 0; width: 100%; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+    <!-- Header Navigation -->
+    <header class="bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 shadow-sm no-print transition-colors duration-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div class="flex items-center gap-3">
+                <div class="bg-teal-500/10 p-2.5 rounded-xl border border-teal-500/20 dark:bg-white/5 dark:border-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-teal-600 dark:text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">PORTAL PENSYARAH</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Sistem Semakan Jadual Waktu & Hebahan Akademik</p>
+                </div>
+            </div>
+            <div class="flex items-center gap-3">
+                <div id="firebase-status-badge-container"></div>
+                <a href="index.html" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/20 text-slate-700 dark:text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                        <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                    </svg>
+                    Utama Dashboard
+                </a>
+            </div>
+        </div>
+    </header>
+
+
+
+    <!-- Main Content Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <!-- Unverified / Not Confirmed State Placeholder -->
+        <div id="unverified-state" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-12 text-center max-w-xl mx-auto mt-12 hidden no-print">
+            <div class="w-16 h-16 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100 dark:border-amber-900/40">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+                    <line x1="12" y1="9" x2="12" y2="13"></line>
+                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Jadual Belum Diterbitkan</h3>
+            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                Jadual waktu bagi semester ini sedang dikemas kini oleh pihak pentadbir dan **belum disahkan/diterbitkan**. Sila semak semula seketika lagi untuk melihat jadual peribadi dan lokasi anda.
+            </p>
+        </div>
+        
+        <!-- Main Content Area -->
+        <div id="contentPortal" class="block">
+            
+            <!-- Controls & Profile Selector Display -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
+                <!-- Profile Status Card -->
+                <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col justify-center">
+                    <div class="flex items-center gap-3">
+                        <div class="bg-teal-500/10 p-3 rounded-xl border border-teal-500/20">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-teal-600 dark:text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </div>
+                        <div>
+                            <span class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Akaun Pensyarah Log Masuk</span>
+                            <h2 class="text-lg font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mt-0.5" id="labelActiveLecturer">
+                                -
+                            </h2>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Quick Actions -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col justify-center gap-3">
+                    <button onclick="cetakJadualPeribadi()" class="w-full bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm cursor-pointer text-xs">
+                        🖨️ Cetak Jadual Peribadi
+                    </button>
+                    <button onclick="cetakJadualLokasi()" class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition shadow-sm cursor-pointer text-xs">
+                        🏫 Cetak Jadual Lokasi
+                    </button>
+                </div>      </div>
+
+            <!-- Tab 1: Personal Teaching Schedule -->
+            <div id="printable-area" class="mb-8">
+                <!-- Timetable Header Card -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                    <div class="flex justify-between items-center">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                📅 JADUAL MENGAJAR MINGGUAN
+                            </h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Rekod slot tugasan mengajar pensyarah utama & pensyarah pembantu</p>
+                        </div>
+                        <span class="bg-teal-600/10 text-teal-700 dark:bg-teal-400/20 dark:text-teal-300 font-extrabold text-xs px-4 py-1.5 rounded-full border border-teal-500/20" id="labelPensyarahTerpilih">
+                            -
+                        </span>
+                    </div>
+                </div>
+
+                <!-- Timetable Grid Table Container -->
+                <div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
+                    <div class="min-w-[800px]" id="jadualGridWrap">
+                        <!-- Dynamic Grid generated via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: Location Timetable Section -->
+            <div class="mb-8" id="kawasanLokasi">
+                <!-- Timetable Header Card -->
+                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                        <div>
+                            <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                🏫 JADUAL PENGGUNAAN LOKASI / BILIK
+                            </h2>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Status penggunaan bilik darjah dan makmal komputer Kolej Komuniti Papar</p>
+                        </div>
+                        <div class="w-full sm:w-72 no-print">
+                            <select id="pilihLokasi" onchange="tukarLokasi()" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
+                                <!-- Populated dynamically -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Timetable Grid Table Container -->
+                <div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
+                    <div class="min-w-[800px]" id="lokasiGridWrap">
+                        <!-- Dynamic Location Grid generated via JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Announcement Management Card (Ubah/Tambah Hebahan) -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 mb-8 no-print">
+                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+                        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+                    </svg>
+                    Urus Hebahan & Peringatan Dashboard
+                </h3>
+
+                <!-- Form to Add/Edit Announcements -->
+                <form id="annForm" onsubmit="simpanHebahan(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <!-- Category -->
+                    <div>
+                        <label for="annCategory" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kategori</label>
+                        <select id="annCategory" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
+                            <option value="Pentadbiran Kolej">Pentadbiran Kolej</option>
+                            <option value="Penyelaras STM">Penyelaras STM</option>
+                            <option value="Penyelaras SLK">Penyelaras SLK</option>
+                            <option value="Unit Akademik">Unit Akademik</option>
+                            <option value="Lain-lain">Lain-lain</option>
+                        </select>
+                    </div>
+                    <!-- Date -->
+                    <div>
+                        <label for="annDate" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tarikh / Waktu</label>
+                        <input type="text" id="annDate" placeholder="cth: Hari Ini / 30 Jun 2026" required value="Hari Ini" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                    </div>
+                    <!-- Title -->
+                    <div class="md:col-span-2">
+                        <label for="annTitle" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tajuk Hebahan</label>
+                        <input type="text" id="annTitle" placeholder="cth: Taklimat Penggunaan Portal Baru" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                    </div>
+                    <!-- Content Description -->
+                    <div class="md:col-span-4">
+                        <label for="annDesc" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kandungan / Butiran Hebahan</label>
+                        <textarea id="annDesc" rows="3" placeholder="Sila masukkan perincian penuh peringatan atau maklumat hebahan akademik..." required class="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs"></textarea>
+                    </div>
+                    <!-- Actions -->
+                    <div class="md:col-span-4 flex justify-end gap-3 pt-2">
+                        <input type="hidden" id="editIndex" value="-1">
+                        <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold px-4 py-2 rounded-xl transition text-xs">
+                            Batal
+                        </button>
+                        <button type="submit" id="btnSubmitAnn" class="bg-teal-700 hover:bg-teal-600 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-xs">
+                            Tambah Hebahan
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Table list of announcements -->
+                <div class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+                                <th class="p-3 w-1/5">Kategori & Tarikh</th>
+                                <th class="p-3 w-1/4">Tajuk</th>
+                                <th class="p-3 w-2/5">Kandungan</th>
+                                <th class="p-3 w-20 text-center">Tindakan</th>
+                            </tr>
+                        </thead>
+                        <tbody id="annTableBody" class="divide-y divide-slate-100 dark:divide-slate-800">
+                            <!-- Loaded dynamically via JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+        </div>
+
+    </main>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none no-print"></div>
+
+    <!-- Firebase Compat SDK and services -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+    <script>
+        appendStatusBadge('#firebase-status-badge-container');
+    </script>
+
+    <script>
+        const KEY = 'jadualSistemV3';
+        const ANN_KEY = 'kkpapar_announcements';
+
+        // Lecturer Profile DB
+        let LECTURERS = JSON.parse(localStorage.getItem('kkpapar_lecturers'));
+        if (!LECTURERS) {
+            const INITIAL_LECTS = [
+                { name: "DAILY BINTI TAYOK", shortName: "DT", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "DEVIANA RADEN", shortName: "DR", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "FARHANA BINTI KAMIUS", shortName: "FBK", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "JUSDY BIN JUWAIT", shortName: "JBJ", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "TIFFANY THU PEI YING", shortName: "TPY", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH42", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" }
+            ];
+            LECTURERS = INITIAL_LECTS;
+            localStorage.setItem('kkpapar_lecturers', JSON.stringify(LECTURERS));
+        }
+        // Map short field for compatibility with Pensyarah.html rendering
+        LECTURERS = LECTURERS.map(l => ({ ...l, short: l.shortName || l.short }));
+
+        // Locations DB
+        const LOCATIONS = [
+            "DEWAN KULIAH",
+            "MAKMAL BAHASA",
+            "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1",
+            "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2",
+            "MAKMAL PENGATURCARAAN 1",
+            "MAKMAL PENGATURCARAAN 2",
+            "MAKMAL MULTIMEDIA",
+            "MAKMAL BAIKPULIH DAN PEMASANGAN",
+            "MAKMAL RANGKAIAN",
+            "MAKMAL PENDAWAIAN RANGKAIAN",
+            "MAKMAL AI",
+            "MAKMAL IOT",
+            "MAKMAL LOGISTIK 1",
+            "MAKMAL LOGISTIK 2",
+            "MAKMAL SIMULASI LOGISTIK"
+        ];
+
+        let DB = { subjek: [], slot: [] };
+        let ANNOUNCEMENTS = [];
+        let activeLecturer = "DT";
+        let activeLocation = "DEWAN KULIAH";
+
+        document.addEventListener("DOMContentLoaded", () => {
+            syncTheme();
+            initData();
+            if (!isFirebaseActive()) {
+                setupLecturerProfile();
+                setupLocationDropdown();
+                checkPublishState();
+                renderAll();
+            }
+        });
+
+        // Sync theme with dashboard settings on load
+        function syncTheme() {
+            const isDark = localStorage.getItem("kkpapar_dark_mode") === "true";
+            const body = document.body;
+            if (isDark) {
+                document.documentElement.classList.add("dark");
+                body.classList.add("dark-mode", "bg-slate-950", "text-slate-100");
+                body.classList.remove("light-mode", "bg-slate-50", "text-slate-900");
+            } else {
+                document.documentElement.classList.remove("dark");
+                body.classList.add("light-mode", "bg-slate-50", "text-slate-900");
+                body.classList.remove("dark-mode", "bg-slate-950", "text-slate-100");
+            }
+        }
+
+        // Print Functions
+        function cetakJadualPeribadi() {
+            document.body.classList.add("print-personal");
+            document.body.classList.remove("print-location");
+            window.print();
+        }
+
+        function cetakJadualLokasi() {
+            document.body.classList.add("print-location");
+            document.body.classList.remove("print-personal");
+            window.print();
+        }
+
+        // Initialize databases
+        function initData() {
+            if (isFirebaseActive()) {
+                firebaseWatchTimetable(data => {
+                    if (data) {
+                        DB = data;
+                        checkPublishState();
+                        renderAll();
+                    }
+                });
+                firebaseWatchAnnouncements(data => {
+                    if (data) {
+                        ANNOUNCEMENTS = data;
+                        renderAnnouncements();
+                    }
+                });
+                firebaseWatchLecturers(data => {
+                    if (data) {
+                        LECTURERS = data.map(l => ({ ...l, short: l.shortName || l.short }));
+                        setupLecturerProfile();
+                        setupLocationDropdown();
+                        renderAll();
+                    }
+                });
+            } else {
+                DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
+                ANNOUNCEMENTS = JSON.parse(localStorage.getItem(ANN_KEY) || '[]');
+                LECTURERS = JSON.parse(localStorage.getItem('kkpapar_lecturers')) || [];
+                LECTURERS = LECTURERS.map(l => ({ ...l, short: l.shortName || l.short }));
+                setupLecturerProfile();
+                setupLocationDropdown();
+                checkPublishState();
+                renderAll();
+            }
+        }
+
+        // Lock profiles select to logged-in user only (satisfies requirement 2)
+        function setupLecturerProfile() {
+            const logged = localStorage.getItem("logged_lecturer");
+            if (logged && LECTURERS.some(l => l.short === logged)) {
+                activeLecturer = logged;
+            }
+
+            const lecObj = LECTURERS.find(l => l.short === activeLecturer);
+            const label = document.getElementById("labelActiveLecturer");
+            if (lecObj) {
+                label.innerHTML = `👤 ${lecObj.name} <span class="bg-teal-600/10 text-teal-600 dark:text-teal-400 px-2.5 py-0.5 rounded-full font-bold ml-1 text-xs border border-teal-500/20">${lecObj.short}</span>`;
+            } else {
+                label.innerHTML = `👤 ${activeLecturer}`;
+            }
+        }
+
+        // Populate location dropdown
+        function setupLocationDropdown() {
+            const select = document.getElementById("pilihLokasi");
+            select.innerHTML = "";
+            LOCATIONS.forEach(loc => {
+                const opt = document.createElement("option");
+                opt.value = loc;
+                opt.textContent = loc;
+                if (loc === activeLocation) opt.selected = true;
+                select.appendChild(opt);
+            });
+        }
+
+        function tukarLokasi() {
+            activeLocation = document.getElementById("pilihLokasi").value;
+            renderLocationGrid();
+            showToast(`Menukar jadual lokasi kepada: ${activeLocation}`, "success");
+        }
+
+        // Verify if admin has confirmed/published schedule
+        function checkPublishState() {
+            const unverifiedArea = document.getElementById("unverified-state");
+            const contentArea = document.getElementById("contentPortal");
+
+            if (!DB.isConfirmed) {
+                unverifiedArea.classList.remove("hidden");
+                contentArea.classList.add("hidden");
+            } else {
+                unverifiedArea.classList.add("hidden");
+                contentArea.classList.remove("hidden");
+            }
+        }
+
+        // Time calculations
+        function toMin(timeStr) {
+            const [h, m] = timeStr.split(':').map(Number);
+            return h * 60 + m;
+        }
+
+        // Render both schedules and announcements
+        function renderAll() {
+            const lecObj = LECTURERS.find(l => l.short === activeLecturer);
+            document.getElementById("labelPensyarahTerpilih").textContent = lecObj ? lecObj.name : activeLecturer;
+
+            renderPersonalGrid();
+            renderLocationGrid();
+            renderAnnouncements();
+        }
+
+        // Render Personal Schedule Grid
+        function renderPersonalGrid() {
+            const personalSlots = DB.slot.filter(s => {
+                const s1 = s.singkatan ? s.singkatan.trim().toUpperCase() : '';
+                const s2 = s.singkatanPembantu ? s.singkatanPembantu.trim().toUpperCase() : '';
+                const act = activeLecturer ? activeLecturer.trim().toUpperCase() : '';
+                return s1 === act || s2 === act;
+            });
+
+            const hari = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
+            const jam = [];
+            for (let h = 8; h <= 17; h++) {
+                jam.push({
+                    mula: `${String(h).padStart(2, '0')}:00`,
+                    tamat: `${String(h + 1).padStart(2, '0')}:00`
+                });
+            }
+
+            function checkConflict(slot) {
+                return personalSlots.some(other => {
+                    const sameSlot = other.kod === slot.kod && 
+                                     other.kelas === slot.kelas && 
+                                     other.hari === slot.hari && 
+                                     other.mula === slot.mula;
+                    if (sameSlot) return false;
+                    return other.hari === slot.hari && 
+                           toMin(other.mula) < toMin(slot.tamat) && 
+                           toMin(slot.mula) < toMin(other.tamat);
+                });
+            }
+
+            const gridWrap = document.getElementById("jadualGridWrap");
+            let gridHtml = `
+                <table class="w-full border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                            <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
+                            ${hari.map(h => `<th class="p-3 text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0">${h}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            jam.forEach(j => {
+                const bMula = toMin(j.mula);
+                const bTamat = toMin(j.tamat);
+
+                gridHtml += `
+                    <tr class="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                        <td class="p-3 text-center font-bold bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-800 select-none">
+                            ${j.mula} – ${j.tamat}
+                        </td>
+                `;
+
+                hari.forEach(h => {
+                    const matching = personalSlots.filter(s => 
+                        s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
+                    );
+
+                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+
+                    if (matching.length > 0) {
+                        matching.forEach(s => {
+                            const isClashed = checkConflict(s);
+                            const cardStyle = isClashed 
+                                ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
+                                : (s.singkatanPembantu === activeLecturer 
+                                    ? "bg-amber-50/70 text-amber-900 border-l-4 border-amber-500 dark:bg-amber-950/20 dark:text-amber-200 dark:border-amber-900 shadow-sm"
+                                    : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm");
+
+                            const roleTag = s.singkatanPembantu === activeLecturer
+                                ? `<span class="bg-amber-500 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">PEMBANTU</span>`
+                                : `<span class="bg-teal-700 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">UTAMA</span>`;
+
+                            gridHtml += `
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} mb-2 last:mb-0 transition hover:shadow-md">
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                        ${roleTag}
+                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                    </div>
+                                    <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                        <div class="flex items-center gap-1">🏫 <span>${s.kelas}</span></div>
+                                        <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
+                                        <div class="flex items-center gap-1">⏱️ <span>${s.mula} – ${s.tamat}</span></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    gridHtml += `</td>`;
+                });
+
+                gridHtml += `</tr>`;
+            });
+
+            gridHtml += `</tbody></table>`;
+            gridWrap.innerHTML = gridHtml;        gridWrap.innerHTML = gridHtml;
+        }
+
+        // Render Location Schedule Grid
+        function renderLocationGrid() {
+            // Filter slots booked for this location with normalization
+            const locSlots = DB.slot.filter(s => {
+                const l1 = s.lokasi ? s.lokasi.trim().toUpperCase() : '';
+                const actL = activeLocation ? activeLocation.trim().toUpperCase() : '';
+                return l1 === actL;
+            });
+
+            const hari = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
+            const jam = [];
+            for (let h = 8; h <= 17; h++) {
+                jam.push({
+                    mula: `${String(h).padStart(2, '0')}:00`,
+                    tamat: `${String(h + 1).padStart(2, '0')}:00`
+                });
+            }
+
+            // Conflict overlap check for location booking
+            function checkLocConflict(slot) {
+                return locSlots.some(other => {
+                    const sameSlot = other.kod === slot.kod && 
+                                     other.kelas === slot.kelas && 
+                                     other.hari === slot.hari && 
+                                     other.mula === slot.mula;
+                    if (sameSlot) return false;
+                    return other.hari === slot.hari && 
+                           toMin(other.mula) < toMin(slot.tamat) && 
+                           toMin(slot.mula) < toMin(other.tamat);
+                });
+            }
+
+            const gridWrap = document.getElementById("lokasiGridWrap");
+            let gridHtml = `
+                <table class="w-full border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
+                    <thead>
+                        <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
+                            <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
+                            ${hari.map(h => `<th class="p-3 text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0">${h}</th>`).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            jam.forEach(j => {
+                const bMula = toMin(j.mula);
+                const bTamat = toMin(j.tamat);
+
+                gridHtml += `
+                    <tr class="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
+                        <td class="p-3 text-center font-bold bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-800 select-none">
+                            ${j.mula} – ${j.tamat}
+                        </td>
+                `;
+
+                hari.forEach(h => {
+                    const matching = locSlots.filter(s => 
+                        s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
+                    );
+
+                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+
+                    if (matching.length > 0) {
+                        matching.forEach(s => {
+                            const isClashed = checkLocConflict(s);
+                            const cardStyle = isClashed 
+                                ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
+                                : "bg-indigo-50/70 text-indigo-900 border-l-4 border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-200 dark:border-indigo-900 shadow-sm";
+
+                            gridHtml += `
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} mb-2 last:mb-0 transition hover:shadow-md">
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">BERTINDIHAN ⚠️</span>` : ''}
+                                    </div>
+                                    <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                        <div class="flex items-center gap-1">🏫 <b>Kelas: ${s.kelas}</b></div>
+                                        <div class="flex items-center gap-1">👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
+                                        <div class="flex items-center gap-1">⏱️ <span>${s.mula} – ${s.tamat}</span></div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                    }
+
+                    gridHtml += `</td>`;
+                });
+
+                gridHtml += `</tr>`;
+            });
+
+            gridHtml += `</tbody></table>`;
+            gridWrap.innerHTML = gridHtml;
+        }
+
+        // Render Announcements
+        function renderAnnouncements() {
+            const annTable = document.getElementById("annTableBody");
+            annTable.innerHTML = "";
+
+            if (ANNOUNCEMENTS.length === 0) {
+                annTable.innerHTML = `
+                    <tr>
+                        <td colspan="4" class="p-6 text-center text-slate-400 dark:text-slate-500 font-medium">
+                            Tiada sebarang hebahan aktif pada masa ini.
+                        </td>
+                    </tr>
+                `;
+            } else {
+                ANNOUNCEMENTS.forEach((a, idx) => {
+                    const row = document.createElement("tr");
+                    row.className = "hover:bg-slate-50 dark:hover:bg-slate-900/10 transition";
+                    row.innerHTML = `
+                        <td class="p-3">
+                            <span class="bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border border-teal-100 dark:border-teal-900/50 font-bold px-2 py-0.5 rounded text-[10px] inline-block mb-1">${a.category}</span>
+                            <div class="text-[10px] text-slate-400 font-medium">${a.date}</div>
+                        </td>
+                        <td class="p-3 font-semibold text-slate-800 dark:text-slate-200">${a.title}</td>
+                        <td class="p-3 text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs truncate" title="${a.desc}">${a.desc}</td>
+                        <td class="p-3 text-center">
+                            <div class="flex items-center justify-center gap-2">
+                                <button onclick="bukaEditHebahan(${idx})" class="bg-blue-50 hover:bg-blue-100 text-blue-600 dark:bg-blue-950/40 dark:text-blue-300 p-1.5 rounded-lg border border-blue-100 dark:border-blue-900/30 transition shadow-sm" title="Edit Hebahan">
+                                    ✏️
+                                </button>
+                                <button onclick="padamHebahan(${idx})" class="bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/40 dark:text-red-300 p-1.5 rounded-lg border border-red-100 dark:border-red-900/30 transition shadow-sm" title="Padam Hebahan">
+                                    🗑️
+                                </button>
+                            </div>
+                        </td>
+                    `;
+                    annTable.appendChild(row);
+                });
+            }
+        }
+
+        // Save announcement (both Add and Update)
+        function simpanHebahan(e) {
+            e.preventDefault();
+
+            const category = document.getElementById("annCategory").value;
+            const date = document.getElementById("annDate").value.trim();
+            const title = document.getElementById("annTitle").value.trim();
+            const desc = document.getElementById("annDesc").value.trim();
+            const editIdx = parseInt(document.getElementById("editIndex").value);
+
+            if (editIdx === -1) {
+                // ADD ACTION
+                ANNOUNCEMENTS.push({ category, date, title, desc });
+                showToast("Hebahan berjaya ditambah ke dashboard!", "success");
+            } else {
+                // EDIT/UPDATE ACTION
+                ANNOUNCEMENTS[editIdx] = { category, date, title, desc };
+                showToast("Hebahan berjaya dikemas kini!", "success");
+                cancelEdit(); // reset form state
+            }
+
+            // Sync database
+            if (isFirebaseActive()) {
+                firebaseSaveAnnouncements(ANNOUNCEMENTS);
+            } else {
+                localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS));
+                renderAnnouncements();
+            }
+
+            // Clear inputs (except category / default date)
+            document.getElementById("annTitle").value = "";
+            document.getElementById("annDesc").value = "";
+            document.getElementById("annDate").value = "Hari Ini";
+        }
+
+        // Delete announcement
+        function padamHebahan(idx) {
+            if (confirm("Adakah anda pasti mahu memadam hebahan ini?")) {
+                ANNOUNCEMENTS.splice(idx, 1);
+                if (isFirebaseActive()) {
+                    firebaseSaveAnnouncements(ANNOUNCEMENTS);
+                } else {
+                    localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS));
+                    renderAnnouncements();
+                }
+                showToast("Hebahan telah dipadam.", "success");
+                cancelEdit(); // reset edit state if current item is deleted
+            }
+        }
+
+        // Open edit form
+        function bukaEditHebahan(idx) {
+            const a = ANNOUNCEMENTS[idx];
+            document.getElementById("annCategory").value = a.category;
+            document.getElementById("annDate").value = a.date;
+            document.getElementById("annTitle").value = a.title;
+            document.getElementById("annDesc").value = a.desc;
+            document.getElementById("editIndex").value = idx;
+
+            // Adjust buttons
+            document.getElementById("btnCancelEdit").classList.remove("hidden");
+            document.getElementById("btnSubmitAnn").textContent = "Simpan Kemas Kini";
+            document.getElementById("btnSubmitAnn").className = "bg-blue-700 hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-xs";
+            
+            // Scroll to form smoothly
+            document.getElementById("annForm").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // Cancel edit state
+        function cancelEdit() {
+            document.getElementById("editIndex").value = "-1";
+            document.getElementById("annTitle").value = "";
+            document.getElementById("annDesc").value = "";
+            document.getElementById("annDate").value = "Hari Ini";
+            document.getElementById("annCategory").selectedIndex = 0;
+
+            document.getElementById("btnCancelEdit").classList.add("hidden");
+            document.getElementById("btnSubmitAnn").textContent = "Tambah Hebahan";
+            document.getElementById("btnSubmitAnn").className = "bg-teal-700 hover:bg-teal-600 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-xs";
+        }
+
+        // Toast helper engine
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            
+            const baseClass = "p-4 rounded-xl shadow-lg border text-sm font-semibold pointer-events-auto flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0";
+            let typeClass = "";
+            let iconSvg = "";
+
+            if (type === "success") {
+                typeClass = "bg-emerald-50 text-emerald-900 border-emerald-200 dark:bg-emerald-950/20 dark:text-emerald-300 dark:border-emerald-900";
+                iconSvg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-emerald-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 6 9 17 4 12"></polyline>
+                    </svg>
+                `;
+            } else {
+                typeClass = "bg-red-50 text-red-900 border-red-200 dark:bg-red-950/20 dark:text-red-300 dark:border-red-900";
+                iconSvg = `
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="12" y1="8" x2="12" y2="12"></line>
+                        <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                    </svg>
+                `;
+            }
+
+            toast.className = `${baseClass} ${typeClass}`;
+            toast.innerHTML = `${iconSvg} <span>${message}</span>`;
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove("translate-y-2", "opacity-0");
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add("translate-y-2", "opacity-0");
+                setTimeout(() => {
+                    toast.remove();
+                }, 300);
+            }, 3500);
+        }
+    </script>
+</body>
+</html>

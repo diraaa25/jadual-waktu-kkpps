@@ -1,0 +1,680 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portal Programmer - Sistem Jadual Waktu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+    /* Additional custom adjustments for Programmer Portal */
+    .credentials-table td {
+        font-family: monospace;
+    }
+    .password-cell {
+        background-color: var(--surface-hover);
+        padding: 4px 8px;
+        border-radius: 4px;
+        font-weight: bold;
+    }
+</style>
+</head>
+<body class="light-mode">
+
+    <div class="app-layout">
+        <!-- Sidebar Navigation -->
+        <aside class="app-sidebar">
+            <div>
+                <div class="sidebar-brand">
+                    <div class="brand-logo">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="16 18 22 12 16 6"></polyline>
+                            <polyline points="8 6 2 12 8 18"></polyline>
+                            <line x1="12" y1="2" x2="12" y2="22"></line>
+                        </svg>
+                    </div>
+                    <div>
+                        <div class="brand-title">KK PAPAR</div>
+                        <div class="brand-subtitle">Programmer Portal</div>
+                    </div>
+                </div>
+
+                <nav class="sidebar-nav">
+                    <button class="nav-item active" onclick="switchSection('dashboard')">
+                        👤 Urus Pensyarah
+                    </button>
+                    <button class="nav-item" onclick="switchSection('subjek')">
+                        📚 Urus Subjek
+                    </button>
+                    <button class="nav-item" onclick="switchSection('kredensial')">
+                        🔑 Rujukan Kredensial
+                    </button>
+                    <a href="index.html" class="nav-item" style="margin-top: 2rem; color: var(--danger);">
+                        🚪 Log Keluar
+                    </a>
+                </nav>
+            </div>
+
+            <div class="sidebar-footer">
+                <div id="firebase-status-badge-container" style="padding: 0 1rem; margin-bottom: 10px;"></div>
+                <button id="theme-toggle" class="theme-switch-btn" onclick="toggleTheme()">
+                    <span>Mod Gelap</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Window -->
+        <main class="app-main" style="flex: 1; padding: 2rem;">
+            <!-- App Header -->
+            <header class="app-header" style="background: none; box-shadow: none; color: inherit; padding: 0; margin-bottom: 2rem; display: flex; justify-content: space-between; align-items: center;">
+                <div class="header-title-area">
+                    <h2 id="header-title" style="font-size: 1.5rem; font-weight: 800;">Portal Programmer</h2>
+                    <p id="header-subtitle" style="color: var(--text-secondary); font-size: 0.9rem;">Urus pangkalan data, subjek mengajar & rujuk kelayakan pensyarah</p>
+                </div>
+            </header>
+
+            <!-- Content Area -->
+            <div class="content-body">
+
+                <!-- SECTION 1: URUS PENSYARAH -->
+                <div id="sec-dashboard" class="tab-section">
+                    <div class="card">
+                        <h2>➕ Tambah Pensyarah Baru</h2>
+                        <form id="formLecturer" onsubmit="tambahPensyarah(event)">
+                            <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem;">
+                                <div>
+                                    <label>Nama Penuh</label>
+                                    <input id="lecName" placeholder="cth: AHMAD BIN ALI" required style="text-transform: uppercase;">
+                                </div>
+                                <div>
+                                    <label>Singkatan (Max 6 aksara)</label>
+                                    <input id="lecShort" placeholder="cth: ABA" maxlength="6" required style="text-transform: uppercase;">
+                                </div>
+                                <div>
+                                    <label>Jawatan</label>
+                                    <input id="lecDesignation" placeholder="cth: Pegawai Pendidikan Pengajian Tinggi DH41" required>
+                                </div>
+                                <div>
+                                    <label>Alamat E-mel</label>
+                                    <input id="lecEmail" type="email" placeholder="cth: ahmad.ali@kolejkomuniti.edu.my" required>
+                                </div>
+                                <div>
+                                    <label>Program / Jabatan</label>
+                                    <select id="lecProgram" required>
+                                        <option value="STM">Sijil Teknologi Maklumat (STM)</option>
+                                        <option value="SLK">Sijil Perkhidmatan Logistik (SLK)</option>
+                                        <option value="UPA">Unit Akademik (UPA)</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Kata Laluan Log Masuk</label>
+                                    <input id="lecPassword" type="text" value="pensyarah123" required>
+                                </div>
+                            </div>
+                            <div class="actions" style="margin-top: 1.5rem; display: flex; gap: 10px; align-items: center;">
+                                <input type="hidden" id="editLecIndex" value="-1">
+                                <button class="btn btn-accent" type="submit" id="btnSubmitLec">Daftar Pensyarah</button>
+                                <button class="btn btn-light" type="button" id="btnCancelLecEdit" onclick="cancelLecEdit()" style="display: none;">Batal</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>👤 Senarai Pensyarah Berdaftar</h2>
+                        <div class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nama</th>
+                                        <th>Singkatan</th>
+                                        <th>Program</th>
+                                        <th>Jawatan</th>
+                                        <th style="text-align: center;">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="lecturerTableBody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 2: URUS SUBJEK -->
+                <div id="sec-subjek" class="tab-section" style="display: none;">
+                    <div class="card">
+                        <h2>📚 Daftar & Petakan Subjek Mengajar</h2>
+                        <form id="formSubject" onsubmit="tambahSubjek(event)">
+                            <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem;">
+                                <div>
+                                    <label>Pensyarah Utama</label>
+                                    <select id="subUtama" required>
+                                        <!-- Dynamic Dropdown -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Pensyarah Pembantu (Jika Ada)</label>
+                                    <select id="subPembantu" required>
+                                        <!-- Dynamic Dropdown -->
+                                    </select>
+                                </div>
+                                <div>
+                                    <label>Nama Subjek</label>
+                                    <input id="subName" placeholder="cth: Pengaturcaraan Web" required>
+                                </div>
+                                <div>
+                                    <label>Kod Subjek</label>
+                                    <input id="subCode" placeholder="cth: STM401" required style="text-transform: uppercase;">
+                                </div>
+                                <div>
+                                    <label>Jumlah Jam Mengajar / Minggu</label>
+                                    <input id="subHours" type="number" min="0.5" step="0.5" placeholder="cth: 4" required>
+                                </div>
+                            </div>
+                            <div class="actions" style="margin-top: 1.5rem;">
+                                <button class="btn btn-primary" type="submit">Daftar Subjek</button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h2>📚 Senarai Subjek Pengajaran Aktif</h2>
+                        <div class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
+                            <table class="custom-table">
+                                <thead>
+                                    <tr>
+                                        <th>Kod</th>
+                                        <th>Subjek</th>
+                                        <th>Pensyarah Utama</th>
+                                        <th>Pensyarah Pembantu</th>
+                                        <th>Jam Kredit</th>
+                                        <th style="text-align: center;">Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="subjectTableBody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SECTION 3: RUJUKAN KREDENSIAL -->
+                <div id="sec-kredensial" class="tab-section" style="display: none;">
+                    <!-- Firebase Utility Card -->
+                    <div class="card" id="firebase-utility-card" style="margin-bottom: 24px; border: 1px solid var(--surface-border);">
+                        <h2>⚡ Firebase Database Control</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            Gunakan butang di bawah untuk memuat naik data tempatan (LocalStorage) semasa anda ke Firebase Realtime Database. 
+                            Ini akan menyalin semua maklumat pensyarah, subjek, dan jadual waktu dari penyemak imbas ini ke pelayan database atas talian.
+                        </p>
+                        <div style="display: flex; gap: 10px; align-items: center;">
+                            <button class="btn btn-accent" onclick="runFirebaseUpload()">📤 Muat Naik Data Tempatan ke Firebase</button>
+                            <span id="firebase-upload-status" style="font-size: 0.85rem; font-weight: 600;"></span>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h2>🔑 Rujukan Kredensial Log Masuk Pensyarah</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            Jadual di bawah menunjukkan maklumat kelayakan log masuk bagi semua akaun pensyarah untuk tujuan rujukan serta semakan debug programmer.
+                        </p>
+                        
+                        <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                            <input id="searchCreds" oninput="filterCredentials()" placeholder="Cari pensyarah (Nama / Singkatan / E-mel)..." style="max-width: 400px;">
+                        </div>
+
+                        <div class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
+                            <table class="custom-table credentials-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nama</th>
+                                        <th>Singkatan</th>
+                                        <th>Alamat E-mel</th>
+                                        <th>Kata Laluan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="credentialsTableBody">
+                                    <!-- Dynamic -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </main>
+    </div>
+
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none no-print"></div>
+
+    <!-- Firebase Compat SDK and services -->
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-service.js"></script>
+    <script>
+        appendStatusBadge('#firebase-status-badge-container');
+    </script>
+
+    <script>
+        const KEY = 'jadualSistemV3';
+        const LECTURERS_KEY = 'kkpapar_lecturers';
+        
+        let DB = { subjek: [], slot: [] };
+        let LECTURERS = [];
+
+        const INITIAL_LECTURERS = [
+            { name: "DAILY BINTI TAYOK", shortName: "DT", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "JUSDY BIN JUWAIT", shortName: "JBJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+            { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+            { name: "DEVIANA RADEN", shortName: "DR", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+            { name: "FARHANA BINTI KAMIUS", shortName: "FBK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+            { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+            { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+            { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+            { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+            { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+            { name: "TIFFANY THU PEI YING", shortName: "TPY", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+            { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", designation: "Pegawai Pendidikan Pengajian Tinggi DH42", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" }
+        ];
+
+        document.addEventListener("DOMContentLoaded", () => {
+            initTheme();
+            loadDB();
+            if (!isFirebaseActive()) {
+                renderLecturers();
+                renderDropdowns();
+                renderSubjects();
+                renderCredentials();
+            }
+        });
+
+        // Theme Loading
+        function initTheme() {
+            const isDark = localStorage.getItem("kkpapar_dark_mode") === "true";
+            const body = document.body;
+            const toggleBtn = document.getElementById("theme-toggle");
+            if (isDark) {
+                body.classList.add("dark-mode");
+                toggleBtn.textContent = "Mod Cerah";
+            } else {
+                body.classList.remove("dark-mode");
+                toggleBtn.textContent = "Mod Gelap";
+            }
+        }
+
+        // Toggle Theme
+        function toggleTheme() {
+            const body = document.body;
+            const toggleBtn = document.getElementById("theme-toggle");
+            const isDark = body.classList.toggle("dark-mode");
+            localStorage.setItem("kkpapar_dark_mode", isDark);
+            toggleBtn.textContent = isDark ? "Mod Cerah" : "Mod Gelap";
+            showToast(`Menukar ke Mod ${isDark ? 'Gelap' : 'Cerah'}`, "success");
+        }
+
+        // Load databases
+        function loadDB() {
+            if (isFirebaseActive()) {
+                firebaseWatchTimetable(data => {
+                    if (data) {
+                        DB = data;
+                        renderSubjects();
+                        renderDropdowns();
+                    }
+                });
+                firebaseWatchLecturers(data => {
+                    if (data) {
+                        LECTURERS = data;
+                        renderLecturers();
+                        renderDropdowns();
+                        renderCredentials();
+                    }
+                });
+            } else {
+                DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
+                LECTURERS = JSON.parse(localStorage.getItem(LECTURERS_KEY));
+                if (!LECTURERS) {
+                    LECTURERS = [...INITIAL_LECTURERS];
+                    localStorage.setItem(LECTURERS_KEY, JSON.stringify(LECTURERS));
+                }
+                renderLecturers();
+                renderDropdowns();
+                renderSubjects();
+                renderCredentials();
+            }
+        }
+
+        function saveDB() {
+            if (isFirebaseActive()) {
+                firebaseSaveTimetable(DB);
+            } else {
+                localStorage.setItem(KEY, JSON.stringify(DB));
+            }
+        }
+
+        function saveLecturers() {
+            if (isFirebaseActive()) {
+                firebaseSaveLecturers(LECTURERS);
+            } else {
+                localStorage.setItem(LECTURERS_KEY, JSON.stringify(LECTURERS));
+            }
+        }
+
+        function runFirebaseUpload() {
+            if (!isFirebaseActive()) {
+                alert("Firebase tidak aktif. Sila pastikan firebase-config.js dikonfigurasikan.");
+                return;
+            }
+            if (confirm("Adakah anda pasti mahu memuat naik data LocalStorage semasa ke Firebase? Ini akan menimpa sebarang data yang ada di database atas talian.")) {
+                const statusText = document.getElementById("firebase-upload-status");
+                statusText.style.color = "orange";
+                statusText.textContent = "Sedang memuat naik...";
+                firebaseUploadLocalToFirebase(() => {
+                    statusText.style.color = "var(--success)";
+                    statusText.textContent = "✅ Berjaya dimuat naik ke Firebase!";
+                    showToast("Data berjaya dimuat naik ke Firebase!", "success");
+                }, (err) => {
+                    statusText.style.color = "var(--danger)";
+                    statusText.textContent = "❌ Gagal: " + err;
+                    showToast("Gagal memuat naik data.", "danger");
+                });
+            }
+        }
+
+        // Switch Sidebar Tab
+        function switchSection(secId) {
+            document.querySelectorAll(".tab-section").forEach(sec => sec.style.display = "none");
+            document.querySelectorAll(".sidebar-nav button").forEach(btn => btn.classList.remove("active"));
+            
+            document.getElementById(`sec-${secId}`).style.display = "block";
+            event.target.classList.add("active");
+        }
+
+        // 1. ADD / UPDATE LECTURER
+        function tambahPensyarah(e) {
+            e.preventDefault();
+            const name = document.getElementById("lecName").value.trim().toUpperCase();
+            const shortName = document.getElementById("lecShort").value.trim().toUpperCase();
+            const designation = document.getElementById("lecDesignation").value.trim();
+            const email = document.getElementById("lecEmail").value.trim();
+            const program = document.getElementById("lecProgram").value;
+            const password = document.getElementById("lecPassword").value.trim();
+            const editIdx = parseInt(document.getElementById("editLecIndex").value);
+
+            if (editIdx === -1) {
+                // ADD ACTION
+                if (LECTURERS.some(l => l.shortName === shortName)) {
+                    showToast("Singkatan pensyarah sudah didaftarkan!", "danger");
+                    return;
+                }
+                if (LECTURERS.some(l => l.email.toLowerCase() === email.toLowerCase())) {
+                    showToast("E-mel pensyarah sudah didaftarkan!", "danger");
+                    return;
+                }
+                LECTURERS.push({ name, shortName, designation, email, program, password });
+                showToast("Pensyarah baru berjaya didaftarkan!", "success");
+            } else {
+                // EDIT/UPDATE ACTION
+                const oldLec = LECTURERS[editIdx];
+                
+                if (shortName !== oldLec.shortName && LECTURERS.some(l => l.shortName === shortName)) {
+                    showToast("Singkatan pensyarah sudah didaftarkan!", "danger");
+                    return;
+                }
+                if (email.toLowerCase() !== oldLec.email.toLowerCase() && LECTURERS.some(l => l.email.toLowerCase() === email.toLowerCase())) {
+                    showToast("E-mel pensyarah sudah didaftarkan!", "danger");
+                    return;
+                }
+
+                // If shortName changed, update subjects and slots mapping
+                if (shortName !== oldLec.shortName) {
+                    DB.subjek.forEach(s => {
+                        if (s.singkatan === oldLec.shortName) { s.singkatan = shortName; s.nama = name; }
+                        if (s.singkatanPembantu === oldLec.shortName) { s.singkatanPembantu = shortName; s.namaPembantu = name; }
+                    });
+                    DB.slot.forEach(s => {
+                        if (s.singkatan === oldLec.shortName) { s.singkatan = shortName; s.nama = name; }
+                        if (s.singkatanPembantu === oldLec.shortName) { s.singkatanPembantu = shortName; s.namaPembantu = name; }
+                    });
+                    saveDB();
+                } else {
+                    DB.subjek.forEach(s => {
+                        if (s.singkatan === shortName) s.nama = name;
+                        if (s.singkatanPembantu === shortName) s.namaPembantu = name;
+                    });
+                    DB.slot.forEach(s => {
+                        if (s.singkatan === shortName) s.nama = name;
+                        if (s.singkatanPembantu === shortName) s.namaPembantu = name;
+                    });
+                    saveDB();
+                }
+
+                LECTURERS[editIdx] = { name, shortName, designation, email, program, password };
+                showToast("Maklumat pensyarah berjaya dikemas kini!", "success");
+                cancelLecEdit();
+            }
+            
+            saveLecturers();
+            
+            // refresh
+            renderLecturers();
+            renderDropdowns();
+            renderCredentials();
+        }
+
+        // RENDER LECTURERS
+        function renderLecturers() {
+            const body = document.getElementById("lecturerTableBody");
+            body.innerHTML = LECTURERS.map((l, idx) => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/10 transition">
+                    <td class="font-semibold">${l.name}</td>
+                    <td><code>${l.shortName}</code></td>
+                    <td><span class="badge ${l.program === 'STM' ? 'bg-blue-600' : (l.program === 'SLK' ? 'bg-teal-600' : 'bg-amber-600')}" style="color:white; padding: 2px 8px; border-radius: 4px; font-size:0.7rem;">${l.program}</span></td>
+                    <td class="text-slate-500 dark:text-slate-400">${l.designation}</td>
+                    <td>
+                        <div style="display: flex; gap: 6px; justify-content: center;">
+                            <button onclick="editPensyarah(${idx})" class="btn btn-light" style="padding: 4px 10px; font-size: 0.75rem;">Edit</button>
+                            <button onclick="padamPensyarah(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem;">Padam</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="5" class="p-6 text-center text-slate-400">Tiada pensyarah ditemui.</td></tr>`;
+        }
+
+        // EDIT LECTURER
+        function editPensyarah(idx) {
+            const lec = LECTURERS[idx];
+            document.getElementById("lecName").value = lec.name;
+            document.getElementById("lecShort").value = lec.shortName;
+            document.getElementById("lecDesignation").value = lec.designation;
+            document.getElementById("lecEmail").value = lec.email;
+            document.getElementById("lecProgram").value = lec.program;
+            document.getElementById("lecPassword").value = lec.password || "pensyarah123";
+            document.getElementById("editLecIndex").value = idx;
+
+            document.getElementById("btnSubmitLec").textContent = "Simpan Kemas Kini";
+            document.getElementById("btnCancelLecEdit").style.display = "inline-flex";
+            
+            document.getElementById("formLecturer").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // CANCEL EDIT
+        function cancelLecEdit() {
+            document.getElementById("formLecturer").reset();
+            document.getElementById("editLecIndex").value = "-1";
+            document.getElementById("lecPassword").value = "pensyarah123";
+            document.getElementById("btnSubmitLec").textContent = "Daftar Pensyarah";
+            document.getElementById("btnCancelLecEdit").style.display = "none";
+        }
+
+        // DELETE LECTURER
+        function padamPensyarah(idx) {
+            const lec = LECTURERS[idx];
+            if (confirm(`Adakah anda pasti mahu memadam pensyarah ${lec.name}? Semua subjek dan slot mengajar beliau juga akan dipadamkan.`)) {
+                // Delete subjects and slots
+                DB.subjek = DB.subjek.filter(s => s.singkatan !== lec.shortName && s.singkatanPembantu !== lec.shortName);
+                DB.slot = DB.slot.filter(s => s.singkatan !== lec.shortName && s.singkatanPembantu !== lec.shortName);
+                saveDB();
+
+                LECTURERS.splice(idx, 1);
+                saveLecturers();
+                showToast("Pensyarah berjaya dipadamkan.", "success");
+                
+                renderLecturers();
+                renderDropdowns();
+                renderSubjects();
+                renderCredentials();
+            }
+        }
+
+        // POPULATE DROPDOWNS
+        function renderDropdowns() {
+            const subUtama = document.getElementById("subUtama");
+            const subPembantu = document.getElementById("subPembantu");
+
+            subUtama.innerHTML = '<option value="" disabled selected>Pilih Pensyarah Utama</option>' + 
+                LECTURERS.map(l => `<option value="${l.shortName}">${l.name} (${l.shortName})</option>`).join('');
+
+            subPembantu.innerHTML = '<option value="-">Tiada Pembantu</option>' + 
+                LECTURERS.map(l => `<option value="${l.shortName}">${l.name} (${l.shortName})</option>`).join('');
+        }
+
+        // 2. REGISTER SUBJECT
+        function tambahSubjek(e) {
+            e.preventDefault();
+            const singkatan = document.getElementById("subUtama").value;
+            const singkatanPembantu = document.getElementById("subPembantu").value;
+            const subjek = document.getElementById("subName").value.trim();
+            const kod = document.getElementById("subCode").value.trim().toUpperCase();
+            const jam = parseFloat(document.getElementById("subHours").value);
+
+            const pUtama = LECTURERS.find(l => l.shortName === singkatan);
+            const pPembantu = LECTURERS.find(l => l.shortName === singkatanPembantu);
+
+            if (DB.subjek.some(s => s.kod === kod && s.singkatan === singkatan)) {
+                showToast("Subjek dengan kod ini bagi pensyarah tersebut sudah didaftarkan.", "danger");
+                return;
+            }
+
+            DB.subjek.push({
+                nama: pUtama ? pUtama.name : '',
+                singkatan,
+                namaPembantu: pPembantu ? pPembantu.name : '-',
+                singkatanPembantu,
+                subjek,
+                kod,
+                jam
+            });
+            saveDB();
+
+            document.getElementById("formSubject").reset();
+            showToast("Subjek pengajaran berjaya ditambahkan!", "success");
+            renderSubjects();
+        }
+
+        // RENDER SUBJECTS
+        function renderSubjects() {
+            const body = document.getElementById("subjectTableBody");
+            body.innerHTML = DB.subjek.map((s, idx) => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/10 transition">
+                    <td><strong>${s.kod}</strong></td>
+                    <td>${s.subjek}</td>
+                    <td><strong>${s.nama}</strong> (${s.singkatan})</td>
+                    <td>${s.namaPembantu !== '-' ? '<strong>'+s.namaPembantu+'</strong>' : '-'} (${s.singkatanPembantu})</td>
+                    <td><code>${s.jam} jam</code></td>
+                    <td style="text-align: center;">
+                        <button onclick="padamSubjek(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem;">Padam</button>
+                    </td>
+                </tr>
+            `).join('') || `<tr><td colspan="6" class="p-6 text-center text-slate-400">Tiada subjek aktif berdaftar.</td></tr>`;
+        }
+
+        // DELETE SUBJECT
+        function padamSubjek(idx) {
+            const sub = DB.subjek[idx];
+            if (confirm(`Adakah anda pasti mahu memadam subjek ${sub.kod} - ${sub.subjek}? Semua slot dalam jadual bagi subjek ini juga akan terpadam.`)) {
+                DB.slot = DB.slot.filter(s => !(s.kod === sub.kod && s.singkatan === sub.singkatan));
+                DB.subjek.splice(idx, 1);
+                saveDB();
+                showToast("Subjek mengajar berjaya dipadamkan.", "success");
+                renderSubjects();
+            }
+        }
+
+        // 3. CREDENTIAL REFERENCE TABLE
+        function renderCredentials() {
+            const body = document.getElementById("credentialsTableBody");
+            body.innerHTML = LECTURERS.map(l => `
+                <tr class="hover:bg-slate-50 dark:hover:bg-slate-900/10 transition creds-row-item">
+                    <td class="font-semibold creds-name">${l.name}</td>
+                    <td><code>${l.shortName}</code></td>
+                    <td class="creds-email">${l.email}</td>
+                    <td><span class="password-cell">${l.password || 'pensyarah123'}</span></td>
+                </tr>
+            `).join('') || `<tr><td colspan="4" class="p-6 text-center text-slate-400">Tiada rekod kredensial.</td></tr>`;
+        }
+
+        // Search filter
+        function filterCredentials() {
+            const query = document.getElementById("searchCreds").value.toLowerCase().trim();
+            const rows = document.querySelectorAll(".creds-row-item");
+            
+            rows.forEach(row => {
+                const name = row.querySelector(".creds-name").textContent.toLowerCase();
+                const email = row.querySelector(".creds-email").textContent.toLowerCase();
+                const code = row.querySelector("code").textContent.toLowerCase();
+                
+                if (name.includes(query) || email.includes(query) || code.includes(query)) {
+                    row.style.display = "";
+                } else {
+                    row.style.display = "none";
+                }
+            });
+        }
+
+        // Toast Helper
+        function showToast(message, type = "success") {
+            const container = document.getElementById("toastContainer");
+            const toast = document.createElement("div");
+            
+            toast.className = `toast ${type}`;
+            toast.style.cssText = `
+                background: ${type === 'success' ? 'var(--success)' : 'var(--danger)'};
+                color: #fff;
+                padding: 12px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                font-weight: 600;
+                font-size: 0.85rem;
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                animation: slideIn 0.3s ease forwards;
+            `;
+            
+            toast.innerHTML = `
+                <span>${type === 'success' ? '✅' : '⚠️'}</span>
+                <span>${message}</span>
+            `;
+            
+            container.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.animation = "slideIn 0.3s ease reverse forwards";
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

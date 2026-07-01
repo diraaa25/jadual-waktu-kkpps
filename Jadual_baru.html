@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sistem Jadual Waktu - Kolej Komuniti Papar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+      --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+      --background: #f8fafc;
+      --surface: #ffffff;
+      --surface-hover: #f1f5f9;
+      --surface-border: #e2e8f0;
+      --text-primary: #0f172a;
+      --text-secondary: #475569;
+      --text-muted: #94a3b8;
+      --primary: #1e3a8a;
+      --primary-hover: #1e40af;
+      --primary-soft: #eff6ff;
+      --primary-soft-text: #1e40af;
+      --accent: #0d9488;
+      --accent-hover: #0f766e;
+      --accent-soft: #f0fdfa;
+      --success: #10b981;
+      --success-soft: #ecfdf5;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --danger-soft: #fef2f2;
+      --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+      --border-radius-md: 12px;
+      --border-radius-lg: 16px;
+      --transition-fast: 0.15s ease;
+  }
+
+  .dark-mode {
+      --background: #0f172a;
+      --surface: #1e293b;
+      --surface-hover: #334155;
+      --surface-border: #334155;
+      --text-primary: #f8fafc;
+      --text-secondary: #cbd5e1;
+      --text-muted: #64748b;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --primary-soft: rgba(59, 130, 246, 0.15);
+      --primary-soft-text: #eff6ff;
+      --accent: #2dd4bf;
+      --accent-hover: #14b8a6;
+      --accent-soft: rgba(45, 212, 191, 0.15);
+      --success: #34d399;
+      --success-soft: rgba(52, 211, 153, 0.15);
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --danger-soft: rgba(248, 113, 113, 0.15);
+      --card-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.3), 0 2px 4px -2px rgb(0 0 0 / 0.3);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; font-family: var(--font-sans); }
+  body { background: var(--background); color: var(--text-primary); transition: background var(--transition-fast), color var(--transition-fast); min-height: 100vh; padding-bottom: 3rem; }
+  
+  header { 
+      background: linear-gradient(135deg, var(--primary), var(--accent)); 
+      color: #fff; 
+      padding: 1.25rem 2rem; 
+      display: flex; 
+      justify-content: space-between; 
+      align-items: center; 
+      box-shadow: var(--card-shadow);
+      margin-bottom: 2rem;
+  }
+  header h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: 0.5px; }
+  
+  .wrap { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem; }
+  
+  .card { 
+      background: var(--surface); 
+      border: 1px solid var(--surface-border); 
+      border-radius: var(--border-radius-lg); 
+      padding: 22px 24px; 
+      margin-bottom: 24px;
+      box-shadow: var(--card-shadow);
+      transition: background var(--transition-fast), border-color var(--transition-fast);
+  }
+  .card h2 { 
+      margin-top: 0; 
+      font-size: 1.15rem; 
+      font-weight: 700;
+      color: var(--text-primary); 
+      border-bottom: 2px solid var(--surface-border); 
+      padding-bottom: 10px; 
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+  }
+  
+  .grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  label { font-size: .8rem; font-weight: 700; display: block; margin-bottom: 6px; color: var(--text-secondary); }
+  
+  input, select, textarea { 
+      width: 100%; 
+      padding: 10px 12px; 
+      border: 1px solid var(--surface-border); 
+      border-radius: 8px; 
+      font-size: .9rem; 
+      background-color: var(--surface); 
+      color: var(--text-primary);
+      outline: none;
+      transition: border-color var(--transition-fast);
+  }
+  input:focus, select:focus, textarea:focus {
+      border-color: var(--accent);
+  }
+  input[readonly] {
+      background-color: var(--surface-hover);
+      cursor: not-allowed;
+      color: var(--text-muted);
+  }
+  
+  button, .btn { 
+      cursor: pointer; 
+      border: none; 
+      border-radius: 8px; 
+      padding: 10px 18px; 
+      font-weight: 600; 
+      font-size: .9rem; 
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all var(--transition-fast);
+      text-decoration: none;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: var(--primary-hover); transform: translateY(-1px); }
+  .btn-accent { background: var(--accent); color: #fff; }
+  .btn-accent:hover { background: var(--accent-hover); transform: translateY(-1px); }
+  .btn-danger { background: var(--danger); color: #fff; }
+  .btn-danger-outline { background: var(--danger-soft); color: var(--danger); border: 1px solid var(--danger); }
+  .btn-danger-outline:hover { background: var(--danger); color: #fff; }
+  .btn-light { background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--surface-border); }
+  .btn-light:hover { background: var(--surface-border); }
+  
+  .actions { margin-top: 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+  
+  table { width: 100%; border-collapse: collapse; font-size: .85rem; margin-bottom: 20px; background: var(--surface); }
+  th, td { border: 1px solid var(--surface-border); padding: 10px 12px; text-align: left; vertical-align: middle; }
+  th { background: var(--surface-hover); color: var(--text-secondary); font-weight: 600; }
+  
+  .slot { background: var(--primary-soft); color: var(--primary-soft-text); border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; line-height: 1.4; border-left: 3px solid var(--primary); }
+  .slot small { color: var(--text-secondary); display: block; margin-top: 2px; }
+  .clash { background: var(--danger-soft) !important; color: var(--danger) !important; outline: 2px solid var(--danger); border-left-color: var(--danger); }
+  
+  .badge { display: inline-block; background: var(--success); color: #fff; border-radius: 4px; padding: 2px 6px; font-size: .7rem; font-weight: 600; }
+  .badge.over { background: var(--danger); }
+  
+  .note { font-size: .8rem; color: var(--text-muted); margin-top: 8px; display: flex; align-items: center; gap: 4px; }
+  
+  .lecturer-section { 
+      margin-bottom: 30px; 
+      padding: 20px; 
+      border: 1px solid var(--surface-border); 
+      border-radius: 10px; 
+      background: var(--surface); 
+  }
+  .lecturer-title { 
+      font-weight: 800; 
+      color: var(--primary); 
+      margin-bottom: 15px; 
+      font-size: 0.95rem; 
+      text-transform: uppercase; 
+      border-left: 4px solid var(--primary); 
+      padding-left: 10px; 
+  }
+  
+  .total-row { font-weight: bold; background-color: var(--surface-hover); }
+  
+  @media print { 
+      header, form, .no-print, .btn, .actions { display: none !important; } 
+      body { background: #fff; color: #000; padding: 0; } 
+      .card { border: none; box-shadow: none; padding: 0; margin-bottom: 30px; }
+      table { border-collapse: collapse; }
+      th, td { border: 1px solid #000 !important; color: #000 !important; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Sistem Jadual Waktu Pengajaran • Kolej Komuniti Papar</h1>
+  <div style="display: flex; align-items: center; gap: 15px;">
+      <div id="firebase-status-badge-container"></div>
+      <a href="index.html" class="btn btn-light" style="background: rgba(255,255,255,0.2); border: none; color: #fff;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+              <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          Utama Dashboard
+      </a>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <!-- 1. DAFTAR PENSYARAH & SUBJEK -->
+  <div class="card no-print">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+        <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+      </svg>
+      1. Daftar Maklumat Pensyarah & Subjek
+    </h2>
+    <form id="formMeta">
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));">
+        <div>
+            <label>Pensyarah Utama</label>
+            <select id="namaPensyarah" required>
+                <!-- Dynamic load -->
+            </select>
+        </div>
+        <div>
+            <label>Singkatan Utama</label>
+            <input id="singkatan" placeholder="Auto-populated" readonly required>
+        </div>
+        <div>
+            <label>Pensyarah Pembantu</label>
+            <select id="namaPembantu">
+                <!-- Dynamic load -->
+            </select>
+        </div>
+        <div>
+            <label>Singkatan Pembantu</label>
+            <input id="singkatanPembantu" placeholder="Auto-populated" readonly>
+        </div>
+        <div>
+            <label>Subjek Mengajar</label>
+            <input id="subjek" placeholder="cth: Pengaturcaraan Web" required>
+        </div>
+        <div>
+            <label>Kod Subjek</label>
+            <input id="kod" placeholder="cth: STM401" required style="text-transform: uppercase;">
+        </div>
+        <div>
+            <label>Jumlah Jam Mengajar / Minggu</label>
+            <input id="jam" type="number" min="0.5" step="0.5" placeholder="cth: 4" required>
+        </div>
+      </div>
+      <div class="actions">
+          <button class="btn btn-accent" type="submit">Tambah Subjek</button>
+      </div>
+    </form>
+    
+    <div class="table-responsive" style="margin-top:20px">
+        <table class="hours-table">
+          <thead>
+            <tr>
+              <th>Pensyarah Utama (Singk.)</th>
+              <th>Pensyarah Pembantu (Singk.)</th>
+              <th>Subjek</th>
+              <th>Kod</th>
+              <th>Jam Diperuntuk</th>
+              <th>Jam Dijadual</th>
+              <th style="width: 80px;">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="metaBody"></tbody>
+        </table>
+    </div>
+  </div>
+
+  <!-- 2. TAMBAH SLOT JADUAL -->
+  <div class="card no-print">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)">
+        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+        <line x1="16" y1="2" x2="16" y2="6"></line>
+        <line x1="8" y1="2" x2="8" y2="6"></line>
+        <line x1="3" y1="10" x2="21" y2="10"></line>
+      </svg>
+      2. Tambah Slot ke Jadual
+    </h2>
+    <form id="formSlot">
+      <div class="grid">
+        <div>
+            <label>Subjek (Kod)</label>
+            <select id="pilihKod" required>
+                <!-- Dynamic load -->
+            </select>
+        </div>
+        <div>
+            <label>Kelas Pelajar</label>
+            <select id="kelas" required>
+                <!-- Dynamic load -->
+            </select>
+        </div>
+        <div>
+            <label>Lokasi Kelas</label>
+            <select id="lokasi" required>
+                <!-- Dynamic load -->
+            </select>
+        </div>
+        <div>
+            <label>Hari</label>
+            <select id="hari">
+              <option>Isnin</option>
+              <option>Selasa</option>
+              <option>Rabu</option>
+              <option>Khamis</option>
+              <option>Jumaat</option>
+            </select>
+        </div>
+        <div>
+            <label>Masa Mula</label>
+            <input id="mula" type="time" value="08:00" required>
+        </div>
+        <div>
+            <label>Masa Tamat</label>
+            <input id="tamat" type="time" value="10:00" required>
+        </div>
+      </div>
+      <div class="actions">
+          <button class="btn btn-primary" type="submit">Tambah ke Jadual</button>
+          <button class="btn btn-accent" type="button" onclick="bukaGeneratorModal()">Generate Jadual Automatik</button>
+      </div>
+      <div class="note">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="12"></line>
+            <line x1="12" y1="16" x2="12.01" y2="16"></line>
+        </svg>
+        Sistem akan memberi amaran jika berlaku pertembungan pensyarah (utama/pembantu), kelas atau lokasi pada masa bertindih.
+      </div>
+    </form>
+  </div>
+
+  <!-- 3. PAPARAN JADUAL MINGGUAN -->
+  <div class="card">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)">
+        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+        <polyline points="14 2 14 8 20 8"></polyline>
+      </svg>
+      3. Jadual Waktu Mingguan
+    </h2>
+    <div class="table-responsive">
+        <div id="jadualWrap"></div>
+    </div>
+  </div>
+
+  <!-- 4. PAPARAN TUGAS MENGAJAR BAGI SETIAP PENSYARAH -->
+  <div class="card">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+        <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
+      </svg>
+      4. Ringkasan Tugas Mengajar
+    </h2>
+    <div id="tugasMengajarWrap"></div>
+    
+    <!-- Ruangan Padam Slot secara individu bagi memudahkan pengurusan data -->
+    <h3 class="no-print" style="font-size:0.95rem; font-weight:700; color:var(--danger); margin-top:30px; margin-bottom:12px;">Senarai Slot Aktif (Untuk Padam Slot)</h3>
+    <div class="table-responsive no-print">
+        <table style="width:100%;">
+          <thead>
+            <tr>
+              <th>Hari & Masa</th>
+              <th>Kod</th>
+              <th>Kelas</th>
+              <th>Lokasi</th>
+              <th>Pensyarah</th>
+              <th style="width: 80px;">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="rawSlotsBody"></tbody>
+        </table>
+    </div>
+
+    <div class="actions no-print">
+      <button class="btn btn-light" onclick="window.print()">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 6 2 18 2 18 9"></polyline>
+              <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+              <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+          Cetak Jadual
+      </button>
+      <button class="btn btn-primary" id="btnConfirmPublish" onclick="handlePublishClick()"></button>
+      <button class="btn btn-danger-outline" onclick="resetSemua()">Reset Semua Data</button>
+    </div>
+  </div>
+
+  <!-- 5. URUS HEBAHAN & PERINGATAN DASHBOARD -->
+  <div class="card no-print">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+        <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+      </svg>
+      5. Urus Hebahan & Peringatan Dashboard
+    </h2>
+    <form id="formAnnouncement">
+      <div class="grid" style="grid-template-columns: 1fr 1fr 2fr;">
+        <div>
+            <label>Kategori</label>
+            <select id="annCategory" required>
+                <option value="Pentadbiran Kolej">Pentadbiran Kolej</option>
+                <option value="Penyelaras STM">Penyelaras STM</option>
+                <option value="Penyelaras SLK">Penyelaras SLK</option>
+                <option value="Unit Akademik">Unit Akademik</option>
+                <option value="Lain-lain">Lain-lain</option>
+            </select>
+        </div>
+        <div>
+            <label>Tarikh / Masa</label>
+            <input id="annDate" placeholder="cth: Hari Ini / 30 Jun 2026" required value="Hari Ini">
+        </div>
+        <div>
+            <label>Tajuk Hebahan</label>
+            <input id="annTitle" placeholder="cth: Taklimat Penggunaan Sistem" required>
+        </div>
+      </div>
+      <div style="margin-top: 12px;">
+          <label>Kandungan Hebahan</label>
+          <textarea id="annDesc" placeholder="Sila masukkan maklumat hebahan di sini..." required style="height: 80px;"></textarea>
+      </div>
+      <div class="actions">
+          <button class="btn btn-accent" type="submit">Post Hebahan Baru</button>
+          <button class="btn btn-light" type="button" onclick="resetAnnouncements()">Reset Hebahan Asal</button>
+      </div>
+    </form>
+
+    <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-top:24px; margin-bottom:12px;">Senarai Hebahan Aktif</h3>
+    <div class="table-responsive">
+        <table style="width:100%;">
+          <thead>
+            <tr>
+              <th style="width: 20%;">Kategori & Tarikh</th>
+              <th style="width: 25%;">Tajuk</th>
+              <th style="width: 45%;">Kandungan</th>
+              <th style="width: 10%; text-align: center;">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="annTableBody">
+            <!-- Dynamic load -->
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Modal Generator Jadual Automatik -->
+<div id="generatorModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); justify-content: center; align-items: center; z-index: 9999; padding: 16px; overflow-y: auto;">
+  <div style="background: var(--surface); color: var(--text-primary); width: 100%; max-width: 680px; border-radius: var(--border-radius-md); border: 1px solid var(--surface-border); box-shadow: var(--card-shadow); padding: 24px; text-align: left; max-height: 90vh; display: flex; flex-direction: column;">
+    <h3 style="margin-top: 0; font-size: 1.25rem; font-weight: 700; border-bottom: 2px solid var(--surface-border); padding-bottom: 12px; margin-bottom: 16px; color: var(--text-primary); display: flex; align-items: center; gap: 8px;">
+      ⚡ Auto-Generate Jadual Waktu
+    </h3>
+    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">
+      Sila petakan **Kelas** dan **Lokasi** bagi setiap subjek berdaftar di bawah. Sistem akan menjadualkan semua jam mengajar secara automatik dan memastikan tiada pertindihan berlaku.
+    </p>
+    
+    <!-- Table list of subjects with selects for Class and Location -->
+    <div style="flex: 1; overflow-y: auto; margin-bottom: 20px; border: 1px solid var(--surface-border); border-radius: var(--border-radius-sm);">
+      <table style="width: 100%; border-collapse: collapse; font-size: 0.8rem;">
+        <thead>
+          <tr style="background: var(--surface-hover); border-bottom: 1px solid var(--surface-border);">
+            <th style="padding: 10px; text-align: left;">Subjek & Pensyarah</th>
+            <th style="padding: 10px; text-align: left; width: 180px;">Pilih Kelas</th>
+            <th style="padding: 10px; text-align: left; width: 220px;">Pilih Lokasi</th>
+          </tr>
+        </thead>
+        <tbody id="generatorSubjectsList">
+          <!-- Populated dynamically via JS -->
+        </tbody>
+      </table>
+    </div>
+
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+      <div style="font-size: 0.75rem; color: var(--danger); font-weight: 600;">
+        ⚠️ Perhatian: Proses ini akan memadam data slot sedia ada dalam jadual.
+      </div>
+      <div style="display: flex; gap: 12px;">
+        <button class="btn btn-light" type="button" onclick="tutupGeneratorModal()" style="padding: 10px 16px;">Batal</button>
+        <button class="btn btn-accent" type="button" onclick="jalankanGenerator()" style="padding: 10px 20px;">Mula Generate</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Pengesahan Jadual -->
+<div id="publishConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); justify-content: center; align-items: center; z-index: 10000; padding: 16px;">
+  <div style="background: var(--surface); color: var(--text-primary); width: 100%; max-width: 460px; border-radius: var(--border-radius-md); border: 1px solid var(--surface-border); box-shadow: var(--card-shadow); padding: 24px; text-align: left;">
+    <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 700; border-bottom: 2px solid var(--surface-border); padding-bottom: 12px; margin-bottom: 16px; color: var(--text-primary);">
+      📢 Pengesahan Penerbitan Jadual
+    </h3>
+    <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px;">
+      Adakah anda pasti mahu **mengesahkan dan menerbitkan** jadual waktu ini? 
+      Setelah diterbitkan, pelajar akan dapat melihat jadual ini di Portal Pelajar (Pelajar.html) mengikut kelas masing-masing.
+    </p>
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <button class="btn btn-light" onclick="tutupConfirmModal()" style="padding: 10px 16px;">Batal</button>
+      <button class="btn btn-accent" onclick="sahkanDanTerbitJadual()" style="padding: 10px 20px;">Ya, Sahkan & Terbit</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Batal Terbit Jadual -->
+<div id="unpublishConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); justify-content: center; align-items: center; z-index: 10000; padding: 16px;">
+  <div style="background: var(--surface); color: var(--text-primary); width: 100%; max-width: 460px; border-radius: var(--border-radius-md); border: 1px solid var(--surface-border); box-shadow: var(--card-shadow); padding: 24px; text-align: left;">
+    <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 700; border-bottom: 2px solid var(--surface-border); padding-bottom: 12px; margin-bottom: 16px; color: var(--text-primary);">
+      ⚠️ Batal Penerbitan Jadual Waktu
+    </h3>
+    <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px;">
+      Adakah anda pasti mahu **menarik balik** penerbitan jadual waktu ini? 
+      Setelah ditarik balik, pelajar tidak akan dapat melihat jadual ini di Portal Pelajar sehingga anda menerbitkannya semula.
+    </p>
+    <div style="display: flex; justify-content: flex-end; gap: 12px;">
+      <button class="btn btn-light" onclick="tutupUnpublishModal()" style="padding: 10px 16px;">Batal</button>
+      <button class="btn btn-danger" onclick="batalTerbitJadual()" style="padding: 10px 20px;">Ya, Tarik Balik</button>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase Compat SDK and services -->
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-service.js"></script>
+<script>
+    appendStatusBadge('#firebase-status-badge-container');
+</script>
+
+<script>
+// --- DATABASES FROM EXCEL ---
+const INITIAL_LECTURERS_DATA = [
+  { name: "DAILY BINTI TAYOK", shortName: "DT", dept: "STM" },
+  { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", dept: "STM" },
+  { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", dept: "UPA" },
+  { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", dept: "SLK" },
+  { name: "DEVIANA RADEN", shortName: "DR", dept: "SLK" },
+  { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", dept: "STM" },
+  { name: "FARHANA BINTI KAMIUS", shortName: "FBK", dept: "SLK" },
+  { name: "JUSDY BIN JUWAIT", shortName: "JBJ", dept: "STM" },
+  { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", dept: "UPA" },
+  { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", dept: "STM" },
+  { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", dept: "STM" },
+  { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", dept: "STM" },
+  { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", dept: "SLK" },
+  { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", dept: "SLK" },
+  { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", dept: "SLK" },
+  { name: "TIFFANY THU PEI YING", shortName: "TPY", dept: "UPA" },
+  { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", dept: "UPA" },
+  { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", dept: "STM" }
+];
+
+let LECTURERS_DATA = [];
+
+const LOCATIONS_DATA = [
+  { name: "DEWAN KULIAH", code: "DK", type: "Umum" },
+  { name: "MAKMAL BAHASA", code: "MB", type: "Umum" },
+  { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1", code: "TECC 1", type: "Umum" },
+  { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2", code: "TECC 2", type: "Umum" },
+  { name: "MAKMAL PENGATURCARAAN 1", code: "MP1", type: "STM" },
+  { name: "MAKMAL PENGATURCARAAN 2", code: "MP2", type: "STM" },
+  { name: "MAKMAL MULTIMEDIA", code: "MM", type: "STM" },
+  { name: "MAKMAL BAIKPULIH DAN PEMASANGAN", code: "MBP", type: "STM" },
+  { name: "MAKMAL RANGKAIAN", code: "MR", type: "STM" },
+  { name: "MAKMAL PENDAWAIAN RANGKAIAN", code: "MPR", type: "STM" },
+  { name: "MAKMAL AI", code: "MAI", type: "STM" },
+  { name: "MAKMAL IOT", code: "MIOT", type: "STM" },
+  { name: "MAKMAL LOGISTIK 1", code: "ML1", type: "SLK" },
+  { name: "MAKMAL LOGISTIK 2", code: "ML2", type: "SLK" },
+  { name: "MAKMAL SIMULASI LOGISTIK", code: "MS", type: "SLK" }
+];
+
+const CLASSES_DATA = [
+  "STM 1A", "STM 1B", "STM 1C",
+  "STM 2A", "STM 2B", "STM 2C",
+  "STM 3A", "STM 3B", "STM 3C",
+  "SLK 1A", "SLK 1B",
+  "SLK 2A", "SLK 2B",
+  "SLK 3A", "SLK 3B"
+];
+
+// --- DEFAULT ANNOUNCEMENTS DATA ---
+const DEFAULT_ANNOUNCEMENTS = [
+    { category: "Pentadbiran Kolej", date: "Hari Ini", title: "Penyediaan Jadual Waktu Sesi 2026/2027", desc: "Semua pensyarah STM, SLK & UPA dikehendaki menyemak slot masing-masing di bahagian \"Urus Jadual Waktu\" bagi mengelakkan pertindihan." },
+    { category: "Penyelaras STM", date: "Semalam", title: "Kemas kini Pakej Kursus Sijil Teknologi Maklumat", desc: "Penambahan subjek Pengaturcaraan Web (STM401) telah dimasukkan ke dalam daftar kursus aktif bagi penggal ini." },
+    { category: "Unit Akademik", date: "3 Hari Lepas", title: "Pertemuan Mingguan Pensyarah", desc: "Perbincangan penyelarasan jadual waktu diadakan setiap hari Jumaat jam 9:00 pagi di Bilik TECC." }
+];
+
+// --- APP STATE & STORAGE ---
+const KEY = 'jadualSistemV3';
+const ANN_KEY = 'kkpapar_announcements';
+
+let DB = { subjek: [], slot: [], isConfirmed: false };
+let ANNOUNCEMENTS = [];
+
+function simpan() { 
+    if (isFirebaseActive()) {
+        firebaseSaveTimetable(DB);
+    } else {
+        localStorage.setItem(KEY, JSON.stringify(DB)); 
+        render(); 
+    }
+}
+function simpanAnn() { 
+    if (isFirebaseActive()) {
+        firebaseSaveAnnouncements(ANNOUNCEMENTS);
+    } else {
+        localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS)); 
+        renderAnnouncements(); 
+    }
+}
+
+// --- DOM INITIALIZATION ---
+document.addEventListener("DOMContentLoaded", () => {
+    // Theme Sync
+    const isDark = localStorage.getItem("kkpapar_dark_mode") === "true";
+    if (isDark) {
+        document.body.classList.add("dark-mode");
+    } else {
+        document.body.classList.remove("dark-mode");
+    }
+    
+    initDatabaseConnection();
+    setupAnnForm();
+});
+
+function initDatabaseConnection() {
+    if (isFirebaseActive()) {
+        firebaseWatchLecturers(data => {
+            if (data) {
+                LECTURERS_DATA = data.map(l => ({
+                    ...l,
+                    dept: l.program || l.dept || 'STM'
+                }));
+                initDropdowns();
+            }
+        });
+        firebaseWatchTimetable(data => {
+            if (data) {
+                DB = data;
+                // Clean up any corrupt slots
+                if (DB && DB.slot) {
+                    DB.slot.forEach(s => {
+                        if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
+                            const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
+                            s.kod = foundSub ? foundSub.kod : 'STM3012';
+                        }
+                    });
+                }
+                render();
+            }
+        });
+        firebaseWatchAnnouncements(data => {
+            if (data) {
+                ANNOUNCEMENTS = data;
+                renderAnnouncements();
+            }
+        });
+    } else {
+        // Fallback to LocalStorage
+        LECTURERS_DATA = JSON.parse(localStorage.getItem('kkpapar_lecturers')) || INITIAL_LECTURERS_DATA;
+        LECTURERS_DATA = LECTURERS_DATA.map(l => ({
+            ...l,
+            dept: l.program || l.dept || 'STM'
+        }));
+        
+        DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
+        if (DB && DB.slot) {
+            let changed = false;
+            DB.slot.forEach(s => {
+                if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
+                    const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
+                    s.kod = foundSub ? foundSub.kod : 'STM3012';
+                    changed = true;
+                }
+            });
+            if (changed) {
+                localStorage.setItem(KEY, JSON.stringify(DB));
+            }
+        }
+        
+        ANNOUNCEMENTS = JSON.parse(localStorage.getItem(ANN_KEY));
+        if (!ANNOUNCEMENTS) {
+            ANNOUNCEMENTS = [...DEFAULT_ANNOUNCEMENTS];
+            localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS));
+        }
+        
+        initDropdowns();
+        render();
+        renderAnnouncements();
+    }
+}
+
+function initDropdowns() {
+  const pUtama = document.getElementById('namaPensyarah');
+  const pPembantu = document.getElementById('namaPembantu');
+  const dKelas = document.getElementById('kelas');
+  const dLokasi = document.getElementById('lokasi');
+
+  // Lecturers
+  pUtama.innerHTML = '<option value="" disabled selected>Pilih Pensyarah Utama</option>' + 
+    LECTURERS_DATA.map(l => `<option value="${l.name}">${l.name} (${l.shortName}) [${l.dept}]</option>`).join('');
+
+  pPembantu.innerHTML = '<option value="-">Tiada Pembantu</option>' + 
+    LECTURERS_DATA.map(l => `<option value="${l.name}">${l.name} (${l.shortName}) [${l.dept}]</option>`).join('');
+
+  // Classes
+  dKelas.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' + 
+    CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
+
+  // Locations
+  dLokasi.innerHTML = '<option value="" disabled selected>Pilih Lokasi</option>' + 
+    LOCATIONS_DATA.map(l => `<option value="${l.name}">${l.name} (${l.code}) [${l.type}]</option>`).join('');
+
+  // Event Listeners for Abbreviation Auto-population
+  pUtama.addEventListener('change', () => {
+    const selected = LECTURERS_DATA.find(l => l.name === pUtama.value);
+    document.getElementById('singkatan').value = selected ? selected.shortName : '';
+  });
+
+  pPembantu.addEventListener('change', () => {
+    if (pPembantu.value === '-') {
+      document.getElementById('singkatanPembantu').value = '-';
+    } else {
+      const selected = LECTURERS_DATA.find(l => l.name === pPembantu.value);
+      document.getElementById('singkatanPembantu').value = selected ? selected.shortName : '-';
+    }
+  });
+}
+
+// --- REGISTER SUBJECT ---
+document.getElementById('formMeta').addEventListener('submit', e => {
+  e.preventDefault();
+  const kod = val('kod').toUpperCase();
+  const singkatan = val('singkatan').toUpperCase();
+  if (DB.subjek.some(s => s.kod === kod && s.singkatan === singkatan)) { 
+    alert('Subjek dengan kod ini bagi pensyarah tersebut sudah didaftarkan.'); 
+    return; 
+  }
+  
+  DB.subjek.push({
+    nama: val('namaPensyarah'), 
+    singkatan: val('singkatan').toUpperCase(),
+    namaPembantu: val('namaPembantu') || '-',
+    singkatanPembantu: val('singkatanPembantu') ? val('singkatanPembantu').toUpperCase() : '-',
+    subjek: val('subjek'), 
+    kod, 
+    jam: parseFloat(val('jam'))
+  });
+  
+  document.getElementById('namaPensyarah').selectedIndex = 0;
+  document.getElementById('namaPembantu').selectedIndex = 0;
+  document.getElementById('singkatan').value = '';
+  document.getElementById('singkatanPembantu').value = '';
+  document.getElementById('subjek').value = '';
+  document.getElementById('kod').value = '';
+  document.getElementById('jam').value = '';
+  
+  simpan();
+});
+
+// --- ADD SLOT ---
+document.getElementById('formSlot').addEventListener('submit', e => {
+  e.preventDefault();
+  const selectValue = val('pilihKod');
+  const s = DB.subjek.find(x => `${x.kod}_${x.singkatan}` === selectValue);
+  if(!s) { alert('Sila daftarkan subjek terlebih dahulu.'); return; }
+  
+  const slot = {
+    kod: s.kod, 
+    kelas: val('kelas'), 
+    lokasi: val('lokasi'),
+    hari: val('hari'), 
+    mula: val('mula'), 
+    tamat: val('tamat'),
+    singkatan: s.singkatan, 
+    singkatanPembantu: s.singkatanPembantu, 
+    subjek: s.subjek, 
+    nama: s.nama, 
+    namaPembantu: s.namaPembantu
+  };
+  
+  if (slot.tamat <= slot.mula) { alert('Masa tamat mesti selepas masa mula.'); return; }
+  DB.slot.push(slot);
+  
+  document.getElementById('pilihKod').selectedIndex = 0;
+  document.getElementById('kelas').selectedIndex = 0;
+  document.getElementById('lokasi').selectedIndex = 0;
+  document.getElementById('hari').selectedIndex = 0;
+  document.getElementById('mula').value = '08:00';
+  document.getElementById('tamat').value = '10:00';
+  
+  simpan();
+});
+
+function val(id){ return document.getElementById(id).value.trim(); }
+function toMin(t){ const [h,m]=t.split(':').map(Number); return h*60+m; }
+
+function bertindih(a,b){ return a.hari===b.hari && toMin(a.mula)<toMin(b.tamat) && toMin(b.mula)<toMin(a.tamat); }
+function checkClash(s, o) {
+  const cPensyarah = (s.singkatan === o.singkatan) || 
+                      (s.singkatan !== '-' && s.singkatan === o.singkatanPembantu) ||
+                      (s.singkatanPembantu !== '-' && s.singkatanPembantu === o.singkatan) ||
+                      (s.singkatanPembantu !== '-' && s.singkatanPembantu === o.singkatanPembantu);
+  const cKelas = (s.kelas === o.kelas);
+  const cLokasi = (s.lokasi === o.lokasi);
+  return cPensyarah || cKelas || cLokasi;
+}
+
+// --- DELETE AND RESET ACTIONS ---
+function padamSubjek(kod, singkatan){
+  if(DB.slot.some(s=>s.kod===kod && s.singkatan===singkatan)){ if(!confirm('Subjek ini ada dalam jadual. Padam semua sekali?'))return; }
+  DB.subjek = DB.subjek.filter(s=>!(s.kod===kod && s.singkatan===singkatan));
+  DB.slot = DB.slot.filter(s=>!(s.kod===kod && s.singkatan===singkatan));
+  simpan();
+}
+function padamSlot(i){ DB.slot.splice(i,1); simpan(); }
+function resetSemua(){ if(confirm('Padam SEMUA data?')){ DB={subjek:[],slot:[]}; simpan(); } }
+
+// --- ANNOUNCEMENT MANAGEMENT ---
+function setupAnnForm() {
+  document.getElementById('formAnnouncement').addEventListener('submit', e => {
+    e.preventDefault();
+    const category = document.getElementById('annCategory').value;
+    const date = document.getElementById('annDate').value.trim();
+    const title = document.getElementById('annTitle').value.trim();
+    const desc = document.getElementById('annDesc').value.trim();
+    
+    ANNOUNCEMENTS.unshift({ category, date, title, desc });
+    
+    // Reset inputs
+    document.getElementById('annTitle').value = '';
+    document.getElementById('annDesc').value = '';
+    document.getElementById('annDate').value = 'Hari Ini';
+    
+    simpanAnn();
+  });
+}
+
+function renderAnnouncements() {
+  const tbody = document.getElementById('annTableBody');
+  tbody.innerHTML = ANNOUNCEMENTS.map((ann, idx) => `
+    <tr>
+      <td><b>${ann.category}</b><br><small>${ann.date}</small></td>
+      <td><strong>${ann.title}</strong></td>
+      <td>${ann.desc}</td>
+      <td style="text-align: center;">
+        <button class="btn btn-danger" onclick="padamAnn(${idx})" style="padding:4px 8px;font-size:0.75rem;">Hapus</button>
+      </td>
+    </tr>
+  `).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Tiada hebahan atau peringatan buat masa ini.</td></tr>';
+}
+
+window.padamAnn = function(idx) {
+  if (confirm("Adakah anda pasti mahu memadam hebahan ini?")) {
+    ANNOUNCEMENTS.splice(idx, 1);
+    simpanAnn();
+  }
+};
+
+window.resetAnnouncements = function() {
+  if (confirm("Adakah anda pasti mahu set semula semua hebahan ke senarai asal?")) {
+    ANNOUNCEMENTS = [...DEFAULT_ANNOUNCEMENTS];
+    simpanAnn();
+  }
+};
+
+// --- RENDER TABLE & SCHEDULE ---
+function render(){
+  // Dropdown pilihan kod subjek in Add Slot form
+  const sel = document.getElementById('pilihKod');
+  sel.innerHTML = '<option value="" disabled selected>Pilih Subjek (Kod)</option>' + 
+    DB.subjek.map(s=>`<option value="${s.kod}_${s.singkatan}">${s.kod} — ${s.subjek} (${s.singkatan}${s.singkatanPembantu !== '-' ? ' & ' + s.singkatanPembantu : ''})</option>`).join('');
+
+  // Render Table 1: Registered Subjects
+  document.getElementById('metaBody').innerHTML = DB.subjek.map(s=>{
+    const dijadual = DB.slot.filter(x=>x.kod===s.kod && x.singkatan===s.singkatan)
+      .reduce((t,x)=>t+(toMin(x.tamat)-toMin(x.mula))/60,0);
+    const over = dijadual>s.jam;
+    return `<tr>
+      <td><strong>${s.nama}</strong> (${s.singkatan})</td>
+      <td>${s.namaPembantu !== '-' ? '<strong>' + s.namaPembantu + '</strong>' : '-'} (${s.singkatanPembantu})</td>
+      <td>${s.subjek}</td>
+      <td><b>${s.kod}</b></td>
+      <td>${s.jam} jam</td>
+      <td><span class="badge ${over?'over':''}">${dijadual} jam</span></td>
+      <td><button class="btn btn-danger btn-icon-only" onclick="padamSubjek('${s.kod}', '${s.singkatan}')" style="padding:4px 8px;font-size:0.75rem;">Padam</button></td>
+    </tr>`;
+  }).join('') || '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Tiada subjek didaftarkan.</td></tr>';
+
+  // Render Schedule Grid
+  const hari=['Isnin','Selasa','Rabu','Khamis','Jumaat'];
+  const masa=[]; for(let h=8;h<=18;h++) masa.push(String(h).padStart(2,'0')+':00');
+  
+  let html='<table class="schedule-table"><thead><tr><th>Masa</th>'+hari.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>';
+  for(let i=0;i<masa.length-1;i++){
+    const blokMula=toMin(masa[i]), blokTamat=toMin(masa[i+1]);
+    html+=`<tr><th style="font-weight:600; text-align:center; background:var(--surface-hover);">${masa[i]}–${masa[i+1]}</th>`;
+    hari.forEach(h=>{
+      const isi = DB.slot.map((s,idx)=>({s,idx})).filter(({s})=>
+        s.hari===h && toMin(s.mula)<blokTamat && blokMula<toMin(s.tamat));
+      const sel = isi.map(({s,idx})=>{
+        const clash = DB.slot.some((o,j)=>j!==idx && bertindih(s,o) && checkClash(s, o));
+        return `<div class="slot ${clash?'clash':''}">
+          <b>${s.kod} — ${s.subjek}</b> ${clash?'⚠️':''}<br>
+          <small>
+            ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
+            📍 ${s.lokasi}<br>
+            ⏱️ ${s.mula}–${s.tamat}
+          </small>
+        </div>`;
+      }).join('');
+      html+=`<td>${sel}</td>`;
+    });
+    html+='</tr>';
+  }
+  html+='</tbody></table>';
+  document.getElementById('jadualWrap').innerHTML=html;
+
+  // Render Teaching Assignments by Lecturer
+  let senaraiPensyarah = {};
+  DB.subjek.forEach(s => {
+    if(s.nama && s.nama !== '-') senaraiPensyarah[s.singkatan] = s.nama;
+    if(s.namaPembantu && s.namaPembantu !== '-') senaraiPensyarah[s.singkatanPembantu] = s.namaPembantu;
+  });
+
+  let tugasHtml = '';
+  Object.keys(senaraiPensyarah).forEach(singk => {
+    const namaPensyarah = senaraiPensyarah[singk];
+    let slotPensyarah = DB.slot.filter(s => s.singkatan === singk || s.singkatanPembantu === singk);
+    
+    let rangkumanTugas = {};
+    slotPensyarah.forEach(s => {
+      let key = `${s.kod}-${s.kelas}-${s.lokasi}`;
+      let jamSlot = (toMin(s.tamat) - toMin(s.mula)) / 60;
+      
+      if(rangkumanTugas[key]) {
+        rangkumanTugas[key].jam += jamSlot;
+      } else {
+        rangkumanTugas[key] = {
+          kod: s.kod,
+          subjek: s.subjek,
+          kelas: s.kelas,
+          lokasi: s.lokasi,
+          jam: jamSlot
+        };
+      }
+    });
+
+    let jumlahKeseluruhan = 0;
+    tugasHtml += `
+    <div class="lecturer-section">
+      <div class="lecturer-title">NAMA PENSYARAH: ${namaPensyarah} (${singk})</div>
+      <div style="font-weight: 700; font-size: 0.85rem; margin-bottom: 8px; color:var(--text-secondary);">TUGAS MENGAJAR AKTIF</div>
+      <div class="table-responsive">
+          <table>
+            <thead>
+              <tr>
+                <th style="width: 15%;">KOD KURSUS</th>
+                <th style="width: 45%;">NAMA KURSUS</th>
+                <th style="width: 15%;">KELAS</th>
+                <th style="width: 15%;">LOKASI</th>
+                <th style="width: 10%; text-align: center;">JAM MENGAJAR</th>
+              </tr>
+            </thead>
+            <tbody>`;
+            
+        let keys = Object.keys(rangkumanTugas);
+        if(keys.length > 0) {
+          keys.forEach(k => {
+            let item = rangkumanTugas[k];
+            jumlahKeseluruhan += item.jam;
+            tugasHtml += `
+              <tr>
+                <td><b>${item.kod}</b></td>
+                <td>${item.subjek}</td>
+                <td><span class="badge" style="background:var(--primary-soft); color:var(--primary-soft-text);">${item.kelas}</span></td>
+                <td>📍 ${item.lokasi}</td>
+                <td style="text-align: center;"><b>${item.jam}</b></td>
+              </tr>`;
+          });
+        } else {
+          tugasHtml += `<tr><td colspan="5" style="text-align:center; color:var(--text-muted);">Tiada tugasan mengajar dijadualkan.</td></tr>`;
+        }
+        
+        tugasHtml += `
+              <tr class="total-row">
+                <td colspan="3" style="border: none; background: transparent;"></td>
+                <td style="text-align: right; border: 1px solid var(--surface-border); font-weight:700;">JUMLAH KESELURUHAN</td>
+                <td style="text-align: center; border: 1px solid var(--surface-border); background-color: var(--primary-soft); color:var(--primary-soft-text); font-weight:700;">${jumlahKeseluruhan}</td>
+              </tr>
+            </tbody>
+          </table>
+      </div>
+    </div>`;
+  });
+
+  if(Object.keys(senaraiPensyarah).length === 0) {
+    tugasHtml = '<p style="text-align:center; color:var(--text-muted); font-size:0.85rem; padding: 20px 0;">Sila daftarkan maklumat pensyarah & subjek terlebih dahulu.</p>';
+  }
+  document.getElementById('tugasMengajarWrap').innerHTML = tugasHtml;
+
+  // Render raw slots for deletion controls
+  document.getElementById('rawSlotsBody').innerHTML = DB.slot.map((s, idx) => `
+    <tr>
+      <td>📅 <b>${s.hari}</b> (${s.mula}–${s.tamat})</td>
+      <td><b>${s.kod}</b></td>
+      <td><span class="badge" style="background:var(--primary-soft); color:var(--primary-soft-text);">${s.kelas}</span></td>
+      <td>📍 ${s.lokasi}</td>
+      <td>👤 <b>${s.nama}</b> (${s.singkatan})${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</td>
+      <td><button class="btn btn-danger" onclick="padamSlot(${idx})" style="padding:4px 8px;font-size:0.75rem;">Hapus</button></td>
+    </tr>
+  `).join('') || '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Tiada data slot aktif.</td></tr>';
+
+  // Update confirmation button state
+  const btn = document.getElementById('btnConfirmPublish');
+  if (btn) {
+    if (DB.isConfirmed) {
+        btn.className = "btn btn-accent";
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+            </svg>
+            Status: Diterbitkan (Batal)
+        `;
+    } else {
+        btn.className = "btn btn-primary";
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="10"></circle>
+                <polyline points="12 6 12 12 16 14"></polyline>
+            </svg>
+            Sahkan & Terbit Jadual
+        `;
+    }
+  }
+}
+
+// --- PUBLISH & CONFIRMATION ACTIONS ---
+function handlePublishClick() {
+  if (DB.isConfirmed) {
+    document.getElementById('unpublishConfirmModal').style.display = 'flex';
+  } else {
+    document.getElementById('publishConfirmModal').style.display = 'flex';
+  }
+}
+function tutupConfirmModal() {
+  document.getElementById('publishConfirmModal').style.display = 'none';
+}
+function tutupUnpublishModal() {
+  document.getElementById('unpublishConfirmModal').style.display = 'none';
+}
+function sahkanDanTerbitJadual() {
+  DB.isConfirmed = true;
+  simpan();
+  tutupConfirmModal();
+  alert('Jadual waktu berjaya disahkan dan diterbitkan kepada pelajar!');
+}
+function batalTerbitJadual() {
+  DB.isConfirmed = false;
+  simpan();
+  tutupUnpublishModal();
+  alert('Penerbitan jadual waktu telah ditarik balik.');
+}
+
+// --- AUTOMATIC TIMETABLE GENERATION ALGORITHMS ---
+function bukaGeneratorModal() {
+  if (DB.subjek.length === 0) {
+    alert("Sila daftarkan maklumat pensyarah & subjek terlebih dahulu.");
+    return;
+  }
+
+  const listContainer = document.getElementById('generatorSubjectsList');
+  listContainer.innerHTML = '';
+
+  DB.subjek.forEach((s, idx) => {
+    // Find if there is already an existing slot for this subject to guess class and location
+    const existingSlot = DB.slot.find(x => x.kod === s.kod);
+    const defaultClass = existingSlot ? existingSlot.kelas : (s.kod.toUpperCase().startsWith('SLK') ? 'SLK 1A' : 'STM 1A');
+    const defaultLoc = existingSlot ? existingSlot.lokasi : (s.kod.toUpperCase().startsWith('SLK') ? 'MAKMAL LOGISTIK 1' : 'MAKMAL PENGATURCARAAN 1');
+
+    // Create dropdown selections
+    const classOptions = CLASSES_DATA.map(c => 
+      `<option value="${c}" ${c === defaultClass ? 'selected' : ''}>${c}</option>`
+    ).join('');
+
+    const locOptions = LOCATIONS_DATA.map(l => 
+      `<option value="${l.name}" ${l.name === defaultLoc ? 'selected' : ''}>${l.name} (${l.code})</option>`
+    ).join('');
+
+    const row = document.createElement('tr');
+    row.style.borderBottom = '1px solid var(--surface-border)';
+    row.innerHTML = `
+      <td style="padding: 10px;">
+        <div style="font-weight: 700;">${s.kod} — ${s.subjek}</div>
+        <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
+          Pensyarah: ${s.nama} (${s.singkatan}) | ⏱️ Beban: ${s.jam} jam
+        </div>
+      </td>
+      <td style="padding: 10px;">
+        <select id="genClass_${idx}" style="width:100%; padding: 6px; font-size: 0.75rem; border-radius: var(--border-radius-sm); border: 1px solid var(--surface-border); background: var(--surface); color: var(--text-primary);">
+          ${classOptions}
+        </select>
+      </td>
+      <td style="padding: 10px;">
+        <select id="genLoc_${idx}" style="width:100%; padding: 6px; font-size: 0.75rem; border-radius: var(--border-radius-sm); border: 1px solid var(--surface-border); background: var(--surface); color: var(--text-primary);">
+          ${locOptions}
+        </select>
+      </td>
+    `;
+    listContainer.appendChild(row);
+  });
+
+  document.getElementById('generatorModal').style.display = 'flex';
+}
+
+function tutupGeneratorModal() {
+  document.getElementById('generatorModal').style.display = 'none';
+}
+
+function jalankanGenerator() {
+  // 1. Gather all targets mapped by user
+  const targets = DB.subjek.map((s, idx) => {
+    const kelasVal = document.getElementById(`genClass_${idx}`).value;
+    const lokasiVal = document.getElementById(`genLoc_${idx}`).value;
+    return { subject: s, kelas: kelasVal, lokasi: lokasiVal };
+  });
+
+  // 2. Helper to split required hours into individual blocks (2h blocks, remaining 1h block)
+  function getDurations(hours) {
+    const blocks = [];
+    let rem = hours;
+    while (rem > 0) {
+      if (rem >= 2) {
+        blocks.push(2);
+        rem -= 2;
+      } else {
+        blocks.push(rem);
+        rem = 0;
+      }
+    }
+    return blocks;
+  }
+
+  // 3. Compile list of required slot items to assign
+  const requirements = [];
+  targets.forEach(t => {
+    const blocks = getDurations(t.subject.jam);
+    blocks.forEach(dur => {
+      requirements.push({
+        subject: t.subject,
+        kelas: t.kelas,
+        lokasi: t.lokasi,
+        duration: dur
+      });
+    });
+  });
+
+  // Sort requirements by duration DESC (schedule larger blocks first)
+  requirements.sort((a, b) => b.duration - a.duration);
+
+  // 4. Scheduling resources setup
+  const days = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
+  const startHours = [8, 9, 10, 11, 14, 15, 16, 17]; // hours excluding lunch 12:00 - 14:00
+
+  // Lunch overlap check
+  function overlapsLunch(start, duration) {
+    const end = start + duration;
+    return !(end <= 12 || start >= 14);
+  }
+
+  // Conflict overlap check
+  function hasConflict(day, startHour, duration, item, currentSlots) {
+    const startMin = startHour * 60;
+    const endMin = (startHour + duration) * 60;
+
+    return currentSlots.some(other => {
+      if (other.hari !== day) return false;
+
+      // Time overlap check
+      const otherStartMin = toMin(other.mula);
+      const otherEndMin = toMin(other.tamat);
+      const timeOverlap = startMin < otherEndMin && otherStartMin < endMin;
+      if (!timeOverlap) return false;
+
+      // Class conflict
+      if (other.kelas === item.kelas) return true;
+
+      // Location conflict
+      if (other.lokasi === item.lokasi) return true;
+
+      // Lecturer conflict (including assistants)
+      const currentLecturers = [item.subject.singkatan];
+      if (item.subject.singkatanPembantu && item.subject.singkatanPembantu !== '-') {
+        currentLecturers.push(item.subject.singkatanPembantu);
+      }
+
+      const otherLecturers = [other.singkatan];
+      if (other.singkatanPembantu && other.singkatanPembantu !== '-') {
+        otherLecturers.push(other.singkatanPembantu);
+      }
+
+      if (currentLecturers.some(l => otherLecturers.includes(l))) return true;
+
+      return false;
+    });
+  }
+
+  // 5. Backtracking recursive search
+  const finalSlots = [];
+
+  function solve(reqIdx) {
+    if (reqIdx === requirements.length) return true;
+
+    const req = requirements[reqIdx];
+
+    // Try days and start hours
+    // Introduce simple random shuffling of search order to improve distribution
+    const shuffledDays = [...days].sort(() => Math.random() - 0.5);
+    const shuffledStarts = [...startHours].sort(() => Math.random() - 0.5);
+
+    for (let day of shuffledDays) {
+      for (let startHour of shuffledStarts) {
+        if (startHour + req.duration > 18) continue;
+        if (overlapsLunch(startHour, req.duration)) continue;
+
+        if (!hasConflict(day, startHour, req.duration, req, finalSlots)) {
+          // Temporarily assign slot
+          const mulaStr = String(startHour).padStart(2, '0') + ':00';
+          const tamatStr = String(startHour + req.duration).padStart(2, '0') + ':00';
+
+          const newSlot = {
+            kod: req.subject.kod,
+            kelas: req.kelas,
+            lokasi: req.lokasi,
+            hari: day,
+            mula: mulaStr,
+            tamat: tamatStr,
+            singkatan: req.subject.singkatan,
+            singkatanPembantu: req.subject.singkatanPembantu,
+            subjek: req.subject.subjek,
+            nama: req.subject.nama,
+            namaPembantu: req.subject.namaPembantu
+          };
+
+          finalSlots.push(newSlot);
+
+          if (solve(reqIdx + 1)) return true;
+
+          // Backtrack
+          finalSlots.pop();
+        }
+      }
+    }
+
+    return false;
+  }
+
+  // Run solver
+  if (solve(0)) {
+    DB.slot = finalSlots;
+    simpan();
+    tutupGeneratorModal();
+    alert('Jadual waktu berjaya dijana secara automatik dengan sifar pertindihan!');
+  } else {
+    alert('❌ Penjadualan Gagal: Sistem tidak dapat menjana jadual tanpa pertembungan. Sila kurangkan beban jam atau tambah lokasi/kelas.');
+  }
+}
+</script>
+</body>
+</html>
