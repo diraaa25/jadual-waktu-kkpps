@@ -62,16 +62,17 @@
   body { background: var(--background); color: var(--text-primary); transition: background var(--transition-fast), color var(--transition-fast); min-height: 100vh; padding-bottom: 3rem; }
   
   header { 
-      background: linear-gradient(135deg, var(--primary), var(--accent)); 
+      background: linear-gradient(135deg, #0f172a, #1e293b); 
       color: #fff; 
-      padding: 1.25rem 2rem; 
+      padding: 1.5rem 2rem; 
       display: flex; 
       justify-content: space-between; 
       align-items: center; 
-      box-shadow: var(--card-shadow);
+      border-bottom: 3px solid #06b6d4;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
       margin-bottom: 2rem;
   }
-  header h1 { font-size: 1.35rem; font-weight: 800; letter-spacing: 0.5px; }
+  header h1 { font-size: 1.6rem; font-weight: 800; letter-spacing: 0.5px; }
   
   .wrap { max-width: 1300px; margin: 0 auto; padding: 0 1.5rem; }
   
@@ -189,7 +190,15 @@
 <body>
 
 <header>
-  <h1>Sistem Jadual Waktu Pengajaran • Kolej Komuniti Papar</h1>
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <h1 style="font-size: 1.5rem; font-weight: 800; letter-spacing: 0.5px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
+      🎓 <span style="background: linear-gradient(to right, #38bdf8, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Sistem Jadual Waktu Pengajaran</span>
+      <span style="font-size: 1.05rem; font-weight: 400; color: #94a3b8; border-left: 2px solid #334155; padding-left: 10px; margin-left: 4px;">Kolej Komuniti Papar</span>
+    </h1>
+    <div id="live-clock" style="font-size: 0.8rem; font-weight: 500; display: flex; flex-wrap: wrap; align-items: center; gap: 10px; margin-top: 2px;">
+        ⏱️ Memuatkan masa...
+    </div>
+  </div>
   <div style="display: flex; align-items: center; gap: 15px;">
       <div id="firebase-status-badge-container"></div>
       <a href="index.html" class="btn btn-light" style="background: rgba(255,255,255,0.2); border: none; color: #fff;">
@@ -325,6 +334,18 @@
           <button class="btn btn-primary" type="submit">Tambah ke Jadual</button>
           <button class="btn btn-accent" type="button" onclick="bukaGeneratorModal()">Generate Jadual Automatik</button>
       </div>
+      <!-- Real-time clash warnings container -->
+      <div id="clashWarningArea" class="clash-warning-box" style="display: none; margin-top: 15px;">
+        <div class="clash-warning-title">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="display: inline; vertical-align: middle; margin-right: 4px;">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+            <line x1="12" y1="9" x2="12" y2="13"></line>
+            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+          </svg>
+          Perhatian: Dikesan Pertindihan Jadual!
+        </div>
+        <ul id="clashWarningList" class="clash-warning-list"></ul>
+      </div>
       <div class="note">
         <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
@@ -402,7 +423,7 @@
       5. Urus Hebahan & Peringatan Dashboard
     </h2>
     <form id="formAnnouncement">
-      <div class="grid" style="grid-template-columns: 1fr 1fr 2fr;">
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
         <div>
             <label>Kategori</label>
             <select id="annCategory" required>
@@ -418,9 +439,25 @@
             <input id="annDate" placeholder="cth: Hari Ini / 30 Jun 2026" required value="Hari Ini">
         </div>
         <div>
-            <label>Tajuk Hebahan</label>
-            <input id="annTitle" placeholder="cth: Taklimat Penggunaan Sistem" required>
+            <label>Keutamaan</label>
+            <select id="annPriority" required>
+                <option value="Biasa">Biasa</option>
+                <option value="Penting">Penting</option>
+                <option value="Segera">Segera</option>
+            </select>
         </div>
+        <div>
+            <label>Tarikh Luput (Opsional)</label>
+            <input type="date" id="annExpiryDate">
+        </div>
+        <div>
+            <label>Penerbit (Publisher)</label>
+            <input id="annPublisher" placeholder="cth: Pentadbir" value="Pentadbir">
+        </div>
+      </div>
+      <div style="margin-top: 12px;">
+          <label>Tajuk Hebahan</label>
+          <input id="annTitle" placeholder="cth: Taklimat Penggunaan Sistem" required>
       </div>
       <div style="margin-top: 12px;">
           <label>Kandungan Hebahan</label>
@@ -445,6 +482,108 @@
           </thead>
           <tbody id="annTableBody">
             <!-- Dynamic load -->
+          </tbody>
+        </table>
+    </div>
+  </div>
+
+  <!-- 6. KONFIGURASI SESI & TPA -->
+  <div class="card no-print">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+        <circle cx="12" cy="12" r="3"></circle>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+      </svg>
+      6. Konfigurasi Sesi Akademik & Lantikan TPA
+    </h2>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+      <div>
+        <label>Sesi Semasa</label>
+        <select id="selectActiveSession" onchange="updateActiveSession(this.value)">
+          <!-- Dynamic -->
+        </select>
+      </div>
+      <div>
+        <label>Pilih Pensyarah TPA</label>
+        <select id="selectTpaLec" onchange="updateTpaLecturer(this.value)">
+          <!-- Dynamic -->
+        </select>
+      </div>
+      <div>
+        <label>Tambah Sesi Baru</label>
+        <div style="display:flex; gap: 8px;">
+          <input id="inputNewSession" placeholder="cth: SESI 1 2026/2027" style="text-transform: uppercase;">
+          <button type="button" class="btn btn-accent" onclick="tambahSesiAdmin()" style="padding: 0 12px; margin: 0; min-height: unset; height: 38px;">Tambah</button>
+        </div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 15px;">
+      <label style="font-weight:600;">Senarai Sesi Terdaftar (Klik "Hapus" untuk buang)</label>
+      <div id="adminSessionsList" style="display:flex; flex-wrap:wrap; gap: 8px; margin-top: 6px;">
+        <!-- Dynamic badges -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 7. URUS REKOD PELAJAR -->
+  <div class="card no-print">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+        <circle cx="9" cy="7" r="4"></circle>
+        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+      </svg>
+      7. Urus Rekod Pelajar
+    </h2>
+    
+    <form id="formAddStudentAdmin" onsubmit="tambahPelajarAdmin(event)" style="margin-bottom: 24px;">
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div>
+          <label for="adminStudName">Nama Penuh</label>
+          <input id="adminStudName" placeholder="cth: AHMAD BIN ALI" required style="text-transform: uppercase;">
+        </div>
+        <div>
+          <label for="adminStudIc">No. Kad Pengenalan (12 Digit)</label>
+          <input id="adminStudIc" placeholder="cth: 080512125011" maxlength="12" required>
+        </div>
+        <div>
+          <label for="adminStudGender">Jantina</label>
+          <select id="adminStudGender" required>
+            <option value="Lelaki">Lelaki</option>
+            <option value="Perempuan">Perempuan</option>
+          </select>
+        </div>
+      </div>
+      <div style="margin-top: 12px;">
+        <label for="adminStudAddress">Alamat Tetap</label>
+        <textarea id="adminStudAddress" placeholder="Masukkan alamat lengkap..." rows="2" required style="height: 60px; resize: none; font-family: inherit; font-size: 0.9rem; padding: 8px; width: 100%; border: 1px solid var(--surface-border); border-radius: var(--border-radius-sm);"></textarea>
+      </div>
+      <div class="actions" style="margin-top: 12px;">
+        <button class="btn btn-accent" type="submit">Daftar Pelajar Baru</button>
+      </div>
+    </form>
+
+    <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-top:24px; margin-bottom:12px;">Senarai Rekod Pelajar Berdaftar</h3>
+    <div style="margin-bottom: 12px;">
+        <input id="searchStudentsAdmin" oninput="filterStudentsAdmin()" placeholder="Cari nama, no. IC atau alamat..." style="max-width: 350px; padding: 8px; font-size:0.85rem;">
+    </div>
+    
+    <div class="table-responsive">
+        <table style="width:100%;">
+          <thead>
+            <tr>
+              <th style="width: 5%;">Bil</th>
+              <th style="width: 25%;">Nama Penuh</th>
+              <th style="width: 15%;">No. IC</th>
+              <th style="width: 10%;">Jantina</th>
+              <th style="width: 35%;">Alamat Tetap</th>
+              <th style="width: 10%; text-align: center;">Tindakan</th>
+            </tr>
+          </thead>
+          <tbody id="studentsAdminTableBody">
+            <!-- Dynamic rows -->
           </tbody>
         </table>
     </div>
@@ -490,39 +629,18 @@
   </div>
 </div>
 
-<!-- Modal Pengesahan Jadual -->
-<div id="publishConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); justify-content: center; align-items: center; z-index: 10000; padding: 16px;">
-  <div style="background: var(--surface); color: var(--text-primary); width: 100%; max-width: 460px; border-radius: var(--border-radius-md); border: 1px solid var(--surface-border); box-shadow: var(--card-shadow); padding: 24px; text-align: left;">
-    <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 700; border-bottom: 2px solid var(--surface-border); padding-bottom: 12px; margin-bottom: 16px; color: var(--text-primary);">
-      📢 Pengesahan Penerbitan Jadual
-    </h3>
-    <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px;">
-      Adakah anda pasti mahu **mengesahkan dan menerbitkan** jadual waktu ini? 
-      Setelah diterbitkan, pelajar akan dapat melihat jadual ini di Portal Pelajar (Pelajar.html) mengikut kelas masing-masing.
-    </p>
-    <div style="display: flex; justify-content: flex-end; gap: 12px;">
-      <button class="btn btn-light" onclick="tutupConfirmModal()" style="padding: 10px 16px;">Batal</button>
-      <button class="btn btn-accent" onclick="sahkanDanTerbitJadual()" style="padding: 10px 20px;">Ya, Sahkan & Terbit</button>
-    </div>
-  </div>
+<!-- Confirms handled inline by tanyaPengesahan -->
+
+<!-- Print Footer -->
+<div class="print-footer" style="display:none; text-align: center; font-size: 0.7rem; border-top: 1px solid #cbd5e1; padding-top: 8px; margin-top: 30px; font-weight: 600;">
+    <div class="print-footer-session">JADUAL DISAHKAN BAGI SESI _________</div>
+    <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
 </div>
 
-<!-- Modal Batal Terbit Jadual -->
-<div id="unpublishConfirmModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.55); justify-content: center; align-items: center; z-index: 10000; padding: 16px;">
-  <div style="background: var(--surface); color: var(--text-primary); width: 100%; max-width: 460px; border-radius: var(--border-radius-md); border: 1px solid var(--surface-border); box-shadow: var(--card-shadow); padding: 24px; text-align: left;">
-    <h3 style="margin-top: 0; font-size: 1.2rem; font-weight: 700; border-bottom: 2px solid var(--surface-border); padding-bottom: 12px; margin-bottom: 16px; color: var(--text-primary);">
-      ⚠️ Batal Penerbitan Jadual Waktu
-    </h3>
-    <p style="font-size: 0.9rem; line-height: 1.5; color: var(--text-secondary); margin-bottom: 20px;">
-      Adakah anda pasti mahu **menarik balik** penerbitan jadual waktu ini? 
-      Setelah ditarik balik, pelajar tidak akan dapat melihat jadual ini di Portal Pelajar sehingga anda menerbitkannya semula.
-    </p>
-    <div style="display: flex; justify-content: flex-end; gap: 12px;">
-      <button class="btn btn-light" onclick="tutupUnpublishModal()" style="padding: 10px 16px;">Batal</button>
-      <button class="btn btn-danger" onclick="batalTerbitJadual()" style="padding: 10px 20px;">Ya, Tarik Balik</button>
-    </div>
-  </div>
-</div>
+<!-- System Footer -->
+<footer class="no-print" style="text-align: center; font-size: 0.75rem; color: var(--text-secondary); margin-top: 40px; padding: 20px 0; border-top: 1px solid var(--surface-border);">
+    Hakcipta &copy; 2026 STM, KKPPS
+</footer>
 
 <!-- Firebase Compat SDK and services -->
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -598,6 +716,7 @@ const ANN_KEY = 'kkpapar_announcements';
 
 let DB = { subjek: [], slot: [], isConfirmed: false };
 let ANNOUNCEMENTS = [];
+let STUDENTS = [];
 
 function simpan() { 
     if (isFirebaseActive()) {
@@ -626,8 +745,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.classList.remove("dark-mode");
     }
     
+    startLiveClock();
     initDatabaseConnection();
     setupAnnForm();
+    setupRealTimeClashDetection();
 });
 
 function initDatabaseConnection() {
@@ -642,24 +763,26 @@ function initDatabaseConnection() {
             }
         });
         firebaseWatchTimetable(data => {
-            if (data) {
-                DB = data;
-                // Clean up any corrupt slots
-                if (DB && DB.slot) {
-                    DB.slot.forEach(s => {
-                        if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
-                            const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
-                            s.kod = foundSub ? foundSub.kod : 'STM3012';
-                        }
-                    });
+            DB = data || { subjek: [], slot: [], isConfirmed: false };
+            DB.slot = DB.slot || [];
+            DB.subjek = DB.subjek || [];
+            // Clean up any corrupt slots
+            DB.slot.forEach(s => {
+                if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
+                    const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
+                    s.kod = foundSub ? foundSub.kod : 'STM3012';
                 }
-                render();
-            }
+            });
+            render();
         });
         firebaseWatchAnnouncements(data => {
+            ANNOUNCEMENTS = data || [];
+            renderAnnouncements();
+        });
+        firebaseWatchStudents(data => {
             if (data) {
-                ANNOUNCEMENTS = data;
-                renderAnnouncements();
+                STUDENTS = data;
+                renderStudentsAdmin();
             }
         });
     } else {
@@ -671,6 +794,8 @@ function initDatabaseConnection() {
         }));
         
         DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
+        DB.slot = DB.slot || [];
+        DB.subjek = DB.subjek || [];
         if (DB && DB.slot) {
             let changed = false;
             DB.slot.forEach(s => {
@@ -691,9 +816,12 @@ function initDatabaseConnection() {
             localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS));
         }
         
+        STUDENTS = JSON.parse(localStorage.getItem('kkpapar_students')) || [];
+        
         initDropdowns();
         render();
         renderAnnouncements();
+        renderStudentsAdmin();
     }
 }
 
@@ -814,14 +942,73 @@ function checkClash(s, o) {
 }
 
 // --- DELETE AND RESET ACTIONS ---
-function padamSubjek(kod, singkatan){
-  if(DB.slot.some(s=>s.kod===kod && s.singkatan===singkatan)){ if(!confirm('Subjek ini ada dalam jadual. Padam semua sekali?'))return; }
-  DB.subjek = DB.subjek.filter(s=>!(s.kod===kod && s.singkatan===singkatan));
-  DB.slot = DB.slot.filter(s=>!(s.kod===kod && s.singkatan===singkatan));
-  simpan();
-}
-function padamSlot(i){ DB.slot.splice(i,1); simpan(); }
-function resetSemua(){ if(confirm('Padam SEMUA data?')){ DB={subjek:[],slot:[]}; simpan(); } }
+// Custom confirmation modal (guarantees in-page execution and avoids native popup blocks)
+window.tanyaPengesahan = function(mesej, padaSelesai) {
+  const overlay = document.createElement("div");
+  overlay.className = "confirm-overlay";
+  overlay.innerHTML = `
+    <div class="confirm-card" id="customConfirmCard">
+      <h3 class="confirm-title">
+        ⚠️ Pengesahan Tindakan
+      </h3>
+      <p class="confirm-desc">
+        ${mesej}
+      </p>
+      <div class="confirm-actions">
+        <button id="btnConfirmBatal" class="btn btn-light" style="padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--surface-border); background: var(--surface-hover); color: var(--text-primary);">
+            Batal
+        </button>
+        <button id="btnConfirmYa" class="btn btn-danger" style="padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; background: var(--danger); border-color: var(--danger); color: white; cursor: pointer;">
+            Ya, Teruskan
+        </button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  // Animation trigger
+  setTimeout(() => {
+    const card = overlay.querySelector("#customConfirmCard");
+    if (card) card.classList.add("active");
+  }, 10);
+
+  overlay.querySelector("#btnConfirmBatal").onclick = () => {
+    overlay.remove();
+  };
+  overlay.querySelector("#btnConfirmYa").onclick = () => {
+    overlay.remove();
+    padaSelesai();
+  };
+};
+
+window.padamSubjek = function(kod, singkatan){
+  if(DB.slot.some(s=>s.kod===kod && s.singkatan===singkatan)){
+    window.tanyaPengesahan('Subjek ini ada dalam jadual. Padam semua sekali?', () => {
+      DB.subjek = DB.subjek.filter(s=>!(s.kod===kod && s.singkatan===singkatan));
+      DB.slot = DB.slot.filter(s=>!(s.kod===kod && s.singkatan===singkatan));
+      simpan();
+    });
+  } else {
+    window.tanyaPengesahan('Adakah anda pasti mahu memadam subjek didaftarkan ini?', () => {
+      DB.subjek = DB.subjek.filter(s=>!(s.kod===kod && s.singkatan===singkatan));
+      simpan();
+    });
+  }
+};
+
+window.padamSlot = function(i){
+  window.tanyaPengesahan('Adakah anda pasti mahu memadam slot waktu ini?', () => {
+    DB.slot.splice(i,1); 
+    simpan();
+  });
+};
+
+window.resetSemua = function(){
+  window.tanyaPengesahan('Padam SEMUA data subjek dan slot?', () => {
+    DB={subjek:[],slot:[]}; 
+    simpan();
+  });
+};
 
 // --- ANNOUNCEMENT MANAGEMENT ---
 function setupAnnForm() {
@@ -831,13 +1018,19 @@ function setupAnnForm() {
     const date = document.getElementById('annDate').value.trim();
     const title = document.getElementById('annTitle').value.trim();
     const desc = document.getElementById('annDesc').value.trim();
+    const priority = document.getElementById('annPriority').value;
+    const expiryDate = document.getElementById('annExpiryDate').value;
+    const publisher = document.getElementById('annPublisher').value.trim() || 'Pentadbir';
     
-    ANNOUNCEMENTS.unshift({ category, date, title, desc });
+    ANNOUNCEMENTS.unshift({ category, date, title, desc, priority, expiryDate, publisher });
     
     // Reset inputs
     document.getElementById('annTitle').value = '';
     document.getElementById('annDesc').value = '';
     document.getElementById('annDate').value = 'Hari Ini';
+    document.getElementById('annPriority').value = 'Biasa';
+    document.getElementById('annExpiryDate').value = '';
+    document.getElementById('annPublisher').value = 'Pentadbir';
     
     simpanAnn();
   });
@@ -845,16 +1038,32 @@ function setupAnnForm() {
 
 function renderAnnouncements() {
   const tbody = document.getElementById('annTableBody');
-  tbody.innerHTML = ANNOUNCEMENTS.map((ann, idx) => `
-    <tr>
-      <td><b>${ann.category}</b><br><small>${ann.date}</small></td>
-      <td><strong>${ann.title}</strong></td>
-      <td>${ann.desc}</td>
-      <td style="text-align: center;">
-        <button class="btn btn-danger" onclick="padamAnn(${idx})" style="padding:4px 8px;font-size:0.75rem;">Hapus</button>
-      </td>
-    </tr>
-  `).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Tiada hebahan atau peringatan buat masa ini.</td></tr>';
+  tbody.innerHTML = ANNOUNCEMENTS.map((ann, idx) => {
+    let priorityBadge = '';
+    if (ann.priority === 'Segera') {
+      priorityBadge = `<span class="badge" style="background:#fef2f2; color:#ef4444; border:1px solid #fee2e2; font-weight:700; font-size:0.65rem; padding: 2px 6px; margin-left: 6px;">⚠️ Segera</span>`;
+    } else if (ann.priority === 'Penting') {
+      priorityBadge = `<span class="badge" style="background:#fffbeb; color:#d97706; border:1px solid #fef3c7; font-weight:700; font-size:0.65rem; padding: 2px 6px; margin-left: 6px;">★ Penting</span>`;
+    }
+    
+    const expText = ann.expiryDate ? `<br><small style="color:var(--danger); font-weight:600;">Luput: ${ann.expiryDate}</small>` : '';
+    
+    return `
+      <tr>
+        <td>
+          <b>${ann.category}</b><br>
+          <small>${ann.date}</small><br>
+          <small style="color:var(--text-secondary);">Oleh: ${ann.publisher || 'Pentadbir'}</small>
+          ${expText}
+        </td>
+        <td><strong>${ann.title}</strong>${priorityBadge}</td>
+        <td>${ann.desc}</td>
+        <td style="text-align: center;">
+          <button class="btn btn-danger" onclick="padamAnn(${idx})" style="padding:4px 8px;font-size:0.75rem;">Hapus</button>
+        </td>
+      </tr>
+    `;
+  }).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Tiada hebahan atau peringatan buat masa ini.</td></tr>';
 }
 
 window.padamAnn = function(idx) {
@@ -1021,53 +1230,148 @@ function render(){
   // Update confirmation button state
   const btn = document.getElementById('btnConfirmPublish');
   if (btn) {
-    if (DB.isConfirmed) {
+    const state = DB.approvalState || "Draft";
+    if (state === "Approved") {
         btn.className = "btn btn-accent";
         btn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
                 <polyline points="22 4 12 14.01 9 11.01"></polyline>
             </svg>
-            Status: Diterbitkan (Batal)
+            Diluluskan TPA & Diterbit (Tarik Balik)
         `;
-    } else {
-        btn.className = "btn btn-primary";
+    } else if (state === "Pending") {
+        btn.className = "btn btn-accent";
+        btn.style.background = "#eab308"; // Amber
+        btn.style.borderColor = "#ca8a04";
         btn.innerHTML = `
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="10"></circle>
                 <polyline points="12 6 12 12 16 14"></polyline>
             </svg>
-            Sahkan & Terbit Jadual
+            Menunggu Kelulusan TPA (Tarik Balik)
+        `;
+    } else {
+        btn.className = "btn btn-primary";
+        btn.style.background = ""; // Reset
+        btn.style.borderColor = "";
+        btn.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+            Hantar Kelulusan TPA
         `;
     }
   }
+
+  // Render configuration elements
+  DB.sessionsList = DB.sessionsList || ["SESI 1 2026/2027", "SESI 2 2026/2027"];
+  DB.activeSession = DB.activeSession || "SESI 1 2026/2027";
+  DB.tpaLecturer = DB.tpaLecturer || "DT";
+  DB.approvalState = DB.approvalState || "Draft";
+
+  // Sesi Semasa Dropdown
+  const selectSess = document.getElementById('selectActiveSession');
+  if (selectSess) {
+    selectSess.innerHTML = DB.sessionsList.map(s => 
+      `<option value="${s}" ${s === DB.activeSession ? 'selected' : ''}>${s}</option>`
+    ).join('');
+  }
+
+  // TPA Select Dropdown
+  const selectTpa = document.getElementById('selectTpaLec');
+  if (selectTpa) {
+    selectTpa.innerHTML = LECTURERS_DATA.map(l => 
+      `<option value="${l.shortName}" ${l.shortName === DB.tpaLecturer ? 'selected' : ''}>${l.name} (${l.shortName})</option>`
+    ).join('');
+  }
+
+  // Admin Sessions List Badges
+  const sessListEl = document.getElementById('adminSessionsList');
+  if (sessListEl) {
+    sessListEl.innerHTML = DB.sessionsList.map(s => {
+      const isActive = s === DB.activeSession;
+      const themeColor = isActive ? '#16a34a' : '#64748b';
+      const actionText = isActive ? '' : ` <span onclick="window.padamSesiAdmin('${s}')" style="cursor:pointer; font-weight:bold; margin-left:6px; background:rgba(0,0,0,0.25); padding:0 6px; border-radius:4px; font-size: 0.8rem;">×</span>`;
+      return `<span class="badge" style="background:${themeColor}; color:white; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight:700; display:inline-flex; align-items:center;">${s}${actionText}</span>`;
+    }).join('');
+  }
+
+  const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+  document.querySelectorAll(".print-footer-session").forEach(el => {
+    el.textContent = `JADUAL DISAHKAN BAGI SESI ${sess}`.toUpperCase();
+  });
+
+  if (typeof window.tickClock === 'function') window.tickClock();
+  if (typeof periksaPertindihanRealTime === 'function') periksaPertindihanRealTime();
 }
 
 // --- PUBLISH & CONFIRMATION ACTIONS ---
 function handlePublishClick() {
-  if (DB.isConfirmed) {
-    document.getElementById('unpublishConfirmModal').style.display = 'flex';
+  const state = DB.approvalState || "Draft";
+  if (state === "Approved") {
+    window.tanyaPengesahan("Adakah anda pasti mahu menarik balik kelulusan jadual ini dan menukarkannya kembali ke status Deraf?", () => {
+      DB.approvalState = "Draft";
+      DB.isConfirmed = false;
+      simpan();
+      alert("Penerbitan ditarik balik. Status kembali ke Deraf.");
+    });
+  } else if (state === "Pending") {
+    window.tanyaPengesahan("Adakah anda pasti mahu menarik balik penghantaran kelulusan TPA? Status akan kembali ke Deraf.", () => {
+      DB.approvalState = "Draft";
+      DB.isConfirmed = false;
+      simpan();
+      alert("Permohonan kelulusan ditarik balik. Status kembali ke Deraf.");
+    });
   } else {
-    document.getElementById('publishConfirmModal').style.display = 'flex';
+    window.tanyaPengesahan("Hantar jadual waktu ini untuk semakan dan kelulusan Timbalan Pengarah Akademik (TPA)?", () => {
+      DB.approvalState = "Pending";
+      DB.isConfirmed = false;
+      simpan();
+      alert("Jadual berjaya dihantar ke TPA untuk kelulusan!");
+    });
   }
 }
-function tutupConfirmModal() {
-  document.getElementById('publishConfirmModal').style.display = 'none';
-}
-function tutupUnpublishModal() {
-  document.getElementById('unpublishConfirmModal').style.display = 'none';
-}
-function sahkanDanTerbitJadual() {
-  DB.isConfirmed = true;
+
+function updateActiveSession(val) {
+  DB.activeSession = val;
   simpan();
-  tutupConfirmModal();
-  alert('Jadual waktu berjaya disahkan dan diterbitkan kepada pelajar!');
+  render();
 }
-function batalTerbitJadual() {
-  DB.isConfirmed = false;
+
+function updateTpaLecturer(val) {
+  DB.tpaLecturer = val;
   simpan();
-  tutupUnpublishModal();
-  alert('Penerbitan jadual waktu telah ditarik balik.');
+  render();
+}
+
+function tambahSesiAdmin() {
+  const input = document.getElementById('inputNewSession');
+  const newSesi = input.value.trim().toUpperCase();
+  if (!newSesi) return;
+
+  DB.sessionsList = DB.sessionsList || ["SESI 1 2026/2027", "SESI 2 2026/2027"];
+  if (DB.sessionsList.includes(newSesi)) {
+    alert("Sesi pengajian ini sudah didaftarkan!");
+    return;
+  }
+
+  DB.sessionsList.push(newSesi);
+  simpan();
+  input.value = '';
+  render();
+}
+
+window.padamSesiAdmin = function(sesi) {
+  window.tanyaPengesahan(`Adakah anda pasti mahu memadam sesi ${sesi}?`, () => {
+    DB.sessionsList = DB.sessionsList.filter(s => s !== sesi);
+    if (DB.activeSession === sesi) {
+      DB.activeSession = DB.sessionsList[0] || '';
+    }
+    simpan();
+    render();
+  });
 }
 
 // --- AUTOMATIC TIMETABLE GENERATION ALGORITHMS ---
@@ -1272,6 +1576,206 @@ function jalankanGenerator() {
   } else {
     alert('❌ Penjadualan Gagal: Sistem tidak dapat menjana jadual tanpa pertembungan. Sila kurangkan beban jam atau tambah lokasi/kelas.');
   }
+}
+
+// --- REAL-TIME CLASH DETECTION ---
+function periksaPertindihanRealTime() {
+  const selectValue = val('pilihKod');
+  const kelas = val('kelas');
+  const lokasi = val('lokasi');
+  const hari = val('hari');
+  const mula = val('mula');
+  const tamat = val('tamat');
+  
+  const warningArea = document.getElementById('clashWarningArea');
+  const warningList = document.getElementById('clashWarningList');
+  
+  if (!selectValue || !kelas || !lokasi || !mula || !tamat) {
+    warningArea.style.display = 'none';
+    return;
+  }
+  
+  if (tamat <= mula) {
+    warningArea.style.display = 'none';
+    return;
+  }
+  
+  const s = DB.subjek.find(x => `${x.kod}_${x.singkatan}` === selectValue);
+  if (!s) {
+    warningArea.style.display = 'none';
+    return;
+  }
+  
+  const targetSlot = {
+    kod: s.kod,
+    kelas,
+    lokasi,
+    hari,
+    mula,
+    tamat,
+    singkatan: s.singkatan,
+    singkatanPembantu: s.singkatanPembantu
+  };
+  
+  const conflicts = [];
+  
+  DB.slot.forEach(o => {
+    if (bertindih(targetSlot, o)) {
+      // Check clash types
+      const cPensyarah = (targetSlot.singkatan === o.singkatan) || 
+                          (targetSlot.singkatan !== '-' && targetSlot.singkatan === o.singkatanPembantu) ||
+                          (targetSlot.singkatanPembantu !== '-' && targetSlot.singkatanPembantu === o.singkatan) ||
+                          (targetSlot.singkatanPembantu !== '-' && targetSlot.singkatanPembantu === o.singkatanPembantu);
+      const cKelas = (targetSlot.kelas === o.kelas);
+      const cLokasi = (targetSlot.lokasi === o.lokasi);
+      
+      if (cPensyarah) {
+        conflicts.push(`<b>Pensyarah bertindih:</b> ${targetSlot.singkatan} ${targetSlot.singkatanPembantu !== '-' ? '+ ' + targetSlot.singkatanPembantu : ''} juga mengajar <b>${o.subjek}</b> (${o.kod}) di kelas <b>${o.kelas}</b> pada waktu ini.`);
+      }
+      if (cKelas) {
+        conflicts.push(`<b>Kelas bertindih:</b> Kumpulan <b>${targetSlot.kelas}</b> sudah mempunyai kelas <b>${o.subjek}</b> (${o.kod}) di lokasi <b>${o.lokasi}</b> pada waktu ini.`);
+      }
+      if (cLokasi) {
+        conflicts.push(`<b>Lokasi bertindih:</b> Bilik <b>${targetSlot.lokasi}</b> sedang digunakan untuk subjek <b>${o.subjek}</b> (${o.kod}) kelas <b>${o.kelas}</b> oleh ${o.singkatan}.`);
+      }
+    }
+  });
+  
+  if (conflicts.length > 0) {
+    warningList.innerHTML = conflicts.map(c => `<li>${c}</li>`).join('');
+    warningArea.style.display = 'block';
+  } else {
+    warningArea.style.display = 'none';
+  }
+}
+
+function setupRealTimeClashDetection() {
+  const inputs = ['pilihKod', 'kelas', 'lokasi', 'hari', 'mula', 'tamat'];
+  inputs.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      el.addEventListener('change', periksaPertindihanRealTime);
+      el.addEventListener('input', periksaPertindihanRealTime);
+    }
+  });
+  
+  // Run check initially
+  periksaPertindihanRealTime();
+}
+
+// Start Live Clock
+function startLiveClock() {
+  const clockEl = document.getElementById("live-clock");
+  if (!clockEl) return;
+  
+  window.tickClock = function() {
+      const now = new Date();
+      const options = { 
+          weekday: 'long', 
+          year: 'numeric', 
+          month: 'long', 
+          day: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: true
+      };
+      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+      clockEl.innerHTML = `
+        <span style="background: rgba(6, 182, 212, 0.15); border: 1px solid rgba(6, 182, 212, 0.35); color: #22d3ee; padding: 4px 12px; border-radius: 50px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+            🎓 SESI SEMASA: ${sess}
+        </span>
+        <span style="color: #cbd5e1; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 500;">
+            📅 ${now.toLocaleDateString('ms-MY', options)}
+        </span>
+      `;
+  };
+  
+  window.tickClock();
+  setInterval(window.tickClock, 1000);
+}
+
+// --- STUDENT DIRECTORY MANAGEMENT FUNCTIONS ---
+function renderStudentsAdmin() {
+    const body = document.getElementById("studentsAdminTableBody");
+    if (!body) return;
+    body.innerHTML = "";
+    
+    STUDENTS.forEach((s, idx) => {
+        const tr = document.createElement("tr");
+        tr.className = "stud-row-item-admin";
+        tr.innerHTML = `
+            <td>${idx + 1}</td>
+            <td class="stud-name-admin" style="font-weight: 600;">${s.name}</td>
+            <td class="stud-ic-admin">${s.ic}</td>
+            <td>${s.gender}</td>
+            <td class="stud-address-admin" style="font-size: 0.8rem; color: var(--text-secondary);">${s.address}</td>
+            <td style="text-align: center;">
+                <button onclick="padamPelajarAdmin(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer; background: var(--danger); border: none; color: white; border-radius: 4px;">Padam</button>
+            </td>
+        `;
+        body.appendChild(tr);
+    });
+}
+
+function filterStudentsAdmin() {
+    const query = document.getElementById("searchStudentsAdmin").value.toLowerCase().trim();
+    const rows = document.querySelectorAll(".stud-row-item-admin");
+    
+    rows.forEach(row => {
+        const name = row.querySelector(".stud-name-admin").textContent.toLowerCase();
+        const ic = row.querySelector(".stud-ic-admin").textContent.toLowerCase();
+        const address = row.querySelector(".stud-address-admin").textContent.toLowerCase();
+        
+        if (name.includes(query) || ic.includes(query) || address.includes(query)) {
+            row.style.display = "";
+        } else {
+            row.style.display = "none";
+        }
+    });
+}
+
+function tambahPelajarAdmin(event) {
+    event.preventDefault();
+    const name = document.getElementById("adminStudName").value.trim().toUpperCase();
+    const ic = document.getElementById("adminStudIc").value.trim();
+    const gender = document.getElementById("adminStudGender").value;
+    const address = document.getElementById("adminStudAddress").value.trim();
+    
+    if (STUDENTS.some(s => s.ic === ic)) {
+        alert("Pelajar dengan No. IC ini sudah didaftarkan!");
+        return;
+    }
+    
+    const newStudent = { name, ic, gender, address };
+    STUDENTS.push(newStudent);
+    
+    saveStudentsAdmin();
+    
+    // Reset form
+    document.getElementById("adminStudName").value = "";
+    document.getElementById("adminStudIc").value = "";
+    document.getElementById("adminStudGender").selectedIndex = 0;
+    document.getElementById("adminStudAddress").value = "";
+    
+    alert("Pelajar berjaya didaftarkan!");
+    renderStudentsAdmin();
+}
+
+function padamPelajarAdmin(idx) {
+    tanyaPengesahan("Adakah anda pasti mahu memadam rekod pelajar ini?", () => {
+        STUDENTS.splice(idx, 1);
+        saveStudentsAdmin();
+        renderStudentsAdmin();
+    });
+}
+
+function saveStudentsAdmin() {
+    if (isFirebaseActive()) {
+        firebaseSaveStudents(STUDENTS);
+    } else {
+        localStorage.setItem('kkpapar_students', JSON.stringify(STUDENTS));
+    }
 }
 </script>
 </body>

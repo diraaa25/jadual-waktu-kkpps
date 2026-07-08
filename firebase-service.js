@@ -36,24 +36,24 @@ const SEED_ANNOUNCEMENTS = [
 ];
 
 const SEED_LECTURERS = [
-    { name: "DAILY BINTI TAYOK", shortName: "DT", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "JUSDY BIN JUWAIT", shortName: "JBJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-    { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-    { name: "DEVIANA RADEN", shortName: "DR", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-    { name: "FARHANA BINTI KAMIUS", shortName: "FBK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-    { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-    { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-    { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-    { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-    { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-    { name: "TIFFANY THU PEI YING", shortName: "TPY", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-    { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", designation: "Pegawai Pendidikan Pengajian Tinggi DH42", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" }
+    { name: "DAILY BINTI TAYOK", shortName: "DT", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "JUSDY BIN JUWAIT", shortName: "JBJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+    { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+    { name: "DEVIANA RADEN", shortName: "DR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+    { name: "FARHANA BINTI KAMIUS", shortName: "FBK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+    { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+    { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+    { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+    { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+    { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+    { name: "TIFFANY THU PEI YING", shortName: "TPY", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+    { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" }
 ];
 
 const SEED_STUDENTS = [
@@ -81,11 +81,35 @@ const SEED_STUDENTS = [
     { name: "Chloe Grace Fernandez", gender: "Perempuan", ic: "080214126138", address: "Lot 10-2, Taman Viewland, Phase 3, 88300 Kota Kinabalu, Sabah" },
     { name: "Mohd Shahril bin Asman", gender: "Lelaki", ic: "070908125401", address: "Kampung Tinusa 2, Jalan Airport, 90000 Sandakan, Sabah" },
     { name: "Nur Fatihah binti Jasni", gender: "Perempuan", ic: "090403125602", address: "Lorong 4, Taman Semarak, 91000 Tawau, Sabah" },
-    { name: "Ethaniel Scott Henry", gender: "Lelaki", ic: "080817125887", address: "Kampung Kapa, Jalan Ranau-Tamparuli, 89250 Tamparuli, Sabah" }
+    { name: "Ethaniel Scott Henry", gender: "Lelaki", ic: "080817125887", address: "Kampung Kapa, Jalan Ranau-Tamparuli, 89250 Tamparuli, Sabah" },
+    { name: "Nurul Farhana binti Roslan", gender: "Perempuan", ic: "081105126044", address: "Kampung Kuala Papar, 89600 Papar, Sabah" },
+    { name: "Brandon Fletcher anak Donald", gender: "Lelaki", ic: "090422125335", address: "Taman Segama, Jalan Datuk Salleh Sulong, 88000 Kota Kinabalu, Sabah" },
+    { name: "Siti Khadijah binti Mohd Daud", gender: "Perempuan", ic: "080219125674", address: "Kampung Laut, 89600 Papar, Sabah" },
+    { name: "Muhammad Imran bin Ahmad", gender: "Lelaki", ic: "070930125893", address: "Taman Limbakau, 89600 Papar, Sabah" },
+    { name: "Audryna Olivia Oswald", gender: "Perempuan", ic: "090714126116", address: "Kampung Koidupan, 89500 Penampang, Sabah" },
+    { name: "Jason Ling Sheng Yee", gender: "Lelaki", ic: "080125125907", address: "Taman Indah Jaya, Jalan Lintas, 90000 Sandakan, Sabah" },
+    { name: "Sharifah Nor Syahirah binti Syed Omar", gender: "Perempuan", ic: "081012125556", address: "Kampung Pengalat Besar, 89600 Papar, Sabah" },
+    { name: "Daniel Marcus Junior", gender: "Lelaki", ic: "070511125219", address: "Kampung Nagapas, 89600 Papar, Sabah" },
+    { name: "Chloe Yong Mei Xian", gender: "Perempuan", ic: "090308125438", address: "Lot 8, Taman Khidmat, Bukit Padang, 88300 Kota Kinabalu, Sabah" },
+    { name: "Mohd Amirul bin Azman", gender: "Lelaki", ic: "080614125801", address: "Kampung Meliau, 89150 Kota Belud, Sabah" },
+    { name: "Nur Syafiqah binti Rahman", gender: "Perempuan", ic: "081228126026", address: "Kampung Melalap, 89000 Tenom, Sabah" },
+    { name: "Darren Voo Jin Hern", gender: "Lelaki", ic: "071015125463", address: "Taman Luyang Phase 4, 88300 Kota Kinabalu, Sabah" },
+    { name: "Alyssa Joann Wong", gender: "Perempuan", ic: "090502126248", address: "Kampung Duvanson, Jalan Putatan, 88200 Putatan, Sabah" },
+    { name: "Mohammad Syukri bin Ismail", gender: "Lelaki", ic: "080310125741", address: "Kampung Benoni, 89600 Papar, Sabah" },
+    { name: "Grace Kelly anak Peter", gender: "Perempuan", ic: "070824125912", address: "Kampung Moyog, Jalan Penampang-Tambunan, 89500 Penampang, Sabah" },
+    { name: "Shahrizal bin Mohd Yusuf", gender: "Lelaki", ic: "080117125303", address: "Kampung Beringgis, 89600 Papar, Sabah" },
+    { name: "Nurul Hidayah binti Abdullah", gender: "Perempuan", ic: "090918126342", address: "Kampung Gana, 89600 Papar, Sabah" },
+    { name: "Caleb Joshua Tan", gender: "Lelaki", ic: "080220125997", address: "Taman Seri Maju, Mile 4, North Road, 90000 Sandakan, Sabah" },
+    { name: "Dayangku Fatimah binti Pengiran Hashim", gender: "Perempuan", ic: "081112126084", address: "Kampung Bundusan, 89500 Penampang, Sabah" },
+    { name: "Mohd Danish bin Kamal", gender: "Lelaki", ic: "090605125785", address: "Kampung Buang Sayang, 89600 Papar, Sabah" }
 ];
 
 const SEED_TIMETABLE = {
-    isConfirmed: true,
+    isConfirmed: false,
+    approvalState: "Draft",
+    tpaLecturer: "DT",
+    activeSession: "SESI 1 2026/2027",
+    sessionsList: ["SESI 1 2026/2027", "SESI 2 2026/2027", "SESI 1 2027/2028"],
     subjek: [
         { nama: "DAILY BINTI TAYOK", singkatan: "DT", namaPembantu: "-", singkatanPembantu: "-", subjek: "Pengaturcaraan Web", kod: "STM3012", jam: 3 },
         { nama: "DARNI BINTI MOHAMED YUSOFF", singkatan: "DMY", namaPembantu: "-", singkatanPembantu: "-", subjek: "Pangkalan Data", kod: "STM3113", jam: 3 },

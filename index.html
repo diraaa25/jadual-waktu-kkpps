@@ -53,6 +53,14 @@
                         </svg>
                         Pelajar
                     </button>
+                    <button class="nav-item" data-tab="lokasi">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                            <circle cx="12" cy="10" r="3"></circle>
+                        </svg>
+                        Jadual Lokasi
+                    </button>
                     <button class="nav-item" data-tab="login">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -65,7 +73,7 @@
                 </nav>
             </div>
 
-            <div class="sidebar-footer">
+            <div class="sidebar-footer" style="display: flex; flex-direction: column; gap: 8px;">
                 <button id="theme-toggle" class="theme-switch-btn">
                     <svg class="sun-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
@@ -82,6 +90,9 @@
                     </svg>
                     <span>Mod Gelap</span>
                 </button>
+                <div style="font-size: 0.65rem; color: var(--text-muted); text-align: center; margin-top: 4px;">
+                    Hakcipta &copy; 2026 STM, KKPPS
+                </div>
             </div>
         </aside>
 
@@ -90,8 +101,15 @@
             <!-- App Header -->
             <header class="app-header">
                 <div class="header-title-area">
-                    <h2 id="header-title">Dashboard Utama</h2>
-                    <p id="header-subtitle">Gambaran keseluruhan maklumat Kolej Komuniti Papar</p>
+                    <h2 id="header-title">Laman Utama</h2>
+                    <p id="header-subtitle"><i>"Tidak Penting Di mana Anda Bermula, Yang Penting Di mana Anda berakhir" - KKPPS</i></p>
+                    <div id="live-clock" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                        ⏱️ Memuatkan masa...
+                    </div>
+                </div>
+                <div class="header-logo-area" style="display: flex; align-items: center;">
+                    <img src="Logo_KKPPS.jpeg" alt="Logo Kolej Komuniti Papar"
+                        style="height: 50px; width: auto; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.08));">
                 </div>
             </header>
 
@@ -108,81 +126,107 @@
                                 pensyarah bagi Sijil Teknologi Maklumat (STM) serta Sijil Perkhidmatan Logistik (SLK)
                                 dengan lancar.</p>
                         </div>
+                        <div class="welcome-logo" style="display: flex; align-items: center; margin-left: 1.5rem;">
+                            <img src="Logo_KKPPS.jpeg" alt="Logo Kolej Komuniti"
+                                style="height: 85px; width: auto; object-fit: contain; filter: drop-shadow(0px 4px 8px rgba(0, 0, 0, 0.2));">
+                        </div>
                     </div>
 
-                    <!-- Stats Row -->
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-info">
-                                <span class="stat-label">Jumlah Pensyarah Keseluruhan</span>
-                                <h2 class="stat-value" id="stat-total-pensyarah">18</h2>
+                    <!-- Stats Section (3 di atas, 2 di bawah centralize) -->
+                    <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem; width: 100%;">
+                        <!-- Top Row (3 items) -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; width: 100%;">
+                            <div class="stat-card" style="flex: 1; min-width: 250px; max-width: 380px;">
+                                <div class="stat-info">
+                                    <span class="stat-label">Jumlah Pensyarah Keseluruhan</span>
+                                    <h2 class="stat-value" id="stat-total-pensyarah">18</h2>
+                                </div>
+                                <div class="stat-icon bg-primary-grad">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="9" cy="7" r="4"></circle>
+                                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="stat-icon bg-primary-grad">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                    <circle cx="9" cy="7" r="4"></circle>
-                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                                </svg>
+
+                            <div class="stat-card clickable" onclick="showLecturersModal('STM')" style="flex: 1; min-width: 250px; max-width: 380px;">
+                                <div class="stat-info">
+                                    <span class="stat-label">Pensyarah STM</span>
+                                    <h2 class="stat-value" id="stat-stm-pensyarah">8</h2>
+                                </div>
+                                <div class="stat-icon bg-accent-grad">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                                        <line x1="8" y1="21" x2="16" y2="21"></line>
+                                        <line x1="12" y1="17" x2="12" y2="21"></line>
+                                    </svg>
+                                </div>
+                            </div>
+
+                            <div class="stat-card clickable" onclick="showLecturersModal('SLK')" style="flex: 1; min-width: 250px; max-width: 380px;">
+                                <div class="stat-info">
+                                    <span class="stat-label">Pensyarah SLK</span>
+                                    <h2 class="stat-value" id="stat-slk-pensyarah">6</h2>
+                                </div>
+                                <div class="stat-icon bg-warning-grad">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <rect x="1" y="3" width="15" height="13" rx="2" ry="2"></rect>
+                                        <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
+                                        <circle cx="5.5" cy="18.5" r="2.5"></circle>
+                                        <circle cx="18.5" cy="18.5" r="2.5"></circle>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="stat-card clickable" onclick="showLecturersModal('STM')">
-                            <div class="stat-info">
-                                <span class="stat-label">Pensyarah STM</span>
-                                <h2 class="stat-value" id="stat-stm-pensyarah">8</h2>
+                        <!-- Bottom Row (2 items, centralized) -->
+                        <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; width: 100%;">
+                            <div class="stat-card clickable" onclick="showLecturersModal('UPA')" style="flex: 1; min-width: 250px; max-width: 380px;">
+                                <div class="stat-info">
+                                    <span class="stat-label">Pensyarah UPA</span>
+                                    <h2 class="stat-value" id="stat-upa-pensyarah">4</h2>
+                                </div>
+                                <div class="stat-icon bg-purple-grad">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                                        <path d="M2 17l10 5 10-5"></path>
+                                        <path d="M2 12l10 5 10-5"></path>
+                                    </svg>
+                                </div>
                             </div>
-                            <div class="stat-icon bg-accent-grad">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-                                    <line x1="8" y1="21" x2="16" y2="21"></line>
-                                    <line x1="12" y1="17" x2="12" y2="21"></line>
-                                </svg>
-                            </div>
-                        </div>
 
-                        <div class="stat-card clickable" onclick="showLecturersModal('SLK')">
-                            <div class="stat-info">
-                                <span class="stat-label">Pensyarah SLK</span>
-                                <h2 class="stat-value" id="stat-slk-pensyarah">6</h2>
-                            </div>
-                            <div class="stat-icon bg-warning-grad">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <rect x="1" y="3" width="15" height="13" rx="2" ry="2"></rect>
-                                    <polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon>
-                                    <circle cx="5.5" cy="18.5" r="2.5"></circle>
-                                    <circle cx="18.5" cy="18.5" r="2.5"></circle>
-                                </svg>
-                            </div>
-                        </div>
-
-                        <div class="stat-card">
-                            <div class="stat-info">
-                                <span class="stat-label">Jumlah Pelajar</span>
-                                <h2 class="stat-value" id="stat-total-pelajar">25</h2>
-                            </div>
-                            <div class="stat-icon bg-danger-grad">
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
-                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
-                                    stroke-linejoin="round">
-                                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                                    <polyline points="14 2 14 8 20 8"></polyline>
-                                    <line x1="16" y1="13" x2="8" y2="13"></line>
-                                    <line x1="16" y1="17" x2="8" y2="17"></line>
-                                    <polyline points="10 9 9 9 8 9"></polyline>
-                                </svg>
+                            <div class="stat-card" style="flex: 1; min-width: 250px; max-width: 380px;">
+                                <div class="stat-info">
+                                    <span class="stat-label">Jumlah Pelajar</span>
+                                    <h2 class="stat-value" id="stat-total-pelajar">25</h2>
+                                </div>
+                                <div class="stat-icon bg-danger-grad">
+                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                        stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                        stroke-linejoin="round">
+                                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                        <polyline points="14 2 14 8 20 8"></polyline>
+                                        <line x1="16" y1="13" x2="8" y2="13"></line>
+                                        <line x1="16" y1="17" x2="8" y2="17"></line>
+                                        <polyline points="10 9 9 9 8 9"></polyline>
+                                    </svg>
+                                </div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Announcements Card (Full-width) -->
-                    <div class="card" style="width: 100%;">
+                    <div class="card" style="width: 100%; border: 2px solid #06b6d4;">
                         <div class="card-header">
                             <div class="card-title">
                                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
@@ -258,6 +302,55 @@
                     </div>
                 </div>
 
+                <!-- 2B. LOKASI TAB -->
+                <div class="tab-pane" id="tab-lokasi">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="card-title">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none"
+                                    stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                    stroke-linejoin="round" style="width:22px;height:22px;color:var(--primary)">
+                                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                                    <circle cx="12" cy="10" r="3"></circle>
+                                </svg>
+                                <span>Semak Jadual Mengikut Lokasi / Bilik</span>
+                            </div>
+                        </div>
+
+                        <!-- Unverified/Draft State Placeholder -->
+                        <div id="lokasi-unverified-state" style="display: none; padding: 3rem 1.5rem; text-align: center; max-width: 500px; margin: 0 auto;">
+                            <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
+                            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">Jadual Waktu Belum Diterbitkan</h3>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
+                                Jadual waktu bagi sesi pengajian ini masih di peringkat deraf penyediaan atau sedang menunggu pengesahan kelulusan daripada Timbalan Pengarah Akademik (TPA).
+                            </p>
+                        </div>
+
+                        <!-- Selector Controls -->
+                        <div id="lokasi-view-content">
+                            <div class="filter-bar">
+                                <div style="flex: 1; min-width: 250px;">
+                                    <label for="pilih-lokasi"
+                                        style="display:block; font-weight:600; font-size:0.85rem; margin-bottom:8px; color: var(--text-primary);">Pilih
+                                        Makmal / Bilik Kuliah:</label>
+                                    <select id="pilih-lokasi" onchange="tukarLokasi()" class="form-select"
+                                        style="width: 100%; max-width: 400px; background: var(--surface); color: var(--text-primary); border: 1px solid var(--surface-border); border-radius: var(--border-radius-sm); padding: 8px;">
+                                        <!-- Options populated dynamically -->
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Location schedule table wrap -->
+                            <div class="table-responsive"
+                                style="margin-top: 1.5rem; border: 1px solid var(--surface-border); border-radius: var(--border-radius-md); overflow-x: auto;">
+                                <div id="lokasi-grid-wrap" style="min-width: 800px;">
+                                    <!-- Grid generated dynamically -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- 3. LOGIN TAB -->
                 <div class="tab-pane" id="tab-login">
                     <div class="login-container">
@@ -292,7 +385,15 @@
                                 </div>
                                 <div class="form-group">
                                     <label for="login-password">Kata Laluan</label>
-                                    <input type="password" id="login-password" required placeholder="••••••••">
+                                    <div style="position: relative; display: flex; align-items: center; width: 100%;">
+                                        <input type="password" id="login-password" required placeholder="••••••••" style="width: 100%; padding-right: 40px;">
+                                        <button type="button" id="toggle-login-password" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 2;">
+                                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                                <circle cx="12" cy="12" r="3"></circle>
+                                            </svg>
+                                        </button>
+                                    </div>
                                 </div>
                                 <div class="form-group"
                                     style="display:flex; align-items:center; gap:0.5rem; margin-top:1.5rem;">
@@ -331,14 +432,16 @@
         appendStatusBadge('.sidebar-footer');
     </script>
     <script src="app.js"></script>
-    
+
     <!-- Modal Senarai Pensyarah (STM/SLK) -->
     <div id="modalLecturers" class="modal-overlay" style="display: none;">
         <div class="modal-card">
             <div class="modal-header">
                 <h3 id="modalLecturersTitle">Senarai Pensyarah</h3>
                 <button class="modal-close-btn" onclick="tutupModalLecturers()">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                        style="width: 20px; height: 20px;">
                         <line x1="18" y1="6" x2="6" y2="18"></line>
                         <line x1="6" y1="6" x2="18" y2="18"></line>
                     </svg>
@@ -355,24 +458,24 @@
     <script>
         function showLecturersModal(programCode) {
             const defaultLecturers = [
-                { name: "DAILY BINTI TAYOK", shortName: "DT", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM" },
-                { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM" },
-                { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM" },
-                { name: "JUSDY BIN JUWAIT", shortName: "JBJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM" },
-                { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM" },
-                { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM" },
-                { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM" },
-                { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM" },
-                { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK" },
-                { name: "DEVIANA RADEN", shortName: "DR", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK" },
-                { name: "FARHANA BINTI KAMIUS", shortName: "FBK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK" },
-                { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK" },
-                { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK" },
-                { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK" },
-                { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA" },
-                { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA" },
-                { name: "TIFFANY THU PEI YING", shortName: "TPY", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA" },
-                { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", designation: "Pegawai Pendidikan Pengajian Tinggi DH42", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA" }
+                { name: "DAILY BINTI TAYOK", shortName: "DT", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM" },
+                { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM" },
+                { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM" },
+                { name: "JUSDY BIN JUWAIT", shortName: "JBJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM" },
+                { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM" },
+                { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM" },
+                { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM" },
+                { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM" },
+                { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK" },
+                { name: "DEVIANA RADEN", shortName: "DR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK" },
+                { name: "FARHANA BINTI KAMIUS", shortName: "FBK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK" },
+                { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK" },
+                { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK" },
+                { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK" },
+                { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA" },
+                { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA" },
+                { name: "TIFFANY THU PEI YING", shortName: "TPY", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA" },
+                { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA" }
             ];
 
             let LECTURERS = [];
@@ -386,12 +489,15 @@
             const listEl = document.getElementById("modalLecturersList");
 
             titleEl.textContent = `Senarai Pensyarah ${programCode} (${list.length})`;
-            
+
             listEl.innerHTML = list.map(l => {
                 const avatarLetters = l.shortName || l.short || "L";
+                const avatarHtml = l.photo 
+                    ? `<img src="${l.photo}" class="lecturer-avatar" style="object-fit: cover; background: none;">`
+                    : `<div class="lecturer-avatar">${avatarLetters}</div>`;
                 return `
                     <div class="lecturer-modal-item">
-                        <div class="lecturer-avatar">${avatarLetters}</div>
+                        ${avatarHtml}
                         <div class="lecturer-modal-info">
                             <h4>${l.name}</h4>
                             <p style="font-weight: 600; color: var(--text-primary); margin-bottom: 2px;">${l.designation}</p>
@@ -421,6 +527,12 @@
             }
         });
     </script>
+
+    <!-- Print Footer -->
+    <div class="print-footer" style="display:none; text-align: center; font-size: 0.7rem; border-top: 1px solid #cbd5e1; padding-top: 8px; margin-top: 30px; font-weight: 600;">
+        <div class="print-footer-session">JADUAL DISAHKAN BAGI SESI _________</div>
+        <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
+    </div>
 </body>
 
 </html>

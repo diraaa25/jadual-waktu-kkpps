@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ms" class="">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,7 +8,8 @@
     <!-- Google Fonts Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <!-- Tailwind CSS Browser Tool -->
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <style type="text/tailwindcss">
@@ -22,17 +24,25 @@
             body.print-location #kawasanLokasi, body.print-location #kawasanLokasi * { visibility: visible; }
             body.print-location #kawasanLokasi { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
+            .print-footer { display: block !important; }
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-200">
+
+<body
+    class="bg-slate-50 text-slate-900 dark:bg-slate-950 dark:text-slate-100 min-h-screen transition-colors duration-200">
 
     <!-- Header Navigation -->
-    <header class="bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 shadow-sm no-print transition-colors duration-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
+    <header
+        class="bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 shadow-sm no-print transition-colors duration-200">
+        <div
+            class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
-                <div class="bg-teal-500/10 p-2.5 rounded-xl border border-teal-500/20 dark:bg-white/5 dark:border-white/10">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-teal-600 dark:text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <div
+                    class="bg-teal-500/10 p-2.5 rounded-xl border border-teal-500/20 dark:bg-white/5 dark:border-white/10">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-teal-600 dark:text-teal-400"
+                        viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
                         <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
                     </svg>
@@ -40,12 +50,17 @@
                 <div>
                     <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">PORTAL PENSYARAH</h1>
                     <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Sistem Semakan Jadual Waktu & Hebahan Akademik</p>
+                    <div id="live-clock" class="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">
+                        ⏱️ Memuatkan masa...
+                    </div>
                 </div>
             </div>
             <div class="flex items-center gap-3">
                 <div id="firebase-status-badge-container"></div>
-                <a href="index.html" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/20 text-slate-700 dark:text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <a href="index.html"
+                    class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/20 text-slate-700 dark:text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
@@ -59,93 +74,167 @@
 
     <!-- Main Content Container -->
     <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        
-        <!-- Unverified / Not Confirmed State Placeholder -->
-        <div id="unverified-state" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-12 text-center max-w-xl mx-auto mt-12 hidden no-print">
-            <div class="w-16 h-16 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100 dark:border-amber-900/40">
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-500" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-                    <line x1="12" y1="9" x2="12" y2="13"></line>
-                    <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                </svg>
-            </div>
-            <h3 class="text-lg font-bold text-slate-800 dark:text-white">Jadual Belum Diterbitkan</h3>
-            <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
-                Jadual waktu bagi semester ini sedang dikemas kini oleh pihak pentadbir dan **belum disahkan/diterbitkan**. Sila semak semula seketika lagi untuk melihat jadual peribadi dan lokasi anda.
-            </p>
-        </div>
-        
+
         <!-- Main Content Area -->
         <div id="contentPortal" class="block">
-            
+
             <!-- Controls & Profile Selector Display -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 no-print">
                 <!-- Profile Status Card -->
-                <div class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col justify-center">
-                    <div class="flex items-center gap-3">
-                        <div class="bg-teal-500/10 p-3 rounded-xl border border-teal-500/20">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-6 h-6 text-teal-600 dark:text-teal-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
+                <div id="profileCard"
+                    class="md:col-span-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div class="flex items-center gap-4">
+                        <!-- Profile Image Container -->
+                        <div class="relative w-16 h-16 flex-shrink-0">
+                            <img id="profileImage" src="" alt="Avatar"
+                                class="w-full h-full object-cover rounded-full border-2 border-teal-500/30 hidden">
+                            <div id="avatarFallback"
+                                class="w-full h-full bg-teal-500/10 rounded-full border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 font-extrabold text-xl">
+                                -
+                            </div>
                         </div>
                         <div>
-                            <span class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Akaun Pensyarah Log Masuk</span>
-                            <h2 class="text-lg font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mt-0.5" id="labelActiveLecturer">
+                            <span
+                                class="block text-xs font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider">Akaun
+                                Pensyarah Log Masuk</span>
+                            <h2 class="text-lg font-extrabold text-slate-800 dark:text-white flex items-center gap-2 mt-0.5"
+                                id="labelActiveLecturer">
                                 -
                             </h2>
                         </div>
                     </div>
+                    <!-- Action Buttons -->
+                    <div class="flex items-center gap-2.5">
+                        <button onclick="bukaModalProfil()"
+                            class="bg-teal-50 hover:bg-teal-100 text-teal-700 dark:bg-teal-950/30 dark:text-teal-300 font-bold py-2 px-4 rounded-xl flex items-center gap-2 border border-teal-200 dark:border-teal-900/30 transition shadow-sm text-xs cursor-pointer">
+                            ⚙️ Kemaskini Profil & Kata Laluan
+                        </button>
+                    </div>
                 </div>
-                
+
                 <!-- Quick Actions -->
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col justify-center gap-3">
-                    <button onclick="cetakJadualPeribadi()" class="w-full bg-teal-700 hover:bg-teal-600 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 transition shadow-sm cursor-pointer text-xs">
+                <div id="quickActionsArea"
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 flex flex-col justify-center gap-3 no-print">
+                    <button onclick="cetakJadualPeribadi()"
+                        class="w-full bg-teal-700 hover:bg-teal-600 text-white font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition shadow-sm cursor-pointer text-xs">
                         🖨️ Cetak Jadual Peribadi
                     </button>
-                    <button onclick="cetakJadualLokasi()" class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold py-2.5 px-4 rounded-xl flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition shadow-sm cursor-pointer text-xs">
+                    <button onclick="muatTurunPDFPeribadi()"
+                        class="w-full bg-teal-50 hover:bg-teal-100 text-teal-800 dark:bg-teal-950/20 dark:text-teal-300 font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition shadow-sm cursor-pointer text-xs border border-teal-200 dark:border-teal-900/30">
+                        📥 PDF Jadual Peribadi
+                    </button>
+                    <button onclick="cetakJadualLokasi()"
+                        class="w-full bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-800 text-slate-800 dark:text-slate-200 font-semibold py-2 px-3 rounded-xl flex items-center justify-center gap-2 border border-slate-200 dark:border-slate-700 transition shadow-sm cursor-pointer text-xs">
                         🏫 Cetak Jadual Lokasi
                     </button>
-                </div>      </div>
+                    <button onclick="muatTurunPDFLokasi()"
+                        class="w-full bg-blue-50 hover:bg-blue-100 text-blue-800 dark:bg-blue-950/20 dark:text-blue-300 font-bold py-2 px-3 rounded-xl flex items-center justify-center gap-2 transition shadow-sm cursor-pointer text-xs border border-blue-200 dark:border-blue-900/30">
+                        📥 PDF Jadual Lokasi
+                    </button>
+                </div>
+            </div>
+
+            <!-- TPA Approval Alert/Action Card (Visible only to designated TPA) -->
+            <div id="tpaApprovalCard" class="hidden no-print bg-amber-50 dark:bg-amber-950/20 border-2 border-amber-300 dark:border-amber-900/40 rounded-2xl p-6 mb-8 shadow-sm">
+                <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                    <div class="flex items-start gap-3">
+                        <span class="text-2xl mt-0.5">⚖️</span>
+                        <div>
+                            <h3 class="font-extrabold text-slate-800 dark:text-white text-base">Tindakan Kelulusan Timbalan Pengarah Akademik (TPA)</h3>
+                            <p class="text-xs text-slate-600 dark:text-slate-400 mt-1 leading-relaxed">
+                                Deraf jadual waktu baru telah dihantar untuk semakan kelulusan anda. Sila semak jadual di bawah sebelum mengesahkan penerbitan.
+                            </p>
+                            <div class="mt-2 text-xs font-bold flex gap-3">
+                                <span>Status Semasa: <span id="tpaStatusBadge" class="px-2.5 py-0.5 rounded-full font-extrabold text-[10px]">Awaiting</span></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div id="tpaActionButtons" class="flex items-center gap-3 self-end md:self-center">
+                        <button onclick="luluskanJadualTpa()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-sm cursor-pointer">
+                            ✓ Lulus & Terbit Jadual
+                        </button>
+                        <button onclick="tolakkanJadualTpa()" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2.5 px-4 rounded-xl text-xs transition shadow-sm cursor-pointer">
+                            ✗ Tolak & Revert Deraf
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Unverified / Not Confirmed State Placeholder -->
+            <div id="unverified-state"
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-12 text-center max-w-xl mx-auto mb-8 hidden no-print">
+                <div
+                    class="w-16 h-16 bg-amber-50 dark:bg-amber-950/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-amber-100 dark:border-amber-900/40">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-amber-500" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
+                        <path
+                            d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z">
+                        </path>
+                        <line x1="12" y1="9" x2="12" y2="13"></line>
+                        <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                    </svg>
+                </div>
+                <h3 class="text-lg font-bold text-slate-800 dark:text-white">Jadual Belum Diterbitkan</h3>
+                <p class="text-sm text-slate-500 dark:text-slate-400 mt-2 leading-relaxed">
+                    Jadual waktu bagi semester ini sedang dikemas kini oleh pihak pentadbir dan **belum
+                    disahkan/diterbitkan**. Sila semak semula seketika lagi untuk melihat jadual peribadi dan lokasi
+                    anda.
+                </p>
+            </div>
 
             <!-- Tab 1: Personal Teaching Schedule -->
             <div id="printable-area" class="mb-8">
                 <!-- Timetable Header Card -->
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                <div
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 📅 JADUAL MENGAJAR MINGGUAN
                             </h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Rekod slot tugasan mengajar pensyarah utama & pensyarah pembantu</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Rekod slot tugasan mengajar
+                                pensyarah utama & pensyarah pembantu</p>
                         </div>
-                        <span class="bg-teal-600/10 text-teal-700 dark:bg-teal-400/20 dark:text-teal-300 font-extrabold text-xs px-4 py-1.5 rounded-full border border-teal-500/20" id="labelPensyarahTerpilih">
+                        <span
+                            class="bg-teal-600/10 text-teal-700 dark:bg-teal-400/20 dark:text-teal-300 font-extrabold text-xs px-4 py-1.5 rounded-full border border-teal-500/20"
+                            id="labelPensyarahTerpilih">
                             -
                         </span>
                     </div>
                 </div>
 
                 <!-- Timetable Grid Table Container -->
-                <div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
+                <div
+                    class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
                     <div class="min-w-[800px]" id="jadualGridWrap">
                         <!-- Dynamic Grid generated via JavaScript -->
                     </div>
+                </div>
+
+                <!-- Print Footer -->
+                <div class="print-footer mt-4 text-center border-t border-slate-200 pt-3 text-[10px] text-slate-500 font-semibold" style="display:none;">
+                    <div class="print-footer-session">JADUAL DISAHKAN BAGI SESI _________</div>
+                    <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
                 </div>
             </div>
 
             <!-- Tab 2: Location Timetable Section -->
             <div class="mb-8" id="kawasanLokasi">
                 <!-- Timetable Header Card -->
-                <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                <div
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 🏫 JADUAL PENGGUNAAN LOKASI / BILIK
                             </h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Status penggunaan bilik darjah dan makmal komputer Kolej Komuniti Papar</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Status penggunaan bilik darjah
+                                dan makmal komputer Kolej Komuniti Papar</p>
                         </div>
                         <div class="w-full sm:w-72 no-print">
-                            <select id="pilihLokasi" onchange="tukarLokasi()" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
+                            <select id="pilihLokasi" onchange="tukarLokasi()"
+                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
                                 <!-- Populated dynamically -->
                             </select>
                         </div>
@@ -153,17 +242,28 @@
                 </div>
 
                 <!-- Timetable Grid Table Container -->
-                <div class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
+                <div
+                    class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
                     <div class="min-w-[800px]" id="lokasiGridWrap">
                         <!-- Dynamic Location Grid generated via JavaScript -->
                     </div>
                 </div>
+
+                <!-- Print Footer -->
+                <div class="print-footer mt-4 text-center border-t border-slate-200 pt-3 text-[10px] text-slate-500 font-semibold" style="display:none;">
+                    <div class="print-footer-session">JADUAL DISAHKAN BAGI SESI _________</div>
+                    <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
+                </div>
             </div>
 
             <!-- Announcement Management Card (Ubah/Tambah Hebahan) -->
-            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 mb-8 no-print">
-                <h3 class="font-extrabold text-lg text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-teal-600" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <div
+                class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 mb-8 no-print">
+                <h3
+                    class="font-extrabold text-lg text-slate-900 dark:text-white mb-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-teal-600" viewBox="0 0 24 24"
+                        fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
+                        stroke-linejoin="round">
                         <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
                         <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
                     </svg>
@@ -174,8 +274,10 @@
                 <form id="annForm" onsubmit="simpanHebahan(event)" class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
                     <!-- Category -->
                     <div>
-                        <label for="annCategory" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kategori</label>
-                        <select id="annCategory" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
+                        <label for="annCategory"
+                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kategori</label>
+                        <select id="annCategory" required
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
                             <option value="Pentadbiran Kolej">Pentadbiran Kolej</option>
                             <option value="Penyelaras STM">Penyelaras STM</option>
                             <option value="Penyelaras SLK">Penyelaras SLK</option>
@@ -185,36 +287,71 @@
                     </div>
                     <!-- Date -->
                     <div>
-                        <label for="annDate" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tarikh / Waktu</label>
-                        <input type="text" id="annDate" placeholder="cth: Hari Ini / 30 Jun 2026" required value="Hari Ini" class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                        <label for="annDate"
+                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tarikh
+                            / Waktu</label>
+                        <input type="text" id="annDate" placeholder="cth: Hari Ini / 30 Jun 2026" required
+                            value="Hari Ini"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                    </div>
+                    <!-- Priority -->
+                    <div>
+                        <label for="annPriority"
+                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Keutamaan</label>
+                        <select id="annPriority" required
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
+                            <option value="Biasa">Biasa</option>
+                            <option value="Penting">Penting</option>
+                            <option value="Segera">Segera</option>
+                        </select>
+                    </div>
+                    <!-- Expiry Date -->
+                    <div>
+                        <label for="annExpiryDate"
+                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tarikh
+                            Luput (Opsional)</label>
+                        <input type="date" id="annExpiryDate"
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
                     </div>
                     <!-- Title -->
-                    <div class="md:col-span-2">
-                        <label for="annTitle" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tajuk Hebahan</label>
-                        <input type="text" id="annTitle" placeholder="cth: Taklimat Penggunaan Portal Baru" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                    <div class="md:col-span-4">
+                        <label for="annTitle"
+                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tajuk
+                            Hebahan</label>
+                        <input type="text" id="annTitle" placeholder="cth: Taklimat Penggunaan Portal Baru" required
+                            class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
                     </div>
                     <!-- Content Description -->
                     <div class="md:col-span-4">
-                        <label for="annDesc" class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kandungan / Butiran Hebahan</label>
-                        <textarea id="annDesc" rows="3" placeholder="Sila masukkan perincian penuh peringatan atau maklumat hebahan akademik..." required class="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs"></textarea>
+                        <label for="annDesc"
+                            class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Kandungan
+                            / Butiran Hebahan</label>
+                        <textarea id="annDesc" rows="3"
+                            placeholder="Sila masukkan perincian penuh peringatan atau maklumat hebahan akademik..."
+                            required
+                            class="w-full p-3 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs"></textarea>
                     </div>
                     <!-- Actions -->
                     <div class="md:col-span-4 flex justify-end gap-3 pt-2">
                         <input type="hidden" id="editIndex" value="-1">
-                        <button type="button" id="btnCancelEdit" onclick="cancelEdit()" class="hidden bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold px-4 py-2 rounded-xl transition text-xs">
+                        <button type="button" id="btnCancelEdit" onclick="cancelEdit()"
+                            class="hidden bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-semibold px-4 py-2 rounded-xl transition text-xs">
                             Batal
                         </button>
-                        <button type="submit" id="btnSubmitAnn" class="bg-teal-700 hover:bg-teal-600 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-xs">
+                        <button type="submit" id="btnSubmitAnn"
+                            class="bg-teal-700 hover:bg-teal-600 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-xs">
                             Tambah Hebahan
                         </button>
                     </div>
                 </form>
 
                 <!-- Table list of announcements -->
-                <div class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
+                <div
+                    class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
                     <table class="w-full text-left text-xs">
                         <thead>
-                            <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
+                            <tr
+                                class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold border-b border-slate-200 dark:border-slate-700">
                                 <th class="p-3 w-1/5">Kategori & Tarikh</th>
                                 <th class="p-3 w-1/4">Tajuk</th>
                                 <th class="p-3 w-2/5">Kandungan</th>
@@ -227,19 +364,110 @@
                     </table>
                 </div>
             </div>
-            
+
         </div>
 
     </main>
 
+    <!-- System Footer -->
+    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800 mt-12 no-print">
+        Hakcipta &copy; 2026 STM, KKPPS
+    </footer>
+
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none no-print"></div>
+
+    <!-- Modal Urus Profil & Keselamatan -->
+    <div id="modalProfil"
+        class="fixed inset-0 bg-slate-950/60 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50 no-print">
+        <div
+            class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 w-full max-w-md rounded-2xl shadow-2xl overflow-hidden transform transition-all duration-300">
+            <!-- Header Modal -->
+            <div
+                class="bg-gradient-to-r from-teal-800 to-teal-950 text-white px-6 py-4 flex justify-between items-center">
+                <div>
+                    <h3 class="text-lg font-bold">Urus Profil & Keselamatan</h3>
+                    <p class="text-xs text-teal-200">Kemas kini foto profil dan kata laluan log masuk anda</p>
+                </div>
+                <button onclick="tutupModalProfil()"
+                    class="text-white/70 hover:text-white bg-white/10 hover:bg-white/20 p-1.5 rounded-lg transition outline-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-5.5 h-5.5" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Body Modal -->
+            <div class="p-6 space-y-6">
+                <!-- Profile Image Action Section -->
+                <div>
+                    <label
+                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-3">Foto
+                        Profil</label>
+                    <div class="flex items-center gap-4">
+                        <img id="modalProfilePreview" src="" alt="Preview"
+                            class="w-16 h-16 object-cover rounded-full border-2 border-teal-500/30 hidden">
+                        <div id="modalAvatarFallback"
+                            class="w-16 h-16 bg-teal-500/10 rounded-full border border-teal-500/20 flex items-center justify-center text-teal-600 dark:text-teal-400 font-extrabold text-xl flex-shrink-0">
+                            -
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <input type="file" id="fileProfileImage" accept="image/*" class="hidden"
+                                onchange="prosesGambarProfil(event)">
+                            <button onclick="document.getElementById('fileProfileImage').click()"
+                                class="bg-teal-600 hover:bg-teal-700 text-white font-bold py-1.5 px-3 rounded-lg text-xs transition">
+                                📷 Muat Naik Foto
+                            </button>
+                            <button onclick="padamGambarProfil()" id="btnRemovePhoto"
+                                class="bg-red-50 hover:bg-red-100 text-red-600 dark:bg-red-950/30 dark:text-red-400 font-bold py-1.5 px-3 rounded-lg text-xs border border-red-200 dark:border-red-900/30 transition hidden">
+                                🗑️ Padam Foto
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Password Action Section -->
+                <div class="border-t border-slate-100 dark:border-slate-800 pt-4">
+                    <label
+                        class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tukar
+                        Kata Laluan Baru</label>
+                    <div class="space-y-3">
+                        <div>
+                            <input type="password" id="inputNewPassword" placeholder="Masukkan kata laluan baru..."
+                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                        </div>
+                        <div>
+                            <input type="password" id="inputConfirmPassword" placeholder="Sahkan kata laluan baru..."
+                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer Modal -->
+            <div
+                class="p-6 bg-slate-50 dark:bg-slate-900/40 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+                <button onclick="tutupModalProfil()"
+                    class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2 rounded-xl text-xs transition">
+                    Batal
+                </button>
+                <button onclick="simpanProfilUbahsuai()"
+                    class="bg-teal-700 hover:bg-teal-600 text-white font-bold px-5 py-2 rounded-xl text-xs transition shadow-sm">
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- Firebase Compat SDK and services -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="firebase-service.js"></script>
+    <!-- html2pdf.js library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script>
         appendStatusBadge('#firebase-status-badge-container');
     </script>
@@ -252,24 +480,24 @@
         let LECTURERS = JSON.parse(localStorage.getItem('kkpapar_lecturers'));
         if (!LECTURERS) {
             const INITIAL_LECTS = [
-                { name: "DAILY BINTI TAYOK", shortName: "DT", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "DEVIANA RADEN", shortName: "DR", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "FARHANA BINTI KAMIUS", shortName: "FBK", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "JUSDY BIN JUWAIT", shortName: "JBJ", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH29", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "TIFFANY THU PEI YING", shortName: "TPY", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH41", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH42", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH44", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" }
+                { name: "DAILY BINTI TAYOK", shortName: "DT", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "DEVIANA RADEN", shortName: "DR", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "FARHANA BINTI KAMIUS", shortName: "FBK", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "JUSDY BIN JUWAIT", shortName: "JBJ", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
+                { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
+                { name: "TIFFANY THU PEI YING", shortName: "TPY", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
+                { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" }
             ];
             LECTURERS = INITIAL_LECTS;
             localStorage.setItem('kkpapar_lecturers', JSON.stringify(LECTURERS));
@@ -304,6 +532,7 @@
         document.addEventListener("DOMContentLoaded", () => {
             syncTheme();
             initData();
+            startLiveClock();
             if (!isFirebaseActive()) {
                 setupLecturerProfile();
                 setupLocationDropdown();
@@ -329,32 +558,86 @@
 
         // Print Functions
         function cetakJadualPeribadi() {
+            updatePrintFooters();
+            const footers = document.querySelectorAll("#printable-area .print-footer");
+            footers.forEach(f => f.style.display = "block");
+
             document.body.classList.add("print-personal");
             document.body.classList.remove("print-location");
             window.print();
+
+            footers.forEach(f => f.style.display = "none");
         }
 
         function cetakJadualLokasi() {
+            updatePrintFooters();
+            const footers = document.querySelectorAll("#kawasanLokasi .print-footer");
+            footers.forEach(f => f.style.display = "block");
+
             document.body.classList.add("print-location");
             document.body.classList.remove("print-personal");
             window.print();
+
+            footers.forEach(f => f.style.display = "none");
+        }
+
+        function muatTurunPDFPeribadi() {
+            const element = document.getElementById("printable-area");
+            if (!element) return;
+
+            updatePrintFooters();
+            const footers = element.querySelectorAll(".print-footer");
+            footers.forEach(f => f.style.display = "block");
+
+            const opt = {
+                margin: 10,
+                filename: `Jadual_Mengajar_${activeLecturer}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            showToast("Menjana fail PDF jadual peribadi, sila tunggu...", "success");
+            html2pdf().set(opt).from(element).save().then(() => {
+                footers.forEach(f => f.style.display = "none");
+            });
+        }
+
+        function muatTurunPDFLokasi() {
+            const element = document.getElementById("kawasanLokasi");
+            if (!element) return;
+
+            updatePrintFooters();
+            const footers = element.querySelectorAll(".print-footer");
+            footers.forEach(f => f.style.display = "block");
+
+            const opt = {
+                margin: 10,
+                filename: `Jadual_Lokasi_${activeLocation.replace(/\s+/g, '_')}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, logging: false },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'landscape' }
+            };
+
+            showToast("Menjana fail PDF jadual lokasi, sila tunggu...", "success");
+            html2pdf().set(opt).from(element).save().then(() => {
+                footers.forEach(f => f.style.display = "none");
+            });
         }
 
         // Initialize databases
         function initData() {
             if (isFirebaseActive()) {
                 firebaseWatchTimetable(data => {
-                    if (data) {
-                        DB = data;
-                        checkPublishState();
-                        renderAll();
-                    }
+                    DB = data || { subjek: [], slot: [], isConfirmed: false };
+                    DB.slot = DB.slot || [];
+                    DB.subjek = DB.subjek || [];
+                    checkPublishState();
+                    renderAll();
                 });
                 firebaseWatchAnnouncements(data => {
-                    if (data) {
-                        ANNOUNCEMENTS = data;
-                        renderAnnouncements();
-                    }
+                    ANNOUNCEMENTS = data || [];
+                    renderAnnouncements();
                 });
                 firebaseWatchLecturers(data => {
                     if (data) {
@@ -366,6 +649,8 @@
                 });
             } else {
                 DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
+                DB.slot = DB.slot || [];
+                DB.subjek = DB.subjek || [];
                 ANNOUNCEMENTS = JSON.parse(localStorage.getItem(ANN_KEY) || '[]');
                 LECTURERS = JSON.parse(localStorage.getItem('kkpapar_lecturers')) || [];
                 LECTURERS = LECTURERS.map(l => ({ ...l, short: l.shortName || l.short }));
@@ -385,10 +670,26 @@
 
             const lecObj = LECTURERS.find(l => l.short === activeLecturer);
             const label = document.getElementById("labelActiveLecturer");
+            const profileImg = document.getElementById("profileImage");
+            const avatarFallback = document.getElementById("avatarFallback");
+
             if (lecObj) {
                 label.innerHTML = `👤 ${lecObj.name} <span class="bg-teal-600/10 text-teal-600 dark:text-teal-400 px-2.5 py-0.5 rounded-full font-bold ml-1 text-xs border border-teal-500/20">${lecObj.short}</span>`;
+
+                if (lecObj.photo) {
+                    profileImg.src = lecObj.photo;
+                    profileImg.classList.remove("hidden");
+                    avatarFallback.classList.add("hidden");
+                } else {
+                    profileImg.classList.add("hidden");
+                    avatarFallback.classList.remove("hidden");
+                    avatarFallback.textContent = lecObj.short ? lecObj.short.substring(0, 2).toUpperCase() : "P";
+                }
             } else {
                 label.innerHTML = `👤 ${activeLecturer}`;
+                profileImg.classList.add("hidden");
+                avatarFallback.classList.remove("hidden");
+                avatarFallback.textContent = "P";
             }
         }
 
@@ -412,17 +713,97 @@
         }
 
         // Verify if admin has confirmed/published schedule
+        function saveDB() {
+            if (isFirebaseActive()) {
+                firebaseSaveTimetable(DB);
+            } else {
+                localStorage.setItem(KEY, JSON.stringify(DB));
+            }
+        }
+
+        function luluskanJadualTpa() {
+            window.tanyaPengesahan("Adakah anda pasti mahu meluluskan dan menerbitkan jadual waktu ini secara rasmi?", () => {
+                DB.approvalState = "Approved";
+                DB.isConfirmed = true;
+                saveDB();
+                showToast("Jadual waktu telah diluluskan dan diterbitkan kepada semua!", "success");
+                checkPublishState();
+                renderAll();
+            });
+        }
+
+        function tolakkanJadualTpa() {
+            window.tanyaPengesahan("Adakah anda pasti mahu menolak deraf jadual waktu ini dan memulangkannya kepada admin?", () => {
+                DB.approvalState = "Draft";
+                DB.isConfirmed = false;
+                saveDB();
+                showToast("Jadual waktu ditolak dan dikembalikan sebagai deraf.", "warning");
+                checkPublishState();
+                renderAll();
+            });
+        }
+
+        function setupTpaWidget() {
+            const isTpa = (DB && DB.tpaLecturer && activeLecturer === DB.tpaLecturer);
+            const tpaCard = document.getElementById("tpaApprovalCard");
+            const tpaStatusBadge = document.getElementById("tpaStatusBadge");
+            const tpaActionButtons = document.getElementById("tpaActionButtons");
+
+            if (!tpaCard) return;
+
+            if (isTpa) {
+                tpaCard.classList.remove("hidden");
+                const state = DB.approvalState || "Draft";
+                
+                if (state === "Approved") {
+                    tpaStatusBadge.className = "px-2.5 py-0.5 rounded-full font-extrabold text-[10px] bg-green-100 text-green-800 dark:bg-green-950/40 dark:text-green-400";
+                    tpaStatusBadge.textContent = "DILULUSKAN & DITERBITKAN";
+                    tpaActionButtons.classList.add("hidden");
+                } else if (state === "Pending") {
+                    tpaStatusBadge.className = "px-2.5 py-0.5 rounded-full font-extrabold text-[10px] bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400 animate-pulse";
+                    tpaStatusBadge.textContent = "MENUNGGU KELULUSAN ANDA";
+                    tpaActionButtons.classList.remove("hidden");
+                } else {
+                    tpaStatusBadge.className = "px-2.5 py-0.5 rounded-full font-extrabold text-[10px] bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-400";
+                    tpaStatusBadge.textContent = "DERAF (SEDANG DIKEMASKINI ADMIN)";
+                    tpaActionButtons.classList.add("hidden");
+                }
+            } else {
+                tpaCard.classList.add("hidden");
+            }
+        }
+
         function checkPublishState() {
             const unverifiedArea = document.getElementById("unverified-state");
-            const contentArea = document.getElementById("contentPortal");
+            const profileCard = document.getElementById("profileCard");
+            const quickActionsArea = document.getElementById("quickActionsArea");
+            const personalScheduleArea = document.getElementById("printable-area");
+            const locationScheduleArea = document.getElementById("kawasanLokasi");
 
-            if (!DB.isConfirmed) {
+            const isTpa = (DB && DB.tpaLecturer && activeLecturer === DB.tpaLecturer);
+            const showSchedule = (DB.approvalState === "Approved") || isTpa;
+
+            if (!showSchedule) {
                 unverifiedArea.classList.remove("hidden");
-                contentArea.classList.add("hidden");
+                if (quickActionsArea) quickActionsArea.classList.add("hidden");
+                if (personalScheduleArea) personalScheduleArea.classList.add("hidden");
+                if (locationScheduleArea) locationScheduleArea.classList.add("hidden");
+                if (profileCard) {
+                    profileCard.classList.remove("md:col-span-2");
+                    profileCard.classList.add("md:col-span-3");
+                }
             } else {
                 unverifiedArea.classList.add("hidden");
-                contentArea.classList.remove("hidden");
+                if (quickActionsArea) quickActionsArea.classList.remove("hidden");
+                if (personalScheduleArea) personalScheduleArea.classList.remove("hidden");
+                if (locationScheduleArea) locationScheduleArea.classList.remove("hidden");
+                if (profileCard) {
+                    profileCard.classList.remove("md:col-span-3");
+                    profileCard.classList.add("md:col-span-2");
+                }
             }
+
+            setupTpaWidget();
         }
 
         // Time calculations
@@ -439,6 +820,7 @@
             renderPersonalGrid();
             renderLocationGrid();
             renderAnnouncements();
+            updatePrintFooters();
         }
 
         // Render Personal Schedule Grid
@@ -461,14 +843,14 @@
 
             function checkConflict(slot) {
                 return personalSlots.some(other => {
-                    const sameSlot = other.kod === slot.kod && 
-                                     other.kelas === slot.kelas && 
-                                     other.hari === slot.hari && 
-                                     other.mula === slot.mula;
+                    const sameSlot = other.kod === slot.kod &&
+                        other.kelas === slot.kelas &&
+                        other.hari === slot.hari &&
+                        other.mula === slot.mula;
                     if (sameSlot) return false;
-                    return other.hari === slot.hari && 
-                           toMin(other.mula) < toMin(slot.tamat) && 
-                           toMin(slot.mula) < toMin(other.tamat);
+                    return other.hari === slot.hari &&
+                        toMin(other.mula) < toMin(slot.tamat) &&
+                        toMin(slot.mula) < toMin(other.tamat);
                 });
             }
 
@@ -496,7 +878,7 @@
                 `;
 
                 hari.forEach(h => {
-                    const matching = personalSlots.filter(s => 
+                    const matching = personalSlots.filter(s =>
                         s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
                     );
 
@@ -505,9 +887,9 @@
                     if (matching.length > 0) {
                         matching.forEach(s => {
                             const isClashed = checkConflict(s);
-                            const cardStyle = isClashed 
+                            const cardStyle = isClashed
                                 ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
-                                : (s.singkatanPembantu === activeLecturer 
+                                : (s.singkatanPembantu === activeLecturer
                                     ? "bg-amber-50/70 text-amber-900 border-l-4 border-amber-500 dark:bg-amber-950/20 dark:text-amber-200 dark:border-amber-900 shadow-sm"
                                     : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm");
 
@@ -540,7 +922,7 @@
             });
 
             gridHtml += `</tbody></table>`;
-            gridWrap.innerHTML = gridHtml;        gridWrap.innerHTML = gridHtml;
+            gridWrap.innerHTML = gridHtml; gridWrap.innerHTML = gridHtml;
         }
 
         // Render Location Schedule Grid
@@ -564,14 +946,14 @@
             // Conflict overlap check for location booking
             function checkLocConflict(slot) {
                 return locSlots.some(other => {
-                    const sameSlot = other.kod === slot.kod && 
-                                     other.kelas === slot.kelas && 
-                                     other.hari === slot.hari && 
-                                     other.mula === slot.mula;
+                    const sameSlot = other.kod === slot.kod &&
+                        other.kelas === slot.kelas &&
+                        other.hari === slot.hari &&
+                        other.mula === slot.mula;
                     if (sameSlot) return false;
-                    return other.hari === slot.hari && 
-                           toMin(other.mula) < toMin(slot.tamat) && 
-                           toMin(slot.mula) < toMin(other.tamat);
+                    return other.hari === slot.hari &&
+                        toMin(other.mula) < toMin(slot.tamat) &&
+                        toMin(slot.mula) < toMin(other.tamat);
                 });
             }
 
@@ -599,7 +981,7 @@
                 `;
 
                 hari.forEach(h => {
-                    const matching = locSlots.filter(s => 
+                    const matching = locSlots.filter(s =>
                         s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
                     );
 
@@ -608,7 +990,7 @@
                     if (matching.length > 0) {
                         matching.forEach(s => {
                             const isClashed = checkLocConflict(s);
-                            const cardStyle = isClashed 
+                            const cardStyle = isClashed
                                 ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
                                 : "bg-indigo-50/70 text-indigo-900 border-l-4 border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-200 dark:border-indigo-900 shadow-sm";
 
@@ -654,14 +1036,27 @@
                 `;
             } else {
                 ANNOUNCEMENTS.forEach((a, idx) => {
+                    let priorityBadge = '';
+                    if (a.priority === 'Segera') {
+                        priorityBadge = `<span class="bg-red-100 text-red-800 border border-red-200 dark:bg-red-950/40 dark:text-red-300 dark:border-red-900/50 font-bold px-2 py-0.5 rounded text-[10px] inline-block ml-2 align-middle">⚠️ Segera</span>`;
+                    } else if (a.priority === 'Penting') {
+                        priorityBadge = `<span class="bg-amber-100 text-amber-800 border border-amber-200 dark:bg-amber-950/40 dark:text-amber-300 dark:border-amber-900/50 font-bold px-2 py-0.5 rounded text-[10px] inline-block ml-2 align-middle">★ Penting</span>`;
+                    }
+
+                    const expText = a.expiryDate ? `<div class="text-[10px] text-red-500 font-semibold mt-1">Luput: ${a.expiryDate}</div>` : '';
+
                     const row = document.createElement("tr");
                     row.className = "hover:bg-slate-50 dark:hover:bg-slate-900/10 transition";
                     row.innerHTML = `
                         <td class="p-3">
                             <span class="bg-teal-50 dark:bg-teal-950/40 text-teal-800 dark:text-teal-300 border border-teal-100 dark:border-teal-900/50 font-bold px-2 py-0.5 rounded text-[10px] inline-block mb-1">${a.category}</span>
                             <div class="text-[10px] text-slate-400 font-medium">${a.date}</div>
+                            <div class="text-[10px] text-slate-400 font-semibold mt-1">Oleh: ${a.publisher || 'Pentadbir'}</div>
+                            ${expText}
                         </td>
-                        <td class="p-3 font-semibold text-slate-800 dark:text-slate-200">${a.title}</td>
+                        <td class="p-3 font-semibold text-slate-800 dark:text-slate-200">
+                            <span>${a.title}</span>${priorityBadge}
+                        </td>
                         <td class="p-3 text-slate-500 dark:text-slate-400 leading-relaxed max-w-xs truncate" title="${a.desc}">${a.desc}</td>
                         <td class="p-3 text-center">
                             <div class="flex items-center justify-center gap-2">
@@ -687,15 +1082,27 @@
             const date = document.getElementById("annDate").value.trim();
             const title = document.getElementById("annTitle").value.trim();
             const desc = document.getElementById("annDesc").value.trim();
+            const priority = document.getElementById("annPriority").value;
+            const expiryDate = document.getElementById("annExpiryDate").value;
+            const publisher = activeLecturer; // Automatically set as logged in lecturer shortName
             const editIdx = parseInt(document.getElementById("editIndex").value);
 
             if (editIdx === -1) {
                 // ADD ACTION
-                ANNOUNCEMENTS.push({ category, date, title, desc });
+                ANNOUNCEMENTS.push({ category, date, title, desc, priority, expiryDate, publisher });
                 showToast("Hebahan berjaya ditambah ke dashboard!", "success");
             } else {
                 // EDIT/UPDATE ACTION
-                ANNOUNCEMENTS[editIdx] = { category, date, title, desc };
+                const existing = ANNOUNCEMENTS[editIdx];
+                ANNOUNCEMENTS[editIdx] = {
+                    category,
+                    date,
+                    title,
+                    desc,
+                    priority,
+                    expiryDate,
+                    publisher: existing.publisher || publisher
+                };
                 showToast("Hebahan berjaya dikemas kini!", "success");
                 cancelEdit(); // reset form state
             }
@@ -712,11 +1119,52 @@
             document.getElementById("annTitle").value = "";
             document.getElementById("annDesc").value = "";
             document.getElementById("annDate").value = "Hari Ini";
+            document.getElementById("annPriority").value = "Biasa";
+            document.getElementById("annExpiryDate").value = "";
+        }
+
+        // Custom premium confirmation modal (bypasses native browser popup-blocking policies)
+        function tanyaPengesahan(mesej, padaSelesai) {
+            const overlay = document.createElement("div");
+            overlay.className = "confirm-overlay";
+            overlay.innerHTML = `
+                <div class="confirm-card" id="customConfirmCard">
+                    <h3 class="confirm-title">
+                        ⚠️ Pengesahan Tindakan
+                    </h3>
+                    <p class="confirm-desc">
+                        ${mesej}
+                    </p>
+                    <div class="confirm-actions">
+                        <button id="btnConfirmBatal" class="btn btn-light" style="padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--surface-border); background: var(--surface-hover); color: var(--text-primary);">
+                            Batal
+                        </button>
+                        <button id="btnConfirmYa" class="btn btn-danger" style="padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; background: var(--danger); border-color: var(--danger); color: white; cursor: pointer;">
+                            Ya, Teruskan
+                        </button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(overlay);
+            
+            // Animation trigger
+            setTimeout(() => {
+                const card = overlay.querySelector("#customConfirmCard");
+                if (card) card.classList.add("active");
+            }, 10);
+
+            overlay.querySelector("#btnConfirmBatal").onclick = () => {
+                overlay.remove();
+            };
+            overlay.querySelector("#btnConfirmYa").onclick = () => {
+                overlay.remove();
+                padaSelesai();
+            };
         }
 
         // Delete announcement
         function padamHebahan(idx) {
-            if (confirm("Adakah anda pasti mahu memadam hebahan ini?")) {
+            tanyaPengesahan("Adakah anda pasti mahu memadam hebahan ini?", () => {
                 ANNOUNCEMENTS.splice(idx, 1);
                 if (isFirebaseActive()) {
                     firebaseSaveAnnouncements(ANNOUNCEMENTS);
@@ -726,7 +1174,7 @@
                 }
                 showToast("Hebahan telah dipadam.", "success");
                 cancelEdit(); // reset edit state if current item is deleted
-            }
+            });
         }
 
         // Open edit form
@@ -736,13 +1184,15 @@
             document.getElementById("annDate").value = a.date;
             document.getElementById("annTitle").value = a.title;
             document.getElementById("annDesc").value = a.desc;
+            document.getElementById("annPriority").value = a.priority || "Biasa";
+            document.getElementById("annExpiryDate").value = a.expiryDate || "";
             document.getElementById("editIndex").value = idx;
 
             // Adjust buttons
             document.getElementById("btnCancelEdit").classList.remove("hidden");
             document.getElementById("btnSubmitAnn").textContent = "Simpan Kemas Kini";
             document.getElementById("btnSubmitAnn").className = "bg-blue-700 hover:bg-blue-600 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-xs";
-            
+
             // Scroll to form smoothly
             document.getElementById("annForm").scrollIntoView({ behavior: 'smooth' });
         }
@@ -754,6 +1204,8 @@
             document.getElementById("annDesc").value = "";
             document.getElementById("annDate").value = "Hari Ini";
             document.getElementById("annCategory").selectedIndex = 0;
+            document.getElementById("annPriority").value = "Biasa";
+            document.getElementById("annExpiryDate").value = "";
 
             document.getElementById("btnCancelEdit").classList.add("hidden");
             document.getElementById("btnSubmitAnn").textContent = "Tambah Hebahan";
@@ -764,7 +1216,7 @@
         function showToast(message, type = "success") {
             const container = document.getElementById("toastContainer");
             const toast = document.createElement("div");
-            
+
             const baseClass = "p-4 rounded-xl shadow-lg border text-sm font-semibold pointer-events-auto flex items-center gap-2 transform transition-all duration-300 translate-y-2 opacity-0";
             let typeClass = "";
             let iconSvg = "";
@@ -802,6 +1254,163 @@
                 }, 300);
             }, 3500);
         }
+
+        // ==========================================
+        // PROFILE PICTURE AND PASSWORD MANAGERS
+        // ==========================================
+        function saveLecturers() {
+            const dataToSave = LECTURERS.map(l => {
+                const copy = { ...l };
+                if (copy.short) {
+                    copy.shortName = copy.short;
+                }
+                return copy;
+            });
+            if (isFirebaseActive()) {
+                firebaseSaveLecturers(dataToSave);
+            } else {
+                localStorage.setItem('kkpapar_lecturers', JSON.stringify(dataToSave));
+            }
+        }
+
+        let tempPhotoBase64 = null;
+
+        function bukaModalProfil() {
+            document.getElementById("modalProfil").classList.remove("hidden");
+
+            const lecObj = LECTURERS.find(l => l.short === activeLecturer);
+            const preview = document.getElementById("modalProfilePreview");
+            const fallback = document.getElementById("modalAvatarFallback");
+            const removeBtn = document.getElementById("btnRemovePhoto");
+
+            document.getElementById("inputNewPassword").value = "";
+            document.getElementById("inputConfirmPassword").value = "";
+            tempPhotoBase64 = lecObj ? lecObj.photo || null : null;
+
+            if (tempPhotoBase64) {
+                preview.src = tempPhotoBase64;
+                preview.classList.remove("hidden");
+                fallback.classList.add("hidden");
+                removeBtn.classList.remove("hidden");
+            } else {
+                preview.classList.add("hidden");
+                fallback.classList.remove("hidden");
+                fallback.textContent = lecObj && lecObj.short ? lecObj.short.substring(0, 2).toUpperCase() : "P";
+                removeBtn.classList.add("hidden");
+            }
+        }
+
+        function tutupModalProfil() {
+            document.getElementById("modalProfil").classList.add("hidden");
+        }
+
+        function prosesGambarProfil(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            // Max size 80KB limit for base64 storage
+            if (file.size > 80 * 1024) {
+                showToast("Gambar terlalu besar! Sila pilih gambar bersaiz bawah 80KB.", "danger");
+                return;
+            }
+
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                tempPhotoBase64 = e.target.result;
+                const preview = document.getElementById("modalProfilePreview");
+                const fallback = document.getElementById("modalAvatarFallback");
+                const removeBtn = document.getElementById("btnRemovePhoto");
+
+                preview.src = tempPhotoBase64;
+                preview.classList.remove("hidden");
+                fallback.classList.add("hidden");
+                removeBtn.classList.remove("hidden");
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function padamGambarProfil() {
+            tempPhotoBase64 = null;
+            const preview = document.getElementById("modalProfilePreview");
+            const fallback = document.getElementById("modalAvatarFallback");
+            const removeBtn = document.getElementById("btnRemovePhoto");
+            const lecObj = LECTURERS.find(l => l.short === activeLecturer);
+
+            preview.classList.add("hidden");
+            fallback.classList.remove("hidden");
+            fallback.textContent = lecObj && lecObj.short ? lecObj.short.substring(0, 2).toUpperCase() : "P";
+            removeBtn.classList.add("hidden");
+            document.getElementById("fileProfileImage").value = "";
+        }
+
+        function simpanProfilUbahsuai() {
+            const passwordVal = document.getElementById("inputNewPassword").value.trim();
+            const confirmVal = document.getElementById("inputConfirmPassword").value.trim();
+
+            const idx = LECTURERS.findIndex(l => l.short === activeLecturer);
+            if (idx === -1) {
+                showToast("Ralat: Pensyarah tidak dijumpai.", "danger");
+                return;
+            }
+
+            // Password update check
+            if (passwordVal) {
+                if (passwordVal !== confirmVal) {
+                    showToast("Kata laluan baru dan sahkan kata laluan tidak sepadan!", "danger");
+                    return;
+                }
+                LECTURERS[idx].password = passwordVal;
+            }
+
+            // Photo update
+            LECTURERS[idx].photo = tempPhotoBase64;
+
+            saveLecturers();
+            setupLecturerProfile();
+            tutupModalProfil();
+            showToast("Perubahan profil berjaya disimpan!", "success");
+        }
+
+        // Start Live Clock
+        function startLiveClock() {
+            const clockEl = document.getElementById("live-clock");
+            if (!clockEl) return;
+            
+            window.tickClock = function() {
+                const now = new Date();
+                const options = { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: true
+                };
+                const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+                clockEl.innerHTML = `
+                    <span style="background: rgba(13, 148, 136, 0.15); border: 1px solid rgba(13, 148, 136, 0.25); color: #0d9488; padding: 3px 10px; border-radius: 50px; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                        🎓 SESI SEMASA: ${sess}
+                    </span>
+                    <span style="color: #64748b; display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 500; margin-left: 6px;">
+                        📅 ${now.toLocaleDateString('ms-MY', options)}
+                    </span>
+                `;
+            };
+            
+            window.tickClock();
+            setInterval(window.tickClock, 1000);
+        }
+
+        // Update Dynamic Print Footers Session Label
+        function updatePrintFooters() {
+            const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+            document.querySelectorAll(".print-footer-session").forEach(el => {
+                el.textContent = `JADUAL DISAHKAN BAGI SESI ${sess}`.toUpperCase();
+            });
+        }
     </script>
 </body>
+
 </html>
