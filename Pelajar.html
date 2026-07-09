@@ -687,7 +687,7 @@
                         const maxRowspan = Math.max(...durations);
                         rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]">`;
+                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/50 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
                         startingSlots.forEach(s => {
                             const isClashed = checkClash(s, combinedSchedule);
@@ -719,14 +719,16 @@
                             }
 
                             gridHtml += `
-                                <div class="relative p-2.5 rounded-xl text-left ${cardStyle} mb-2 last:mb-0 transition hover:shadow-md">
+                                <div class="relative p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-between">
                                     ${deleteBtn}
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${tagLabel}
+                                    <div>
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${tagLabel}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
                                     </div>
-                                    <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
                                         <div class="flex items-center gap-1">👤 <span>${s.singkatan}</span></div>
                                         <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
                                         <div class="flex items-center gap-1">⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
@@ -735,7 +737,7 @@
                                 </div>
                             `;
                         });
-                        gridHtml += `</td>`;
+                        gridHtml += `</div></td>`;
                     } else {
                         gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]"></td>`;
                     }

@@ -152,6 +152,8 @@
   
   .slot { background: var(--primary-soft); color: var(--primary-soft-text); border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; line-height: 1.4; border-left: 3px solid var(--primary); }
   .slot small { color: var(--text-secondary); display: block; margin-top: 2px; }
+  .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
+  .slot-flex { flex: 1; display: flex; flex-direction: column; justify-content: space-between; margin-bottom: 0 !important; }
   .clash { background: var(--danger-soft) !important; color: var(--danger) !important; outline: 2px solid var(--danger); border-left-color: var(--danger); }
   
   .badge { display: inline-block; background: var(--success); color: #fff; border-radius: 4px; padding: 2px 6px; font-size: .7rem; font-weight: 600; }
@@ -1198,19 +1200,21 @@ function render(){
         const maxRowspan = Math.max(...durations);
         rowspanTracker[h] = maxRowspan - 1;
 
-        const sel = startingSlots.map(({s,idx})=>{
+        const sel = `<div class="schedule-wrapper">` + startingSlots.map(({s,idx})=>{
           const clash = DB.slot.some((o,j)=>j!==idx && bertindih(s,o) && checkClash(s, o));
-          return `<div class="slot ${clash?'clash':''}">
-            <b>${s.kod} — ${s.subjek}</b> ${clash?'⚠️':''}<br>
-            <small>
-              ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
+          return `<div class="slot ${clash?'clash':''} slot-flex">
+            <div>
+              <b>${s.kod} — ${s.subjek}</b> ${clash?'⚠️':''}<br>
+              <small>${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''} • <b>${s.kelas}</b></small>
+            </div>
+            <small style="margin-top:auto; padding-top:4px; border-top:1px solid rgba(0,0,0,0.05);">
               📍 ${s.lokasi}<br>
               ⏱️ ${format12Hour(s.mula)} – ${format12Hour(s.tamat)}
             </small>
           </div>`;
-        }).join('');
+        }).join('') + `</div>`;
 
-        html+=`<td rowspan="${maxRowspan}">${sel}</td>`;
+        html+=`<td rowspan="${maxRowspan}" style="height:1px; padding:4px; vertical-align:stretch;">${sel}</td>`;
       } else {
         html+=`<td></td>`;
       }

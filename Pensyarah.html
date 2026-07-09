@@ -1056,7 +1056,7 @@
                         const maxRowspan = Math.max(...durations);
                         rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
                         startingSlots.forEach(s => {
                             const isClashed = checkConflict(s);
@@ -1065,13 +1065,15 @@
                                 : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm";
 
                             gridHtml += `
-                                <div class="p-2.5 rounded-xl text-left ${cardStyle} mb-2 last:mb-0 transition hover:shadow-md">
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
                                     </div>
-                                    <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
                                         <div class="flex items-center gap-1">🏫 <b>Kelas: ${s.kelas}</b></div>
                                         <div class="flex items-center gap-1">👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
                                         <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
@@ -1080,7 +1082,7 @@
                                 </div>
                             `;
                         });
-                        gridHtml += `</td>`;
+                        gridHtml += `</div></td>`;
                     } else {
                         gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
                     }
@@ -1223,7 +1225,7 @@
                         const maxRowspan = Math.max(...durations);
                         rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
                         startingSlots.forEach(s => {
                             const isClashed = checkConflict(s);
@@ -1238,14 +1240,16 @@
                                 : `<span class="bg-teal-700 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">UTAMA</span>`;
 
                             gridHtml += `
-                                <div class="p-2.5 rounded-xl text-left ${cardStyle} mb-2 last:mb-0 transition hover:shadow-md">
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${roleTag}
-                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${roleTag}
+                                            ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
                                     </div>
-                                    <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
                                         <div class="flex items-center gap-1">🏫 <span>${s.kelas}</span></div>
                                         <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
                                         <div class="flex items-center gap-1">⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
@@ -1253,7 +1257,7 @@
                                 </div>
                             `;
                         });
-                        gridHtml += `</td>`;
+                        gridHtml += `</div></td>`;
                     } else {
                         gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
                     }
@@ -1345,7 +1349,7 @@
                         const maxRowspan = Math.max(...durations);
                         rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
                         startingSlots.forEach(s => {
                             const isClashed = checkLocConflict(s);
@@ -1354,13 +1358,15 @@
                                 : "bg-indigo-50/70 text-indigo-900 border-l-4 border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-200 dark:border-indigo-900 shadow-sm";
 
                             gridHtml += `
-                                <div class="p-2.5 rounded-xl text-left ${cardStyle} mb-2 last:mb-0 transition hover:shadow-md">
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">BERTINDIHAN ⚠️</span>` : ''}
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-between">
+                                    <div>
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">BERTINDIHAN ⚠️</span>` : ''}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
                                     </div>
-                                    <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
                                         <div class="flex items-center gap-1">🏫 <b>Kelas: ${s.kelas}</b></div>
                                         <div class="flex items-center gap-1">👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
                                         <div class="flex items-center gap-1">⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
@@ -1368,7 +1374,7 @@
                                 </div>
                             `;
                         });
-                        gridHtml += `</td>`;
+                        gridHtml += `</div></td>`;
                     } else {
                         gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
                     }
