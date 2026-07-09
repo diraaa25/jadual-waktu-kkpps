@@ -1499,20 +1499,9 @@ function jalankanGenerator() {
     return { subject: s, kelas: kelasVal, lokasi: lokasiVal };
   });
 
-  // 2. Helper to split required hours into individual blocks (2h blocks, remaining 1h block)
+  // 2. Helper to keep required hours together as a single block (not split across days)
   function getDurations(hours) {
-    const blocks = [];
-    let rem = hours;
-    while (rem > 0) {
-      if (rem >= 2) {
-        blocks.push(2);
-        rem -= 2;
-      } else {
-        blocks.push(rem);
-        rem = 0;
-      }
-    }
-    return blocks;
+    return [hours];
   }
 
   // 3. Compile list of required slot items to assign
