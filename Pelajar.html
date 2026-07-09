@@ -652,6 +652,9 @@
                     <tbody>
             `;
 
+            // Rowspan tracker to avoid repeating cards for multi-hour blocks
+            const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
+
             jam.forEach(j => {
                 const bMula = toMin(j.mula);
                 const bTamat = toMin(j.tamat);
@@ -664,15 +667,29 @@
                 `;
 
                 hari.forEach(h => {
-                    // Find slots overlapping with this hour block
-                    const matchingSlots = combinedSchedule.filter(s =>
-                        s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
+                    // If this day-hour cell is already spanned from a previous row, skip td rendering
+                    if (rowspanTracker[h] > 0) {
+                        rowspanTracker[h]--;
+                        return;
+                    }
+
+                    // Find slots starting at this exact hour
+                    const startingSlots = combinedSchedule.filter(s =>
+                        s.hari === h && toMin(s.mula) === bMula
                     );
 
-                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]">`;
+                    if (startingSlots.length > 0) {
+                        // Calculate maximum rowspan duration from slots starting here
+                        const durations = startingSlots.map(s => {
+                            const diffMin = toMin(s.tamat) - toMin(s.mula);
+                            return Math.max(1, Math.round(diffMin / 60));
+                        });
+                        const maxRowspan = Math.max(...durations);
+                        rowspanTracker[h] = maxRowspan - 1;
 
-                    if (matchingSlots.length > 0) {
-                        matchingSlots.forEach(s => {
+                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]">`;
+
+                        startingSlots.forEach(s => {
                             const isClashed = checkClash(s, combinedSchedule);
 
                             let cardStyle = "";
@@ -690,7 +707,6 @@
                             }
 
                             if (s.isRepeat) {
-                                // Find repeat index to delete
                                 const repIdx = repeatSlots.findIndex(r => r.kod === s.kod && r.hari === s.hari && r.mula === s.mula);
                                 deleteBtn = `
                                     <button onclick="padamRepeat(${repIdx})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-950/50 dark:hover:bg-red-900/70 p-1 rounded transition no-print shadow-sm" title="Padam subjek repeat">
@@ -719,9 +735,10 @@
                                 </div>
                             `;
                         });
+                        gridHtml += `</td>`;
+                    } else {
+                        gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]"></td>`;
                     }
-
-                    gridHtml += `</td>`;
                 });
 
                 gridHtml += `</tr>`;

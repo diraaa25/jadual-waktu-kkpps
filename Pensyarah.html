@@ -924,9 +924,8 @@
                             <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
                             ${hari.map(h => `<th class="p-3 text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0">${h}</th>`).join('')}
                         </tr>
-                    </thead>
-                    <tbody>
-            `;
+                    </t            // Rowspan tracker to avoid repeating cards for multi-hour blocks
+            const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
 
             jam.forEach(j => {
                 const bMula = toMin(j.mula);
@@ -940,14 +939,29 @@
                 `;
 
                 hari.forEach(h => {
-                    const matching = personalSlots.filter(s =>
-                        s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
+                    // If this day-hour cell is already spanned from a previous row, skip td rendering
+                    if (rowspanTracker[h] > 0) {
+                        rowspanTracker[h]--;
+                        return;
+                    }
+
+                    // Find slots starting at this exact hour
+                    const startingSlots = personalSlots.filter(s =>
+                        s.hari === h && toMin(s.mula) === bMula
                     );
 
-                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+                    if (startingSlots.length > 0) {
+                        // Calculate maximum rowspan duration from slots starting here
+                        const durations = startingSlots.map(s => {
+                            const diffMin = toMin(s.tamat) - toMin(s.mula);
+                            return Math.max(1, Math.round(diffMin / 60));
+                        });
+                        const maxRowspan = Math.max(...durations);
+                        rowspanTracker[h] = maxRowspan - 1;
 
-                    if (matching.length > 0) {
-                        matching.forEach(s => {
+                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+
+                        startingSlots.forEach(s => {
                             const isClashed = checkConflict(s);
                             const cardStyle = isClashed
                                 ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
@@ -975,16 +989,17 @@
                                 </div>
                             `;
                         });
+                        gridHtml += `</td>`;
+                    } else {
+                        gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
                     }
-
-                    gridHtml += `</td>`;
                 });
 
                 gridHtml += `</tr>`;
             });
 
             gridHtml += `</tbody></table>`;
-            gridWrap.innerHTML = gridHtml; gridWrap.innerHTML = gridHtml;
+            gridWrap.innerHTML = gridHtml;
         }
 
         // Render Location Schedule Grid
@@ -1031,6 +1046,9 @@
                     <tbody>
             `;
 
+            // Rowspan tracker to avoid repeating cards for multi-hour blocks
+            const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
+
             jam.forEach(j => {
                 const bMula = toMin(j.mula);
                 const bTamat = toMin(j.tamat);
@@ -1043,14 +1061,29 @@
                 `;
 
                 hari.forEach(h => {
-                    const matching = locSlots.filter(s =>
-                        s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
+                    // If this day-hour cell is already spanned from a previous row, skip td rendering
+                    if (rowspanTracker[h] > 0) {
+                        rowspanTracker[h]--;
+                        return;
+                    }
+
+                    // Find slots starting at this exact hour
+                    const startingSlots = locSlots.filter(s =>
+                        s.hari === h && toMin(s.mula) === bMula
                     );
 
-                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+                    if (startingSlots.length > 0) {
+                        // Calculate maximum rowspan duration from slots starting here
+                        const durations = startingSlots.map(s => {
+                            const diffMin = toMin(s.tamat) - toMin(s.mula);
+                            return Math.max(1, Math.round(diffMin / 60));
+                        });
+                        const maxRowspan = Math.max(...durations);
+                        rowspanTracker[h] = maxRowspan - 1;
 
-                    if (matching.length > 0) {
-                        matching.forEach(s => {
+                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]">`;
+
+                        startingSlots.forEach(s => {
                             const isClashed = checkLocConflict(s);
                             const cardStyle = isClashed
                                 ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
@@ -1071,9 +1104,10 @@
                                 </div>
                             `;
                         });
+                        gridHtml += `</td>`;
+                    } else {
+                        gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
                     }
-
-                    gridHtml += `</td>`;
                 });
 
                 gridHtml += `</tr>`;

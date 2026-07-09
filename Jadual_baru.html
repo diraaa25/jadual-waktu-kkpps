@@ -1170,24 +1170,50 @@ function render(){
   const masa=[]; for(let h=8;h<=18;h++) masa.push(String(h).padStart(2,'0')+':00');
   
   let html='<table class="schedule-table"><thead><tr><th>Masa</th>'+hari.map(h=>`<th>${h}</th>`).join('')+'</tr></thead><tbody>';
+  
+  // Rowspan tracker to avoid repeating cards for multi-hour blocks
+  const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
+
   for(let i=0;i<masa.length-1;i++){
-    const blokMula=toMin(masa[i]), blokTamat=toMin(masa[i+1]);
+    const blokMula=toMin(masa[i]);
     html+=`<tr><th style="font-weight:600; text-align:center; background:var(--surface-hover);">${masa[i]}–${masa[i+1]}</th>`;
+    
     hari.forEach(h=>{
-      const isi = DB.slot.map((s,idx)=>({s,idx})).filter(({s})=>
-        s.hari===h && toMin(s.mula)<blokTamat && blokMula<toMin(s.tamat));
-      const sel = isi.map(({s,idx})=>{
-        const clash = DB.slot.some((o,j)=>j!==idx && bertindih(s,o) && checkClash(s, o));
-        return `<div class="slot ${clash?'clash':''}">
-          <b>${s.kod} — ${s.subjek}</b> ${clash?'⚠️':''}<br>
-          <small>
-            ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
-            📍 ${s.lokasi}<br>
-            ⏱️ ${s.mula}–${s.tamat}
-          </small>
-        </div>`;
-      }).join('');
-      html+=`<td>${sel}</td>`;
+      // If this day-hour cell is already spanned from a previous row, skip td rendering
+      if (rowspanTracker[h] > 0) {
+        rowspanTracker[h]--;
+        return;
+      }
+
+      // Find slots starting at this exact hour
+      const startingSlots = DB.slot.map((s,idx)=>({s,idx})).filter(({s})=>
+        s.hari===h && toMin(s.mula)===blokMula);
+
+      if (startingSlots.length > 0) {
+        // Calculate maximum rowspan duration from slots starting here
+        const durations = startingSlots.map(({s}) => {
+          const diffMin = toMin(s.tamat) - toMin(s.mula);
+          return Math.max(1, Math.round(diffMin / 60));
+        });
+        const maxRowspan = Math.max(...durations);
+        rowspanTracker[h] = maxRowspan - 1;
+
+        const sel = startingSlots.map(({s,idx})=>{
+          const clash = DB.slot.some((o,j)=>j!==idx && bertindih(s,o) && checkClash(s, o));
+          return `<div class="slot ${clash?'clash':''}">
+            <b>${s.kod} — ${s.subjek}</b> ${clash?'⚠️':''}<br>
+            <small>
+              ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
+              📍 ${s.lokasi}<br>
+              ⏱️ ${s.mula}–${s.tamat}
+            </small>
+          </div>`;
+        }).join('');
+
+        html+=`<td rowspan="${maxRowspan}">${sel}</td>`;
+      } else {
+        html+=`<td></td>`;
+      }
     });
     html+='</tr>';
   }

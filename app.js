@@ -671,10 +671,12 @@ function renderLocationGrid() {
                     <th style="width: 120px; text-align:center; background:var(--primary); color:#fff; padding:10px;">Masa</th>
                     ${hari.map(h => `<th style="text-align:center; background:var(--primary); color:#fff; padding:10px;">${h}</th>`).join('')}
                 </tr>
-            </thead>
-            <tbody>
+                     <tbody>
     `;
     
+    // Rowspan tracker to avoid repeating cards for multi-hour blocks
+    const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
+
     jam.forEach(j => {
         const bMula = toMin(j.mula);
         const bTamat = toMin(j.tamat);
@@ -687,14 +689,29 @@ function renderLocationGrid() {
         `;
         
         hari.forEach(h => {
-            const matching = locSlots.filter(s => 
-                s.hari === h && toMin(s.mula) < bTamat && toMin(s.tamat) > bMula
+            // If this day-hour cell is already spanned from a previous row, skip td rendering
+            if (rowspanTracker[h] > 0) {
+                rowspanTracker[h]--;
+                return;
+            }
+
+            // Find slots starting at this exact hour
+            const startingSlots = locSlots.filter(s =>
+                s.hari === h && toMin(s.mula) === bMula
             );
             
-            gridHtml += `<td style="padding: 6px; vertical-align: top; border-right:1px solid var(--surface-border); min-height:80px;">`;
-            
-            if (matching.length > 0) {
-                matching.forEach(s => {
+            if (startingSlots.length > 0) {
+                // Calculate maximum rowspan duration from slots starting here
+                const durations = startingSlots.map(s => {
+                    const diffMin = toMin(s.tamat) - toMin(s.mula);
+                    return Math.max(1, Math.round(diffMin / 60));
+                });
+                const maxRowspan = Math.max(...durations);
+                rowspanTracker[h] = maxRowspan - 1;
+
+                gridHtml += `<td rowspan="${maxRowspan}" style="padding: 6px; vertical-align: top; border-right:1px solid var(--surface-border); min-height:80px;">`;
+
+                startingSlots.forEach(s => {
                     const isClashed = checkLocConflict(s);
                     const clashStyle = isClashed ? "background:#fef2f2; border:1px solid #ef4444; color:#ef4444;" : "background:var(--primary-soft); border-left:4px solid var(--primary); color:var(--text-primary);";
                     
@@ -709,14 +726,14 @@ function renderLocationGrid() {
                         </div>
                     `;
                 });
+                gridHtml += `</td>`;
+            } else {
+                gridHtml += `<td style="padding: 6px; vertical-align: top; border-right:1px solid var(--surface-border); min-height:80px;"></td>`;
             }
-            
-            gridHtml += `</td>`;
         });
         
         gridHtml += `</tr>`;
     });
-    
     gridHtml += `</tbody></table>`;
     gridWrap.innerHTML = gridHtml;
 }
