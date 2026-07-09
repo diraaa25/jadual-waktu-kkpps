@@ -716,11 +716,9 @@ function renderLocationGrid() {
                     const clashStyle = isClashed ? "background:#fef2f2; border:1px solid #ef4444; color:#ef4444;" : "background:var(--primary-soft); border-left:4px solid var(--primary); color:var(--text-primary);";
                     
                     gridHtml += `
-                        <div style="padding:8px; border-radius:var(--border-radius-sm); font-size:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: space-between; flex: 1; ${clashStyle}">
-                            <div>
-                                <div style="font-weight:700;">${s.kod} — ${s.subjek} ${isClashed ? '⚠️' : ''}</div>
-                            </div>
-                            <div style="font-size:0.7rem; margin-top:4px; opacity:0.95; padding-top:4px; border-top: 1px solid rgba(0,0,0,0.03);">
+                        <div style="padding:8px; border-radius:var(--border-radius-sm); font-size:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 4px; flex: 1; ${clashStyle}">
+                            <div style="font-weight:700;">${s.kod} — ${s.subjek} ${isClashed ? '⚠️' : ''}</div>
+                            <div style="font-size:0.7rem; opacity:0.95;">
                                 👤 ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''}<br>
                                 🏫 Kelas: <b>${s.kelas}</b><br>
                                 ⏱️ ${format12Hour(s.mula)} – ${format12Hour(s.tamat)}

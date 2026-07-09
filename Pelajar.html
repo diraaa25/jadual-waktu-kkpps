@@ -719,20 +719,18 @@
                             }
 
                             gridHtml += `
-                                <div class="relative p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-between">
+                                <div class="relative p-2.5 rounded-xl text-center ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-center gap-1">
                                     ${deleteBtn}
-                                    <div>
-                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                            ${tagLabel}
-                                        </div>
-                                        <div class="font-bold text-[11px] leading-tight mb-1 text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                    <div class="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                        ${tagLabel}
                                     </div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-2 pt-2 border-t border-slate-100 dark:border-slate-800/40">
-                                        <div class="flex items-center gap-1">👤 <span>${s.singkatan}</span></div>
-                                        <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
-                                        <div class="flex items-center gap-1">⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
-                                        ${s.isRepeat ? `<div class="flex items-center gap-1 text-teal-600 dark:text-teal-400">🏫 <span>Asal: ${s.kelas}</span></div>` : ''}
+                                    <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                        <div>👤 <span>${s.singkatan}</span></div>
+                                        <div class="truncate max-w-[150px] mx-auto" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
+                                        <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
+                                        ${s.isRepeat ? `<div class="text-teal-600 dark:text-teal-400">🏫 <span>Asal: ${s.kelas}</span></div>` : ''}
                                     </div>
                                 </div>
                             `;
