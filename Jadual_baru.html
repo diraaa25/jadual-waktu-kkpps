@@ -1525,6 +1525,12 @@
       `;
 
       const gridHtml = buatJadualGridHTML(filteredSlots);
+      const printAutoTriggerScript = '<script>' + `
+        window.onload = function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        }
+      ` + '<' + '/script>';
 
       printWindow.document.write(`
         <html>
@@ -1540,12 +1546,7 @@
               <div>JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
               <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
             </div>
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(function() { window.close(); }, 500);
-              }
-            </script>
+            ${printAutoTriggerScript}
           </body>
         </html>
       `);
@@ -1606,6 +1607,13 @@
         `;
       });
 
+      const printAutoTriggerScript = '<script>' + `
+        window.onload = function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        }
+      ` + '<' + '/script>';
+
       printWindow.document.write(`
         <html>
           <head>
@@ -1614,12 +1622,7 @@
           </head>
           <body>
             ${bodyHtml}
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(function() { window.close(); }, 500);
-              }
-            </script>
+            ${printAutoTriggerScript}
           </body>
         </html>
       `);
@@ -1648,6 +1651,12 @@
       `;
 
       const gridHtml = buatJadualGridHTML(filteredSlots);
+      const printAutoTriggerScript = '<script>' + `
+        window.onload = function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        }
+      ` + '<' + '/script>';
 
       printWindow.document.write(`
         <html>
@@ -1663,12 +1672,7 @@
               <div>JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
               <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
             </div>
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(function() { window.close(); }, 500);
-              }
-            </script>
+            ${printAutoTriggerScript}
           </body>
         </html>
       `);
