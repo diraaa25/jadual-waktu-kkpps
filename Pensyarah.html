@@ -924,7 +924,11 @@
                             <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
                             ${hari.map(h => `<th class="p-3 text-center border-r border-slate-200 dark:border-slate-700 last:border-r-0">${h}</th>`).join('')}
                         </tr>
-                    </t            // Rowspan tracker to avoid repeating cards for multi-hour blocks
+                    </thead>
+                    <tbody>
+            `;
+
+            // Rowspan tracker to avoid repeating cards for multi-hour blocks
             const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
 
             jam.forEach(j => {
