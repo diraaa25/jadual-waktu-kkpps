@@ -290,7 +290,8 @@ function setupEventListeners() {
         const feedback = document.getElementById("login-feedback");
         
         if (role === "admin") {
-            if (emailVal === "admin@papar.edu.my" && password === "admin123") {
+            const adminPass = (DB && DB.adminPassword) ? DB.adminPassword : "admin123";
+            if (emailVal === "admin@papar.edu.my" && password === adminPass) {
                 feedback.style.color = "var(--success)";
                 feedback.style.display = "block";
                 feedback.textContent = "Log masuk Admin berjaya! Mengalihkan ke Halaman Pengurusan...";
@@ -304,7 +305,8 @@ function setupEventListeners() {
                 showError("Alamat e-mel atau kata laluan salah.");
             }
         } else if (role === "programmer") {
-            if (emailVal === "programmer@papar.edu.my" && password === "programmer123") {
+            const progPass = (DB && DB.programmerPassword) ? DB.programmerPassword : "programmer123";
+            if (emailVal === "programmer@papar.edu.my" && password === progPass) {
                 feedback.style.color = "var(--success)";
                 feedback.style.display = "block";
                 feedback.textContent = "Log masuk Programmer berjaya! Mengalihkan ke Portal Programmer...";
@@ -716,7 +718,7 @@ function renderLocationGrid() {
                     const clashStyle = isClashed ? "background:#fef2f2; border:1px solid #ef4444; color:#ef4444;" : "background:var(--primary-soft); border-left:4px solid var(--primary); color:var(--text-primary);";
                     
                     gridHtml += `
-                        <div style="padding:8px; border-radius:var(--border-radius-sm); font-size:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; gap: 4px; flex: 1; ${clashStyle}">
+                        <div style="padding:8px; border-radius:var(--border-radius-sm); font-size:0.75rem; box-shadow:0 1px 3px rgba(0,0,0,0.05); display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; gap: 4px; flex: 1; ${clashStyle}">
                             <div style="font-weight:700;">${s.kod} — ${s.subjek} ${isClashed ? '⚠️' : ''}</div>
                             <div style="font-size:0.7rem; opacity:0.95;">
                                 👤 ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''}<br>

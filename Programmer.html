@@ -546,6 +546,29 @@
             <!-- SECTION 5: SYSTEM CONFIGURATION (TPA & SESSIONS) -->
             <div id="sec-config" class="tab-section" style="display: none;">
 
+                        <!-- System Password Management Card -->
+                        <div class="card">
+                            <h2>🔐 Pengurusan Kata Laluan Sistem (Admin & Programmer)</h2>
+                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                                Kemaskini kata laluan untuk akaun Admin dan Programmer bagi mengelakkan akses tidak sah jika pelajar mengetahui kata laluan lalai.
+                            </p>
+                            <form id="formSystemPasswords" onsubmit="simpanKataLaluanSistem(event)" style="max-width: 500px;">
+                                <div class="form-group-wrapper" style="grid-template-columns: 1fr; gap: 1rem;">
+                                    <div class="form-group">
+                                        <label for="inputAdminPassword">Kata Laluan Admin Baru</label>
+                                        <input type="text" id="inputAdminPassword" class="programmer-input" placeholder="Masukkan kata laluan admin baru..." required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="inputProgrammerPassword">Kata Laluan Programmer Baru</label>
+                                        <input type="text" id="inputProgrammerPassword" class="programmer-input" placeholder="Masukkan kata laluan programmer baru..." required>
+                                    </div>
+                                </div>
+                                <div class="actions" style="margin-top: 1.25rem;">
+                                    <button type="submit" class="btn btn-primary">Simpan Kata Laluan Baru</button>
+                                </div>
+                            </form>
+                        </div>
+
                         <!-- Choose TPA Card -->
                         <div class="card">
                             <h2>👤 Lantikan Timbalan Pengarah Akademik (TPA)</h2>
@@ -1509,8 +1532,35 @@
                 }).join('');
             }
 
+            // 4. Passwords
+            const inputAdminPass = document.getElementById("inputAdminPassword");
+            if (inputAdminPass) {
+                inputAdminPass.value = DB.adminPassword || "admin123";
+            }
+            const inputProgPass = document.getElementById("inputProgrammerPassword");
+            if (inputProgPass) {
+                inputProgPass.value = DB.programmerPassword || "programmer123";
+            }
+
             // Update live clock immediately
             if (typeof window.tickClock === 'function') window.tickClock();
+        }
+
+        function simpanKataLaluanSistem(e) {
+            e.preventDefault();
+            const adminPass = document.getElementById("inputAdminPassword").value.trim();
+            const progPass = document.getElementById("inputProgrammerPassword").value.trim();
+            
+            if (adminPass.length < 4 || progPass.length < 4) {
+                showToast("Kata laluan mestilah sekurang-kurangnya 4 aksara!", "danger");
+                return;
+            }
+            
+            DB.adminPassword = adminPass;
+            DB.programmerPassword = progPass;
+            saveDB();
+            showToast("Kata laluan Admin & Programmer berjaya dikemaskini!", "success");
+            renderConfigSection();
         }
 
         function simpanTpa(e) {

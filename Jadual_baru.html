@@ -153,7 +153,7 @@
   .slot { background: var(--primary-soft); color: var(--primary-soft-text); border-radius: 6px; padding: 6px 8px; margin-bottom: 6px; line-height: 1.4; border-left: 3px solid var(--primary); }
   .slot small { color: var(--text-secondary); display: block; margin-top: 2px; }
   .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-  .slot-flex { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; margin-bottom: 0 !important; gap: 4px; }
+  .slot-flex { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; margin-bottom: 0 !important; gap: 4px; }
   .clash { background: var(--danger-soft) !important; color: var(--danger) !important; outline: 2px solid var(--danger); border-left-color: var(--danger); }
   
   .badge { display: inline-block; background: var(--success); color: #fff; border-radius: 4px; padding: 2px 6px; font-size: .7rem; font-weight: 600; }
@@ -586,6 +586,33 @@
       <label style="font-weight:600;">Senarai Sesi Terdaftar (Klik "Hapus" untuk buang)</label>
       <div id="adminSessionsList" style="display:flex; flex-wrap:wrap; gap: 8px; margin-top: 6px;">
         <!-- Dynamic badges -->
+      </div>
+    </div>
+  </div>
+
+  <!-- 6.5 PENGURUSAN KATA LALUAN SISTEM -->
+  <div class="card no-print">
+    <h2>
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+        <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+        <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+      </svg>
+      Pengurusan Kata Laluan Sistem (Admin & Programmer)
+    </h2>
+    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
+      Kemaskini kata laluan untuk akaun Admin dan Programmer bagi mengelakkan akses tidak sah jika pelajar mengetahui kata laluan lalai.
+    </p>
+    <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 15px;">
+      <div>
+        <label for="adminPasswordInput">Kata Laluan Admin Baru</label>
+        <input type="text" id="adminPasswordInput" placeholder="Masukkan kata laluan admin baru..." style="width: 100%; box-sizing: border-box;">
+      </div>
+      <div>
+        <label for="programmerPasswordInput">Kata Laluan Programmer Baru</label>
+        <input type="text" id="programmerPasswordInput" placeholder="Masukkan kata laluan programmer baru..." style="width: 100%; box-sizing: border-box;">
+      </div>
+      <div style="display: flex; align-items: flex-end;">
+        <button type="button" class="btn btn-primary" onclick="simpanKataLaluanAdmin()" style="margin: 0; width: 100%;">Simpan Kata Laluan</button>
       </div>
     </div>
   </div>
@@ -1388,6 +1415,16 @@ function render(){
     }).join('');
   }
 
+  // Password fields
+  const adminPassInput = document.getElementById("adminPasswordInput");
+  if (adminPassInput) {
+    adminPassInput.value = DB.adminPassword || "admin123";
+  }
+  const progPassInput = document.getElementById("programmerPasswordInput");
+  if (progPassInput) {
+    progPassInput.value = DB.programmerPassword || "programmer123";
+  }
+
   const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
   document.querySelectorAll(".print-footer-session").forEach(el => {
     el.textContent = `JADUAL DISAHKAN BAGI SESI ${sess}`.toUpperCase();
@@ -1395,6 +1432,22 @@ function render(){
 
   if (typeof window.tickClock === 'function') window.tickClock();
   if (typeof periksaPertindihanRealTime === 'function') periksaPertindihanRealTime();
+}
+
+function simpanKataLaluanAdmin() {
+  const adminPass = document.getElementById("adminPasswordInput").value.trim();
+  const progPass = document.getElementById("programmerPasswordInput").value.trim();
+  
+  if (adminPass.length < 4 || progPass.length < 4) {
+    alert("Kata laluan mestilah sekurang-kurangnya 4 aksara!");
+    return;
+  }
+  
+  DB.adminPassword = adminPass;
+  DB.programmerPassword = progPass;
+  simpan();
+  alert("Kata laluan Admin & Programmer berjaya dikemaskini!");
+  render();
 }
 
 // --- PUBLISH & CONFIRMATION ACTIONS ---

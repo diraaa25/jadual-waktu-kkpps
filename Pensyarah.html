@@ -1065,8 +1065,8 @@
                                 : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm";
 
                             gridHtml += `
-                                <div class="p-2.5 rounded-xl text-center ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-center gap-1">
-                                    <div class="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
                                         <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
                                         ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
                                     </div>
@@ -1074,7 +1074,7 @@
                                     <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
                                         <div>🏫 <b>Kelas: ${s.kelas}</b></div>
                                         <div>👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
-                                        <div class="truncate max-w-[150px] mx-auto" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
+                                        <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
                                         <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
                                     </div>
                                 </div>
@@ -1238,8 +1238,8 @@
                                 : `<span class="bg-teal-700 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">UTAMA</span>`;
 
                             gridHtml += `
-                                <div class="p-2.5 rounded-xl text-center ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-center gap-1">
-                                    <div class="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
                                         <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
                                         ${roleTag}
                                         ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
@@ -1247,7 +1247,7 @@
                                     <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
                                     <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
                                         <div>🏫 <span>${s.kelas}</span></div>
-                                        <div class="truncate max-w-[150px] mx-auto" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
+                                        <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
                                         <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
                                     </div>
                                 </div>
@@ -1354,8 +1354,8 @@
                                 : "bg-indigo-50/70 text-indigo-900 border-l-4 border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-200 dark:border-indigo-900 shadow-sm";
 
                             gridHtml += `
-                                <div class="p-2.5 rounded-xl text-center ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-center gap-1">
-                                    <div class="flex flex-wrap items-center justify-center gap-1.5 mb-1">
+                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
+                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
                                         <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
                                         ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">BERTINDIHAN ⚠️</span>` : ''}
                                     </div>
