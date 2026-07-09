@@ -291,7 +291,7 @@
                             class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tarikh
                             / Waktu</label>
                         <input type="text" id="annDate" placeholder="cth: Hari Ini / 30 Jun 2026" required
-                            value="Hari Ini"
+                            value="Hari Ini" onfocus="this.select()"
                             class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
                     </div>
                     <!-- Priority -->
@@ -434,13 +434,25 @@
                         class="block text-xs font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-2">Tukar
                         Kata Laluan Baru</label>
                     <div class="space-y-3">
-                        <div>
+                        <div style="position: relative; display: flex; align-items: center; width: 100%;">
                             <input type="password" id="inputNewPassword" placeholder="Masukkan kata laluan baru..."
-                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                class="w-full p-2.5 pr-10 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                            <button type="button" id="toggle-new-password" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 2;">
+                                <svg id="eye-icon-new" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
                         </div>
-                        <div>
+                        <div style="position: relative; display: flex; align-items: center; width: 100%;">
                             <input type="password" id="inputConfirmPassword" placeholder="Sahkan kata laluan baru..."
-                                class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                class="w-full p-2.5 pr-10 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                            <button type="button" id="toggle-confirm-password" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; color: #64748b; display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 2;">
+                                <svg id="eye-icon-confirm" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -533,6 +545,7 @@
             syncTheme();
             initData();
             startLiveClock();
+            setupPasswordToggles();
             if (!isFirebaseActive()) {
                 setupLecturerProfile();
                 setupLocationDropdown();
@@ -553,6 +566,55 @@
                 document.documentElement.classList.remove("dark");
                 body.classList.add("light-mode", "bg-slate-50", "text-slate-900");
                 body.classList.remove("dark-mode", "bg-slate-950", "text-slate-100");
+            }
+        }
+
+        // Setup password visibility toggles in the profile modal
+        function setupPasswordToggles() {
+            const toggleNewBtn = document.getElementById("toggle-new-password");
+            if (toggleNewBtn) {
+                toggleNewBtn.addEventListener("click", () => {
+                    const passInput = document.getElementById("inputNewPassword");
+                    const eyeIcon = document.getElementById("eye-icon-new");
+                    if (passInput && eyeIcon) {
+                        if (passInput.type === "password") {
+                            passInput.type = "text";
+                            eyeIcon.innerHTML = `
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            `;
+                        } else {
+                            passInput.type = "password";
+                            eyeIcon.innerHTML = `
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            `;
+                        }
+                    }
+                });
+            }
+
+            const toggleConfBtn = document.getElementById("toggle-confirm-password");
+            if (toggleConfBtn) {
+                toggleConfBtn.addEventListener("click", () => {
+                    const passInput = document.getElementById("inputConfirmPassword");
+                    const eyeIcon = document.getElementById("eye-icon-confirm");
+                    if (passInput && eyeIcon) {
+                        if (passInput.type === "password") {
+                            passInput.type = "text";
+                            eyeIcon.innerHTML = `
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+                                <line x1="1" y1="1" x2="23" y2="23"></line>
+                            `;
+                        } else {
+                            passInput.type = "password";
+                            eyeIcon.innerHTML = `
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            `;
+                        }
+                    }
+                });
             }
         }
 
@@ -1126,20 +1188,20 @@
         // Custom premium confirmation modal (bypasses native browser popup-blocking policies)
         function tanyaPengesahan(mesej, padaSelesai) {
             const overlay = document.createElement("div");
-            overlay.className = "confirm-overlay";
+            overlay.className = "fixed inset-0 bg-slate-950/65 backdrop-blur-sm flex items-center justify-center p-4 z-[99999]";
             overlay.innerHTML = `
-                <div class="confirm-card" id="customConfirmCard">
-                    <h3 class="confirm-title">
+                <div class="bg-white dark:bg-slate-900 text-slate-900 dark:text-white w-full max-w-sm rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl p-6 transform scale-95 opacity-0 transition-all duration-200" id="customConfirmCard">
+                    <h3 class="text-lg font-extrabold flex items-center gap-2 mb-2 text-slate-900 dark:text-white">
                         ⚠️ Pengesahan Tindakan
                     </h3>
-                    <p class="confirm-desc">
+                    <p class="text-sm text-slate-600 dark:text-slate-400 mb-6 leading-relaxed">
                         ${mesej}
                     </p>
-                    <div class="confirm-actions">
-                        <button id="btnConfirmBatal" class="btn btn-light" style="padding: 8px 16px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; cursor: pointer; border: 1px solid var(--surface-border); background: var(--surface-hover); color: var(--text-primary);">
+                    <div class="flex justify-end gap-3">
+                        <button id="btnConfirmBatal" class="px-4 py-2 border border-slate-200 dark:border-slate-800 bg-slate-50 hover:bg-slate-100 dark:bg-slate-800 dark:hover:bg-slate-700/80 rounded-xl font-semibold text-xs text-slate-700 dark:text-slate-300 transition cursor-pointer">
                             Batal
                         </button>
-                        <button id="btnConfirmYa" class="btn btn-danger" style="padding: 8px 20px; border-radius: 8px; font-weight: 600; font-size: 0.8rem; background: var(--danger); border-color: var(--danger); color: white; cursor: pointer;">
+                        <button id="btnConfirmYa" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-xl font-semibold text-xs transition cursor-pointer shadow-sm">
                             Ya, Teruskan
                         </button>
                     </div>
@@ -1150,7 +1212,10 @@
             // Animation trigger
             setTimeout(() => {
                 const card = overlay.querySelector("#customConfirmCard");
-                if (card) card.classList.add("active");
+                if (card) {
+                    card.classList.remove("scale-95", "opacity-0");
+                    card.classList.add("scale-100", "opacity-100");
+                }
             }, 10);
 
             overlay.querySelector("#btnConfirmBatal").onclick = () => {
