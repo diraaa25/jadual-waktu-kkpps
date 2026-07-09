@@ -684,7 +684,7 @@ function renderLocationGrid() {
         gridHtml += `
             <tr style="border-bottom:1px solid var(--surface-border);">
                 <th style="font-weight:600; text-align:center; background:var(--surface-hover); padding: 12px 6px; border-right:1px solid var(--surface-border);">
-                    ${j.mula}–${j.tamat}
+                    ${format12Hour(j.mula)} – ${format12Hour(j.tamat)}
                 </th>
         `;
         
@@ -721,7 +721,7 @@ function renderLocationGrid() {
                             <div style="font-size:0.7rem; margin-top:4px; opacity:0.95;">
                                 👤 ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''}<br>
                                 🏫 Kelas: <b>${s.kelas}</b><br>
-                                ⏱️ ${s.mula}–${s.tamat}
+                                ⏱️ ${format12Hour(s.mula)} – ${format12Hour(s.tamat)}
                             </div>
                         </div>
                     `;

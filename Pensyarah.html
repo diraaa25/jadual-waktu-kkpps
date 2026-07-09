@@ -1034,7 +1034,7 @@
                 gridHtml += `
                     <tr class="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
                         <td class="p-3 text-center font-bold bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-450 border-r border-slate-200 dark:border-slate-800 select-none">
-                            ${j.mula} – ${j.tamat}
+                            ${format12Hour(j.mula)} – ${format12Hour(j.tamat)}
                         </td>
                 `;
 
@@ -1075,7 +1075,7 @@
                                         <div class="flex items-center gap-1">🏫 <b>Kelas: ${s.kelas}</b></div>
                                         <div class="flex items-center gap-1">👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
                                         <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
-                                        <div class="flex items-center gap-1">⏱️ <span>${s.mula} – ${s.tamat}</span></div>
+                                        <div class="flex items-center gap-1">⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
                                     </div>
                                 </div>
                             `;
@@ -1198,7 +1198,7 @@
                 gridHtml += `
                     <tr class="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
                         <td class="p-3 text-center font-bold bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-800 select-none">
-                            ${j.mula} – ${j.tamat}
+                            ${format12Hour(j.mula)} – ${format12Hour(j.tamat)}
                         </td>
                 `;
 
@@ -1248,7 +1248,7 @@
                                     <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
                                         <div class="flex items-center gap-1">🏫 <span>${s.kelas}</span></div>
                                         <div class="flex items-center gap-1">📍 <span class="truncate" title="${s.lokasi}">${s.lokasi}</span></div>
-                                        <div class="flex items-center gap-1">⏱️ <span>${s.mula} – ${s.tamat}</span></div>
+                                        <div class="flex items-center gap-1">⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
                                     </div>
                                 </div>
                             `;
@@ -1320,7 +1320,7 @@
                 gridHtml += `
                     <tr class="border-b border-slate-200 dark:border-slate-800 hover:bg-slate-50/50 dark:hover:bg-slate-900/10">
                         <td class="p-3 text-center font-bold bg-slate-100 dark:bg-slate-950 text-slate-500 dark:text-slate-400 border-r border-slate-200 dark:border-slate-800 select-none">
-                            ${j.mula} – ${j.tamat}
+                            ${format12Hour(j.mula)} – ${format12Hour(j.tamat)}
                         </td>
                 `;
 
@@ -1363,7 +1363,7 @@
                                     <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
                                         <div class="flex items-center gap-1">🏫 <b>Kelas: ${s.kelas}</b></div>
                                         <div class="flex items-center gap-1">👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
-                                        <div class="flex items-center gap-1">⏱️ <span>${s.mula} – ${s.tamat}</span></div>
+                                        <div class="flex items-center gap-1">⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
                                     </div>
                                 </div>
                             `;

@@ -1176,7 +1176,7 @@ function render(){
 
   for(let i=0;i<masa.length-1;i++){
     const blokMula=toMin(masa[i]);
-    html+=`<tr><th style="font-weight:600; text-align:center; background:var(--surface-hover);">${masa[i]}–${masa[i+1]}</th>`;
+    html+=`<tr><th style="font-weight:600; text-align:center; background:var(--surface-hover);">${format12Hour(masa[i])} – ${format12Hour(masa[i+1])}</th>`;
     
     hari.forEach(h=>{
       // If this day-hour cell is already spanned from a previous row, skip td rendering
@@ -1205,7 +1205,7 @@ function render(){
             <small>
               ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
               📍 ${s.lokasi}<br>
-              ⏱️ ${s.mula}–${s.tamat}
+              ⏱️ ${format12Hour(s.mula)} – ${format12Hour(s.tamat)}
             </small>
           </div>`;
         }).join('');

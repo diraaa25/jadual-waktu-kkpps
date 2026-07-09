@@ -288,3 +288,15 @@ const appendStatusBadge = (sidebarSelector, isDark = false) => {
         }
     }, 100);
 };
+
+const format12Hour = (timeStr) => {
+    if (!timeStr) return '';
+    const parts = timeStr.split(':');
+    if (parts.length < 2) return timeStr;
+    let h = parseInt(parts[0], 10);
+    const m = parts[1];
+    const ampm = h >= 12 ? 'PM' : 'AM';
+    h = h % 12;
+    h = h ? h : 12;
+    return `${h}:${m} ${ampm}`;
+};
