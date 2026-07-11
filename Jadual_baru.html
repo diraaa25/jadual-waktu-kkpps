@@ -2,13 +2,30 @@
 <html lang="ms">
 
 <head>
+  <script>
+    // Security session guard to prevent direct URL access without login
+    if (sessionStorage.getItem("logged_role") !== "admin" && sessionStorage.getItem("logged_role") !== "programmer") {
+        alert("Akses ditolak. Sila log masuk terlebih dahulu.");
+        window.location.href = "index.html";
+    }
+  </script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b3d5c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jadual KKPPS">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
   <title>Sistem Jadual Waktu - Kolej Komuniti Papar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <style>
     :root {
       --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
@@ -296,7 +313,6 @@
 
     .badge {
       display: inline-block;
-      background: var(--success);
       color: #fff;
       border-radius: 4px;
       padding: 2px 6px;
@@ -304,8 +320,29 @@
       font-weight: 600;
     }
 
+    .badge.under {
+      background: #eab308;
+    }
+
+    .badge.match {
+      background: var(--success);
+    }
+
     .badge.over {
       background: var(--danger);
+    }
+
+    .rehat-cell {
+      background-color: #fef08a !important;
+      color: #854d0e !important;
+      text-align: center;
+      vertical-align: middle;
+      font-weight: 700;
+      font-size: 0.7rem;
+      letter-spacing: 0.5px;
+      user-select: none;
+      opacity: 0.85;
+      border: 1px dashed #ca8a04 !important;
     }
 
     .note {
@@ -371,6 +408,17 @@
       td {
         border: 1px solid #000 !important;
         color: #000 !important;
+      }
+
+      .rehat-cell {
+        background: #fef08a !important;
+        color: #854d0e !important;
+        text-align: center;
+        vertical-align: middle;
+        font-weight: 700;
+        font-size: 0.7rem;
+        letter-spacing: 0.5px;
+        border: 1px dashed #ca8a04 !important;
       }
     }
 
@@ -445,7 +493,7 @@
       <h1
         style="font-size: 1.5rem; font-weight: 800; letter-spacing: 0.5px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; text-shadow: 0 2px 4px rgba(0,0,0,0.2);">
         🎓 <span
-          style="background: linear-gradient(to right, #38bdf8, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Sistem
+          style="background: linear-gradient(to right, #38bdf8, #22d3ee); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Sistem
           Jadual Waktu Pengajaran</span>
         <span
           style="font-size: 1.05rem; font-weight: 400; color: #94a3b8; border-left: 2px solid #334155; padding-left: 10px; margin-left: 4px;">Kolej
@@ -465,6 +513,15 @@
           <polyline points="9 22 9 12 15 12 15 22"></polyline>
         </svg>
         Utama Dashboard
+      </a>
+      <a href="index.html" onclick="sessionStorage.clear();" class="btn btn-danger" style="border: none; display: flex; align-items: center; gap: 6px;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+          <polyline points="16 17 21 12 16 7"></polyline>
+          <line x1="21" y1="12" x2="9" y2="12"></line>
+        </svg>
+        Log Keluar
       </a>
     </div>
   </header>
@@ -516,9 +573,31 @@
             <label>Jumlah Jam Mengajar / Minggu</label>
             <input id="jam" type="number" min="0.5" step="0.5" placeholder="cth: 4" required>
           </div>
+          <div>
+            <label>Kelas</label>
+            <select id="metaKelas" required>
+              <!-- Dynamic load -->
+            </select>
+          </div>
+          <div>
+            <label>⏱️ Had Mula Mengajar (Pilihan)</label>
+            <select id="prefStart" required>
+              <option value="8" selected>Tiada Had (Bebas)</option>
+              <option value="9">09:00 AM</option>
+              <option value="10">10:00 AM</option>
+              <option value="11">11:00 AM</option>
+              <option value="14">02:00 PM</option>
+            </select>
+          </div>
         </div>
-        <div class="actions">
+        <div class="actions" style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
           <button class="btn btn-accent" type="submit">Tambah Subjek</button>
+          <div style="border-left: 1px solid var(--surface-border); height: 24px; margin: 0 10px;" class="no-print"></div>
+          <label class="btn btn-light" style="margin-bottom: 0; display: inline-flex; align-items: center; gap: 6px; cursor: pointer;" class="no-print">
+            📥 Muat Naik Excel
+            <input type="file" id="excelSubjekInput" accept=".xlsx, .xls" style="display: none;" onchange="muatNaikExcelSubjek(event)">
+          </label>
+          <span style="font-size: 0.7rem; color: var(--text-secondary);" class="no-print">Sila pilih fail excel (.xlsx) untuk import subjek secara pukal</span>
         </div>
       </form>
 
@@ -530,6 +609,7 @@
               <th>Pensyarah Pembantu (Singk.)</th>
               <th>Subjek</th>
               <th>Kod</th>
+              <th>Kelas</th>
               <th>Jam Diperuntuk</th>
               <th>Jam Dijadual</th>
               <th style="width: 80px;">Tindakan</th>
@@ -625,15 +705,27 @@
 
     <!-- 3. PAPARAN JADUAL MINGGUAN -->
     <div class="card">
-      <h2>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          style="color:var(--primary)">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-        </svg>
-        3. Jadual Waktu Mingguan
-      </h2>
+      <div
+        style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--surface-border); padding-bottom: 10px; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+        <h2
+          style="border-bottom: none; padding-bottom: 0; margin-bottom: 0; display: flex; align-items: center; gap: 0.5rem;">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+            stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+            style="color:var(--primary)">
+            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+            <polyline points="14 2 14 8 20 8"></polyline>
+          </svg>
+          3. Jadual Waktu Mingguan
+        </h2>
+        <div style="display: flex; align-items: center; gap: 8px;">
+          <label style="font-weight: 700; margin-bottom: 0; white-space: nowrap; font-size: 0.85rem;">Tapis Mengikut
+            Kelas:</label>
+          <select id="pilihJadualKelas" style="width: auto; padding: 6px 12px; margin-bottom: 0;"
+            onchange="window.renderJadualWaktuKelas()">
+            <!-- Options populated dynamically -->
+          </select>
+        </div>
+      </div>
       <div class="table-responsive">
         <div id="jadualWrap"></div>
       </div>
@@ -689,20 +781,45 @@
     <!-- 4.5 CETAKAN KHAS JADUAL -->
     <div class="card no-print">
       <h2>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
+          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+          style="color:var(--accent)">
           <polyline points="6 9 6 2 18 2 18 9"></polyline>
           <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
           <rect x="6" y="14" width="12" height="8"></rect>
         </svg>
-        4.5 Cetak Khas Jadual (Pensyarah & Lokasi)
+        4.5 Cetak Khas Jadual (Kelas, Pensyarah & Lokasi)
       </h2>
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px;">
-        Pilih pensyarah atau lokasi tertentu untuk dicetak secara berasingan, atau cetak semua jadual pensyarah secara serentak.
+        Pilih kelas, pensyarah atau lokasi tertentu untuk dicetak secara berasingan, atau cetak semua jadual secara
+        serentak.
       </p>
-      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+      <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 15px;">
+        <!-- Cetak Kelas -->
+        <div
+          style="border: 1px solid var(--surface-border); padding: 15px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+          <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">🏫 Cetakan Mengikut Kelas</h4>
+          <div>
+            <label for="printSelectClass">Pilih Kelas</label>
+            <select id="printSelectClass">
+              <!-- Dynamic options -->
+            </select>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px;">
+            <button type="button" class="btn btn-primary" onclick="cetakIndividuKelas()"
+              style="flex: 1; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak
+              Individu</button>
+            <button type="button" class="btn btn-accent" onclick="cetakSemuaKelasSerentak()"
+              style="flex: 1; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak
+              Semua (Serentak)</button>
+          </div>
+        </div>
+
         <!-- Cetak Pensyarah -->
-        <div style="border: 1px solid var(--surface-border); padding: 15px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
-          <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">👤 Cetakan Mengikut Pensyarah</h4>
+        <div
+          style="border: 1px solid var(--surface-border); padding: 15px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+          <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">👤 Cetakan Mengikut Pensyarah
+          </h4>
           <div>
             <label for="printSelectLec">Pilih Pensyarah</label>
             <select id="printSelectLec">
@@ -710,13 +827,18 @@
             </select>
           </div>
           <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-top: 5px;">
-            <button type="button" class="btn btn-primary" onclick="cetakIndividuPensyarah()" style="flex: 1; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak Individu</button>
-            <button type="button" class="btn btn-accent" onclick="cetakSemuaPensyarahSerentak()" style="flex: 1; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak Semua (Serentak)</button>
+            <button type="button" class="btn btn-primary" onclick="cetakIndividuPensyarah()"
+              style="flex: 1; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak
+              Individu</button>
+            <button type="button" class="btn btn-accent" onclick="cetakSemuaPensyarahSerentak()"
+              style="flex: 1; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak
+              Semua (Serentak)</button>
           </div>
         </div>
 
         <!-- Cetak Lokasi -->
-        <div style="border: 1px solid var(--surface-border); padding: 15px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
+        <div
+          style="border: 1px solid var(--surface-border); padding: 15px; border-radius: 8px; display: flex; flex-direction: column; justify-content: space-between; gap: 10px;">
           <h4 style="font-size: 0.9rem; font-weight: 700; color: var(--text-primary);">📍 Cetakan Mengikut Lokasi</h4>
           <div>
             <label for="printSelectLoc">Pilih Lokasi</label>
@@ -725,7 +847,9 @@
             </select>
           </div>
           <div style="margin-top: 5px;">
-            <button type="button" class="btn btn-primary" onclick="cetakIndividuLokasi()" style="width: 100%; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak Jadual Lokasi</button>
+            <button type="button" class="btn btn-primary" onclick="cetakIndividuLokasi()"
+              style="width: 100%; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak
+              Jadual Lokasi</button>
           </div>
         </div>
       </div>
@@ -837,6 +961,10 @@
           </select>
         </div>
         <div>
+          <label>Tarikh Kuatkuasa Jadual</label>
+          <input type="date" id="inputEffectiveDate" onchange="updateEffectiveDate(this.value)" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; height: 38px; font-family: inherit; font-size: 0.8rem;">
+        </div>
+        <div>
           <label>Tambah Sesi Baru</label>
           <div style="display:flex; gap: 8px;">
             <input id="inputNewSession" placeholder="cth: SESI 1 2026/2027" style="text-transform: uppercase;">
@@ -896,10 +1024,14 @@
       </h2>
 
       <form id="formAddStudentAdmin" onsubmit="tambahPelajarAdmin(event)" style="margin-bottom: 24px;">
-        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;">
           <div>
             <label for="adminStudName">Nama Penuh</label>
             <input id="adminStudName" placeholder="cth: AHMAD BIN ALI" required style="text-transform: uppercase;">
+          </div>
+          <div>
+            <label for="adminStudMatrix">No. Kad Matriks</label>
+            <input id="adminStudMatrix" placeholder="cth: KKP2026001" required style="text-transform: uppercase;">
           </div>
           <div>
             <label for="adminStudIc">No. Kad Pengenalan (12 Digit)</label>
@@ -918,16 +1050,30 @@
           <textarea id="adminStudAddress" placeholder="Masukkan alamat lengkap..." rows="2" required
             style="height: 60px; resize: none; font-family: inherit; font-size: 0.9rem; padding: 8px; width: 100%; border: 1px solid var(--surface-border); border-radius: var(--border-radius-sm);"></textarea>
         </div>
-        <div class="actions" style="margin-top: 12px;">
-          <button class="btn btn-accent" type="submit">Daftar Pelajar Baru</button>
+        <div class="actions" style="margin-top: 12px; display: flex; gap: 10px; align-items: center;">
+          <button class="btn btn-accent" type="submit" id="btnSubmitStudentAdmin">Daftar Pelajar Baru</button>
         </div>
       </form>
 
+      <!-- Excel Import Section -->
+      <div style="margin-top: 15px; margin-bottom: 24px; padding: 15px; background: var(--primary-soft); border: 1px dashed var(--primary); border-radius: var(--border-radius-md); display: flex; flex-direction: column; gap: 8px;">
+        <label style="font-weight: 700; font-size: 0.85rem; color: var(--primary-soft-text);">📥 Import Pelajar secara Automatik dari Excel (.xlsx / .xls)</label>
+        <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 4px;">
+          <input type="file" id="excelStudentFile" accept=".xlsx, .xls" style="font-size: 0.8rem; padding: 4px; border: 1px solid var(--surface-border); border-radius: var(--border-radius-sm); background: var(--surface);">
+          <button class="btn btn-accent" type="button" onclick="uploadExcelPelajar()" style="padding: 6px 14px; font-size: 0.8rem;">Muat Naik & Import Excel</button>
+        </div>
+        <small style="color: var(--text-secondary); font-size: 0.72rem; line-height: 1.3;">
+          Nota: Pastikan fail Excel mengandungi tajuk lajur (Header) berikut: 
+          <b>Nama Penuh</b>, <b>No. IC</b> (12 digit tanpa sempang), <b>Jantina</b>, dan <b>Alamat Tetap</b>.
+        </small>
+      </div>
+
       <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-top:24px; margin-bottom:12px;">
         Senarai Rekod Pelajar Berdaftar</h3>
-      <div style="margin-bottom: 12px;">
-        <input id="searchStudentsAdmin" oninput="filterStudentsAdmin()" placeholder="Cari nama, no. IC atau alamat..."
+      <div style="margin-bottom: 12px; display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px;">
+        <input id="searchStudentsAdmin" oninput="filterStudentsAdmin()" placeholder="Cari nama, no. matriks, IC atau alamat..."
           style="max-width: 350px; padding: 8px; font-size:0.85rem;">
+        <button class="btn btn-primary" onclick="cetakSenaraiPelajar()" style="padding: 6px 14px; font-size: 0.8rem;">🖨️ Cetak Senarai Pelajar</button>
       </div>
 
       <div class="table-responsive">
@@ -935,10 +1081,11 @@
           <thead>
             <tr>
               <th style="width: 5%;">Bil</th>
-              <th style="width: 25%;">Nama Penuh</th>
+              <th style="width: 20%;">Nama Penuh</th>
+              <th style="width: 15%;">No. Matriks</th>
               <th style="width: 15%;">No. IC</th>
               <th style="width: 10%;">Jantina</th>
-              <th style="width: 35%;">Alamat Tetap</th>
+              <th style="width: 25%;">Alamat Tetap</th>
               <th style="width: 10%; text-align: center;">Tindakan</th>
             </tr>
           </thead>
@@ -961,7 +1108,8 @@
         ⚡ Auto-Generate Jadual Waktu
       </h3>
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">
-        Sila petakan **Kelas** dan **Lokasi** bagi setiap subjek berdaftar di bawah. Sistem akan menjadualkan semua jam
+        Sila masukkan <b>Kelas</b> dan <b>Lokasi</b> bagi setiap subjek berdaftar di bawah. Sistem akan menjadualkan
+        semua jam
         mengajar secara automatik dan memastikan tiada pertindihan berlaku.
       </p>
 
@@ -1016,6 +1164,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="firebase-service.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     appendStatusBadge('#firebase-status-badge-container');
   </script>
@@ -1063,7 +1212,17 @@
       { name: "MAKMAL SIMULASI LOGISTIK", code: "MS", type: "SLK" }
     ];
 
-    const CLASSES_DATA = [
+    // Load any custom locations from localStorage
+    const customLocs = JSON.parse(localStorage.getItem('kkpapar_locations')) || [];
+    customLocs.forEach(loc => {
+      if (!LOCATIONS_DATA.some(l => l.name === loc)) {
+        const code = loc.split(' ').map(w => w[0]).join('');
+        const type = loc.includes('LOGISTIK') ? 'SLK' : (loc.includes('STM') || loc.includes('MAKMAL') ? 'STM' : 'Umum');
+        LOCATIONS_DATA.push({ name: loc, code: code, type: type });
+      }
+    });
+
+    let CLASSES_DATA = JSON.parse(localStorage.getItem('kkpapar_classes')) || [
       "STM 1A", "STM 1B", "STM 1C",
       "STM 2A", "STM 2B", "STM 2C",
       "STM 3A", "STM 3B", "STM 3C",
@@ -1086,6 +1245,8 @@
     let DB = { subjek: [], slot: [], isConfirmed: false };
     let ANNOUNCEMENTS = [];
     let STUDENTS = [];
+    let editSubjekIndex = null;
+    let editSlotIndex = null;
 
     function simpan() {
       if (isFirebaseActive()) {
@@ -1120,6 +1281,37 @@
       setupRealTimeClashDetection();
     });
 
+    function bersihkanDatabase(database) {
+      let changed = false;
+      database.subjek = database.subjek || [];
+      database.slot = database.slot || [];
+
+      // Clean up corrupt slots
+      database.slot.forEach(s => {
+        if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
+          const foundSub = database.subjek.find(sub => sub.subjek === s.subjek);
+          s.kod = foundSub ? foundSub.kod : 'STM3012';
+          changed = true;
+        }
+      });
+
+      // Clean up missing/undefined class and prefStart in subjects
+      database.subjek.forEach(sub => {
+        if (!sub.kelas) {
+          // Find class from slot
+          const matchingSlot = database.slot.find(sl => sl.kod === sub.kod && sl.singkatan === sub.singkatan);
+          sub.kelas = matchingSlot ? matchingSlot.kelas : 'STM 1A';
+          changed = true;
+        }
+        if (sub.prefStart === undefined) {
+          sub.prefStart = 8;
+          changed = true;
+        }
+      });
+
+      return changed;
+    }
+
     function initDatabaseConnection() {
       if (isFirebaseActive()) {
         firebaseWatchLecturers(data => {
@@ -1133,15 +1325,10 @@
         });
         firebaseWatchTimetable(data => {
           DB = data || { subjek: [], slot: [], isConfirmed: false };
-          DB.slot = DB.slot || [];
-          DB.subjek = DB.subjek || [];
-          // Clean up any corrupt slots
-          DB.slot.forEach(s => {
-            if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
-              const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
-              s.kod = foundSub ? foundSub.kod : 'STM3012';
-            }
-          });
+          const changed = bersihkanDatabase(DB);
+          if (changed) {
+            firebaseSaveTimetable(DB);
+          }
           render();
         });
         firebaseWatchAnnouncements(data => {
@@ -1163,20 +1350,9 @@
         }));
 
         DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
-        DB.slot = DB.slot || [];
-        DB.subjek = DB.subjek || [];
-        if (DB && DB.slot) {
-          let changed = false;
-          DB.slot.forEach(s => {
-            if (!s.kod || typeof s.kod === 'object' || s.kod === '[object HTMLInputElement]') {
-              const foundSub = DB.subjek.find(sub => sub.subjek === s.subjek);
-              s.kod = foundSub ? foundSub.kod : 'STM3012';
-              changed = true;
-            }
-          });
-          if (changed) {
-            localStorage.setItem(KEY, JSON.stringify(DB));
-          }
+        const changed = bersihkanDatabase(DB);
+        if (changed) {
+          localStorage.setItem(KEY, JSON.stringify(DB));
         }
 
         ANNOUNCEMENTS = JSON.parse(localStorage.getItem(ANN_KEY));
@@ -1211,6 +1387,18 @@
       dKelas.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' +
         CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
 
+      const mKelas = document.getElementById('metaKelas');
+      if (mKelas) {
+        mKelas.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' +
+          CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
+      }
+
+      const pSelectClass = document.getElementById('printSelectClass');
+      if (pSelectClass) {
+        pSelectClass.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' +
+          CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
+      }
+
       // Locations
       dLokasi.innerHTML = '<option value="" disabled selected>Pilih Lokasi</option>' +
         LOCATIONS_DATA.map(l => `<option value="${l.name}">${l.name} (${l.code}) [${l.type}]</option>`).join('');
@@ -1229,27 +1417,92 @@
           document.getElementById('singkatanPembantu').value = selected ? selected.shortName : '-';
         }
       });
+
+      // Auto-select class when choosing a subject
+      const pilihKodEl = document.getElementById('pilihKod');
+      if (pilihKodEl) {
+        pilihKodEl.addEventListener('change', () => {
+          const selectValue = pilihKodEl.value;
+          if (selectValue) {
+            const parts = selectValue.split('_');
+            if (parts.length >= 3) {
+              const kelas = parts[2];
+              dKelas.value = kelas;
+            }
+          }
+        });
+      }
     }
 
-    // --- REGISTER SUBJECT ---
+    // --- REGISTER / EDIT SUBJECT ---
     document.getElementById('formMeta').addEventListener('submit', e => {
       e.preventDefault();
       const kod = val('kod').toUpperCase();
       const singkatan = val('singkatan').toUpperCase();
-      if (DB.subjek.some(s => s.kod === kod && s.singkatan === singkatan)) {
-        alert('Subjek dengan kod ini bagi pensyarah tersebut sudah didaftarkan.');
-        return;
-      }
+      const kelas = val('metaKelas');
 
-      DB.subjek.push({
-        nama: val('namaPensyarah'),
-        singkatan: val('singkatan').toUpperCase(),
-        namaPembantu: val('namaPembantu') || '-',
-        singkatanPembantu: val('singkatanPembantu') ? val('singkatanPembantu').toUpperCase() : '-',
-        subjek: val('subjek'),
-        kod,
-        jam: parseFloat(val('jam'))
-      });
+      if (editSubjekIndex === null) {
+        // Adding new subject
+        if (DB.subjek.some(s => s.kod === kod && s.singkatan === singkatan && s.kelas === kelas)) {
+          alert('Subjek dengan kod ini bagi pensyarah dan kelas tersebut sudah didaftarkan.');
+          return;
+        }
+
+        DB.subjek.push({
+          nama: val('namaPensyarah'),
+          singkatan: val('singkatan').toUpperCase(),
+          namaPembantu: val('namaPembantu') || '-',
+          singkatanPembantu: val('singkatanPembantu') ? val('singkatanPembantu').toUpperCase() : '-',
+          subjek: val('subjek'),
+          kod,
+          jam: parseFloat(val('jam')),
+          kelas,
+          prefStart: parseInt(val('prefStart')) || 8
+        });
+      } else {
+        // Editing existing subject
+        const oldSubjek = DB.subjek[editSubjekIndex];
+        const oldKod = oldSubjek.kod;
+        const oldSingkatan = oldSubjek.singkatan;
+        const oldKelas = oldSubjek.kelas;
+
+        if (DB.subjek.some((s, idx) => idx !== editSubjekIndex && s.kod === kod && s.singkatan === singkatan && s.kelas === kelas)) {
+          alert('Subjek dengan kod ini bagi pensyarah dan kelas tersebut sudah didaftarkan.');
+          return;
+        }
+
+        const updatedSubjek = {
+          nama: val('namaPensyarah'),
+          singkatan: val('singkatan').toUpperCase(),
+          namaPembantu: val('namaPembantu') || '-',
+          singkatanPembantu: val('singkatanPembantu') ? val('singkatanPembantu').toUpperCase() : '-',
+          subjek: val('subjek'),
+          kod,
+          jam: parseFloat(val('jam')),
+          kelas,
+          prefStart: parseInt(val('prefStart')) || 8
+        };
+        DB.subjek[editSubjekIndex] = updatedSubjek;
+
+        // Sync slots that referenced this subject
+        DB.slot.forEach(sl => {
+          if (sl.kod === oldKod && sl.singkatan === oldSingkatan && sl.kelas === oldKelas) {
+            sl.kod = updatedSubjek.kod;
+            sl.singkatan = updatedSubjek.singkatan;
+            sl.singkatanPembantu = updatedSubjek.singkatanPembantu;
+            sl.subjek = updatedSubjek.subjek;
+            sl.nama = updatedSubjek.nama;
+            sl.namaPembantu = updatedSubjek.namaPembantu;
+            sl.kelas = updatedSubjek.kelas;
+          }
+        });
+
+        editSubjekIndex = null;
+        const submitBtn = document.querySelector('#formMeta button[type="submit"]');
+        submitBtn.textContent = 'Tambah Subjek';
+        const cancelBtn = document.getElementById('btnCancelEditSubjek');
+        if (cancelBtn) cancelBtn.remove();
+      }
 
       document.getElementById('namaPensyarah').selectedIndex = 0;
       document.getElementById('namaPembantu').selectedIndex = 0;
@@ -1258,24 +1511,189 @@
       document.getElementById('subjek').value = '';
       document.getElementById('kod').value = '';
       document.getElementById('jam').value = '';
+      document.getElementById('metaKelas').selectedIndex = 0;
+      document.getElementById('prefStart').value = '8';
 
       simpan();
     });
 
-    // --- ADD SLOT ---
+    window.muatNaikExcelSubjek = function(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        try {
+          const data = evt.target.result;
+          const workbook = XLSX.read(data, { type: 'binary' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const json = XLSX.utils.sheet_to_json(worksheet);
+
+          if (json.length === 0) {
+            alert("Ralat: Fail Excel kosong!");
+            return;
+          }
+
+          let importCount = 0;
+          let skippedCount = 0;
+
+          // Helper to find key matches
+          const findVal = (row, possibleKeys) => {
+            const foundKey = Object.keys(row).find(k => 
+              possibleKeys.some(pk => k.trim().toLowerCase().replace(/\s+/g, '') === pk)
+            );
+            return foundKey ? row[foundKey] : null;
+          };
+
+          json.forEach(row => {
+            const kod = (findVal(row, ['kodsubjek', 'kod', 'subjectcode']) || '').toString().trim().toUpperCase();
+            const subjekName = (findVal(row, ['namasubjek', 'subjek', 'subject', 'kursus', 'namakursus']) || '').toString().trim();
+            const kelas = (findVal(row, ['kelas', 'kumpulan', 'class', 'group']) || '').toString().trim().toUpperCase();
+            const jamStr = findVal(row, ['jam', 'jammengajar', 'hours', 'credithours', 'kredit']);
+            const pUtamaInput = (findVal(row, ['pensyarahutama', 'pensyarah', 'lecturer', 'utama']) || '').toString().trim();
+            const pPembantuInput = (findVal(row, ['pensyarahpembantu', 'pembantu', 'assistant', 'ass']) || '-').toString().trim();
+            const prefStartVal = parseInt(findVal(row, ['hadmula', 'hadwaktu', 'prefstart', 'hadmulamengajar'])) || 8;
+
+            if (!kod || !subjekName || !kelas || !pUtamaInput) {
+              skippedCount++;
+              return;
+            }
+
+            const jam = parseFloat(jamStr) || 2.0;
+
+            const singkatan = cariSingkatanPensyarah(pUtamaInput);
+            const namaUtama = cariNamaPenuhPensyarah(pUtamaInput);
+            const singkatanPembantu = pPembantuInput === '-' ? '-' : cariSingkatanPensyarah(pPembantuInput);
+            const namaPembantu = pPembantuInput === '-' ? '-' : cariNamaPenuhPensyarah(pPembantuInput);
+
+            // Check if already exists in DB.subjek
+            const exists = DB.subjek.some(s => s.kod === kod && s.singkatan === singkatan && s.kelas === kelas);
+            if (exists) {
+              skippedCount++;
+              return;
+            }
+
+            // Also make sure the class is in CLASSES_DATA
+            if (!CLASSES_DATA.includes(kelas)) {
+              CLASSES_DATA.push(kelas);
+              localStorage.setItem('kkpapar_classes', JSON.stringify(CLASSES_DATA));
+            }
+
+            DB.subjek.push({
+              nama: namaUtama,
+              singkatan: singkatan,
+              namaPembantu: namaPembantu,
+              singkatanPembantu: singkatanPembantu,
+              subjek: subjekName,
+              kod: kod,
+              jam: jam,
+              kelas: kelas,
+              prefStart: prefStartVal
+            });
+            importCount++;
+          });
+
+          if (importCount > 0) {
+            simpan();
+            initDropdowns(); // Reload dropdown options
+            alert(`Berjaya memuat naik ${importCount} subjek dari Excel! (Langkau: ${skippedCount} baris bertindih/tidak sah)`);
+          } else {
+            alert(`Tiada subjek baharu dimasukkan. (Langkau: ${skippedCount} baris bertindih/tidak sah)`);
+          }
+
+        } catch (err) {
+          console.error(err);
+          alert("Gagal membaca fail Excel. Pastikan format fail betul.");
+        }
+        
+        e.target.value = "";
+      };
+
+      reader.readAsBinaryString(file);
+    };
+
+    function cariSingkatanPensyarah(nama) {
+      if (!nama || nama.trim() === '-' || nama.trim() === '') return '-';
+      const normNama = nama.trim().toUpperCase();
+      const lec = LECTURERS_DATA.find(l => l.name.toUpperCase() === normNama || l.shortName.toUpperCase() === normNama);
+      return lec ? lec.shortName : normNama;
+    }
+
+    function cariNamaPenuhPensyarah(nama) {
+      if (!nama || nama.trim() === '-' || nama.trim() === '') return '-';
+      const normNama = nama.trim().toUpperCase();
+      const lec = LECTURERS_DATA.find(l => l.name.toUpperCase() === normNama || l.shortName.toUpperCase() === normNama);
+      return lec ? lec.name : normNama;
+    }
+
+    window.batalEditSubjek = function () {
+      editSubjekIndex = null;
+      document.getElementById('namaPensyarah').selectedIndex = 0;
+      document.getElementById('namaPembantu').selectedIndex = 0;
+      document.getElementById('singkatan').value = '';
+      document.getElementById('singkatanPembantu').value = '';
+      document.getElementById('subjek').value = '';
+      document.getElementById('kod').value = '';
+      document.getElementById('jam').value = '';
+      document.getElementById('metaKelas').selectedIndex = 0;
+      document.getElementById('prefStart').value = '8';
+
+      const submitBtn = document.querySelector('#formMeta button[type="submit"]');
+      submitBtn.textContent = 'Tambah Subjek';
+      const cancelBtn = document.getElementById('btnCancelEditSubjek');
+      if (cancelBtn) cancelBtn.remove();
+    };
+
+    window.editSubjek = function (index) {
+      editSubjekIndex = index;
+      const s = DB.subjek[index];
+
+      document.getElementById('namaPensyarah').value = s.nama;
+      document.getElementById('singkatan').value = s.singkatan;
+      document.getElementById('namaPembantu').value = s.namaPembantu;
+      document.getElementById('singkatanPembantu').value = s.singkatanPembantu;
+      document.getElementById('subjek').value = s.subjek;
+      document.getElementById('kod').value = s.kod;
+      document.getElementById('jam').value = s.jam;
+      document.getElementById('metaKelas').value = s.kelas || '';
+      document.getElementById('prefStart').value = s.prefStart || '8';
+
+      const submitBtn = document.querySelector('#formMeta button[type="submit"]');
+      submitBtn.textContent = 'Kemaskini Subjek';
+
+      if (!document.getElementById('btnCancelEditSubjek')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.id = 'btnCancelEditSubjek';
+        cancelBtn.className = 'btn btn-light';
+        cancelBtn.textContent = 'Batal Ubah';
+        cancelBtn.onclick = window.batalEditSubjek;
+        submitBtn.parentNode.appendChild(cancelBtn);
+      }
+
+      document.getElementById('formMeta').scrollIntoView({ behavior: 'smooth' });
+    };
+
+    // --- ADD / EDIT SLOT ---
     document.getElementById('formSlot').addEventListener('submit', e => {
       e.preventDefault();
       const selectValue = val('pilihKod');
-      const s = DB.subjek.find(x => `${x.kod}_${x.singkatan}` === selectValue);
+      const [kod, singkatan, kelas] = selectValue.split('_');
+      const s = DB.subjek.find(x => x.kod === kod && x.singkatan === singkatan && x.kelas === kelas);
       if (!s) { alert('Sila daftarkan subjek terlebih dahulu.'); return; }
+
+      const mula = val('mula');
+      const tamat = val('tamat');
+      if (tamat <= mula) { alert('Masa tamat mesti selepas masa mula.'); return; }
 
       const slot = {
         kod: s.kod,
-        kelas: val('kelas'),
+        kelas: s.kelas,
         lokasi: val('lokasi'),
         hari: val('hari'),
-        mula: val('mula'),
-        tamat: val('tamat'),
+        mula,
+        tamat,
         singkatan: s.singkatan,
         singkatanPembantu: s.singkatanPembantu,
         subjek: s.subjek,
@@ -1283,8 +1701,19 @@
         namaPembantu: s.namaPembantu
       };
 
-      if (slot.tamat <= slot.mula) { alert('Masa tamat mesti selepas masa mula.'); return; }
-      DB.slot.push(slot);
+      if (editSlotIndex === null) {
+        // Add new slot
+        DB.slot.push(slot);
+      } else {
+        // Edit existing slot
+        DB.slot[editSlotIndex] = slot;
+
+        editSlotIndex = null;
+        const submitBtn = document.querySelector('#formSlot button[type="submit"]');
+        submitBtn.textContent = 'Tambah ke Jadual';
+        const cancelBtn = document.getElementById('btnCancelEditSlot');
+        if (cancelBtn) cancelBtn.remove();
+      }
 
       document.getElementById('pilihKod').selectedIndex = 0;
       document.getElementById('kelas').selectedIndex = 0;
@@ -1296,17 +1725,87 @@
       simpan();
     });
 
+    window.batalEditSlot = function () {
+      editSlotIndex = null;
+      document.getElementById('pilihKod').selectedIndex = 0;
+      document.getElementById('kelas').selectedIndex = 0;
+      document.getElementById('lokasi').selectedIndex = 0;
+      document.getElementById('hari').selectedIndex = 0;
+      document.getElementById('mula').value = '08:00';
+      document.getElementById('tamat').value = '10:00';
+
+      const submitBtn = document.querySelector('#formSlot button[type="submit"]');
+      submitBtn.textContent = 'Tambah ke Jadual';
+      const cancelBtn = document.getElementById('btnCancelEditSlot');
+      if (cancelBtn) cancelBtn.remove();
+    };
+
+    window.editSlot = function (index) {
+      editSlotIndex = index;
+      const s = DB.slot[index];
+
+      // Since pilihKod options are populated dynamically and filter out completed subjects, 
+      // we must force render() to run with the correct editSlotIndex set so that the subject of the
+      // edited slot is temporarily restored to the select list.
+      render();
+
+      document.getElementById('pilihKod').value = `${s.kod}_${s.singkatan}_${s.kelas}`;
+      document.getElementById('kelas').value = s.kelas;
+      document.getElementById('lokasi').value = s.lokasi;
+      document.getElementById('hari').value = s.hari;
+      document.getElementById('mula').value = s.mula;
+      document.getElementById('tamat').value = s.tamat;
+
+      const submitBtn = document.querySelector('#formSlot button[type="submit"]');
+      submitBtn.textContent = 'Kemaskini Slot';
+
+      if (!document.getElementById('btnCancelEditSlot')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.id = 'btnCancelEditSlot';
+        cancelBtn.className = 'btn btn-light';
+        cancelBtn.textContent = 'Batal Ubah';
+        cancelBtn.onclick = window.batalEditSlot;
+        submitBtn.parentNode.appendChild(cancelBtn);
+      }
+
+      document.getElementById('formSlot').scrollIntoView({ behavior: 'smooth' });
+    };
+
     function val(id) { return document.getElementById(id).value.trim(); }
     function toMin(t) { const [h, m] = t.split(':').map(Number); return h * 60 + m; }
 
     function bertindih(a, b) { return a.hari === b.hari && toMin(a.mula) < toMin(b.tamat) && toMin(b.mula) < toMin(a.tamat); }
     function checkClash(s, o) {
-      const cPensyarah = (s.singkatan === o.singkatan) ||
-        (s.singkatan !== '-' && s.singkatan === o.singkatanPembantu) ||
-        (s.singkatanPembantu !== '-' && s.singkatanPembantu === o.singkatan) ||
-        (s.singkatanPembantu !== '-' && s.singkatanPembantu === o.singkatanPembantu);
-      const cKelas = (s.kelas === o.kelas);
-      const cLokasi = (s.lokasi === o.lokasi);
+      const isSameSubject = (s.kod === o.kod && s.kod !== '-') || (s.subjek === o.subjek);
+      const isCombinedClass = isSameSubject && (s.singkatan === o.singkatan) && (s.lokasi === o.lokasi);
+
+      // Lecturer conflict check
+      const l1 = [s.singkatan]; if (s.singkatanPembantu && s.singkatanPembantu !== '-') l1.push(s.singkatanPembantu);
+      const l2 = [o.singkatan]; if (o.singkatanPembantu && o.singkatanPembantu !== '-') l2.push(o.singkatanPembantu);
+      const sameLec = l1.some(l => l2.includes(l));
+
+      const cPensyarah = !isCombinedClass && sameLec;
+
+      // Parallel Elective Check (Islam vs Moral vs Kebangsaan)
+      const isParallelElective = (
+        (s.subjek && o.subjek) && (
+          (s.subjek.toUpperCase().includes("ISLAM") && o.subjek.toUpperCase().includes("MORAL")) ||
+          (s.subjek.toUpperCase().includes("MORAL") && o.subjek.toUpperCase().includes("ISLAM")) ||
+          (s.subjek.toUpperCase().includes("ISLAM") && o.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+          (s.subjek.toUpperCase().includes("KEBANGSAAN") && o.subjek.toUpperCase().includes("ISLAM")) ||
+          (s.subjek.toUpperCase().includes("MORAL") && o.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+          (s.subjek.toUpperCase().includes("KEBANGSAAN") && o.subjek.toUpperCase().includes("MORAL"))
+        )
+      );
+
+      // Allow shared lecturer for parallel electives in same room
+      if (isParallelElective && (s.lokasi === o.lokasi) && sameLec) {
+        return false;
+      }
+
+      const cKelas = (s.kelas === o.kelas) && !isParallelElective;
+      const cLokasi = !isCombinedClass && (s.lokasi === o.lokasi);
       return cPensyarah || cKelas || cLokasi;
     }
 
@@ -1350,16 +1849,16 @@
       };
     };
 
-    window.padamSubjek = function (kod, singkatan) {
-      if (DB.slot.some(s => s.kod === kod && s.singkatan === singkatan)) {
-        window.tanyaPengesahan('Subjek ini ada dalam jadual. Padam semua sekali?', () => {
-          DB.subjek = DB.subjek.filter(s => !(s.kod === kod && s.singkatan === singkatan));
-          DB.slot = DB.slot.filter(s => !(s.kod === kod && s.singkatan === singkatan));
+    window.padamSubjek = function (kod, singkatan, kelas) {
+      if (DB.slot.some(s => s.kod === kod && s.singkatan === singkatan && s.kelas === kelas)) {
+        window.tanyaPengesahan(`Subjek ini ada dalam jadual bagi kelas ${kelas}. Padam semua sekali?`, () => {
+          DB.subjek = DB.subjek.filter(s => !(s.kod === kod && s.singkatan === singkatan && s.kelas === kelas));
+          DB.slot = DB.slot.filter(s => !(s.kod === kod && s.singkatan === singkatan && s.kelas === kelas));
           simpan();
         });
       } else {
-        window.tanyaPengesahan('Adakah anda pasti mahu memadam subjek didaftarkan ini?', () => {
-          DB.subjek = DB.subjek.filter(s => !(s.kod === kod && s.singkatan === singkatan));
+        window.tanyaPengesahan(`Adakah anda pasti mahu memadam subjek bagi kelas ${kelas} ini?`, () => {
+          DB.subjek = DB.subjek.filter(s => !(s.kod === kod && s.singkatan === singkatan && s.kelas === kelas));
           simpan();
         });
       }
@@ -1453,78 +1952,306 @@
     function buatJadualGridHTML(filteredSlots) {
       const hari = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
       const masa = []; for (let h = 8; h <= 18; h++) masa.push(String(h).padStart(2, '0') + ':00');
-      
+
       let html = '<table class="schedule-table"><thead><tr><th>Masa</th>' + hari.map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>';
       const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
 
       for (let i = 0; i < masa.length - 1; i++) {
         const blokMula = toMin(masa[i]);
         html += `<tr><th style="font-weight:600; text-align:center; background:var(--surface-hover);">${format12Hour(masa[i])} – ${format12Hour(masa[i + 1])}</th>`;
-        
-        hari.forEach(h => {
-          if (rowspanTracker[h] > 0) {
-            rowspanTracker[h]--;
-            return;
-          }
 
-          const startingSlots = filteredSlots.filter(s => s.hari === h && toMin(s.mula) === blokMula);
+        // Check for 12:00 PM rest row merge across all days if there are no slots
+        if (blokMula === 720 && filteredSlots.filter(s => toMin(s.mula) < 780 && toMin(s.tamat) > 720).length === 0) {
+          html += `<td colspan="4" class="rehat-cell"><div style="display:flex; align-items:center; justify-content:center; gap:6px; height:100%;">🍽️ <b>REHAT (12:00 PM - 01:00 PM)</b></div></td>`;
+          html += `<td rowspan="2" class="rehat-cell"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:100%;">🍽️ <b>REHAT / SOLAT</b><span style="font-size:0.6rem; opacity:0.85; margin-top:2px;">12:00 PM - 02:00 PM</span></div></td>`;
+          rowspanTracker['Jumaat'] = 1;
+        } else {
+          hari.forEach(h => {
+            if (rowspanTracker[h] > 0) {
+              rowspanTracker[h]--;
+              return;
+            }
 
-          if (startingSlots.length > 0) {
-            const durations = startingSlots.map(s => {
-              const diffMin = toMin(s.tamat) - toMin(s.mula);
-              return Math.max(1, Math.round(diffMin / 60));
-            });
-            const maxRowspan = Math.max(...durations);
-            rowspanTracker[h] = maxRowspan - 1;
+            const startingSlots = filteredSlots.filter(s => s.hari === h && toMin(s.mula) === blokMula);
 
-            const sel = `<div class="schedule-wrapper">` + startingSlots.map(s => {
-              const clash = DB.slot.some(o => s !== o && bertindih(s, o) && checkClash(s, o));
-              return `<div class="slot ${clash ? 'clash' : ''} slot-flex">
-                <b>${s.kod} — ${s.subjek}</b> ${clash ? '⚠️' : ''}<br>
-                <small style="margin-top:2px;">
-                  ${s.singkatan}${s.singkatanPembantu !== '-' ? '+' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
-                  📍 ${s.lokasi}<br>
-                  ⏱️ ${format12Hour(s.mula)} – ${format12Hour(s.tamat)}
-                </small>
-              </div>`;
-            }).join('') + `</div>`;
+            if (startingSlots.length > 0) {
+              const durations = startingSlots.map(s => {
+                const diffMin = toMin(s.tamat) - toMin(s.mula);
+                return Math.max(1, Math.round(diffMin / 60));
+              });
+              const maxRowspan = Math.max(...durations);
+              rowspanTracker[h] = maxRowspan - 1;
 
-            html += `<td rowspan="${maxRowspan}" style="height:1px; padding:4px; vertical-align:stretch;">${sel}</td>`;
-          } else {
-            html += `<td></td>`;
-          }
-        });
+              const sel = `<div class="schedule-wrapper">` + startingSlots.map(s => {
+                const clash = DB.slot.some(o => s !== o && bertindih(s, o) && checkClash(s, o));
+                return `<div class="slot ${clash ? 'clash' : ''} slot-flex">
+                  <b>${s.kod} — ${s.subjek}</b> ${clash ? '⚠️' : ''}<br>
+                  <small style="margin-top:2px;">
+                    ${s.singkatan}${s.singkatanPembantu !== '-' ? '/' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
+                    📍 ${s.lokasi}<br>
+                    ⏱️ ${format12Hour(s.mula)} – ${format12Hour(s.tamat)}
+                  </small>
+                </div>`;
+              }).join('') + `</div>`;
+
+              html += `<td rowspan="${maxRowspan}" style="height:1px; padding:4px; vertical-align:stretch;">${sel}</td>`;
+            } else {
+              // Check if it is rest time (12:00 PM) - individual fallback
+              if (blokMula === 720) {
+                if (h === 'Jumaat') {
+                  rowspanTracker[h] = 1;
+                  html += `<td rowspan="2" class="rehat-cell"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:100%;">🍽️ <b>REHAT / SOLAT</b><span style="font-size:0.6rem; opacity:0.85; margin-top:2px;">12:00 PM - 02:00 PM</span></div></td>`;
+                } else {
+                  html += `<td class="rehat-cell"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:100%;">🍽️ <b>REHAT</b><span style="font-size:0.6rem; opacity:0.85; margin-top:2px;">12:00 PM - 01:00 PM</span></div></td>`;
+                }
+              } else {
+                html += `<td></td>`;
+              }
+            }
+          });
+        }
         html += '</tr>';
       }
       html += '</tbody></table>';
       return html;
     }
 
+    // --- PRINT HELPERS ---
+    function formatKuatkuasaDate() {
+      const months = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"];
+      if (DB && DB.effectiveDate) {
+        const parts = DB.effectiveDate.split('-');
+        if (parts.length === 3) {
+          const y = parts[0];
+          const m = parseInt(parts[1], 10) - 1;
+          const d = parseInt(parts[2], 10);
+          return `${d} ${months[m]} ${y}`;
+        }
+      }
+      const d = new Date();
+      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    function dapatkanTugasMengajarLecturer(singkatan) {
+      const tugasList = [];
+      const keys = new Set();
+      
+      DB.subjek.forEach(s => {
+        const isLec = (s.singkatan && s.singkatan.trim().toUpperCase() === singkatan.toUpperCase()) || 
+                      (s.singkatanPembantu && s.singkatanPembantu.trim().toUpperCase() === singkatan.toUpperCase());
+        if (isLec) {
+          const key = `${s.kod}_${s.kelas}`;
+          if (!keys.has(key)) {
+            keys.add(key);
+            const jamSlot = DB.slot.filter(sl => sl.kod === s.kod && sl.kelas === s.kelas && (sl.singkatan === s.singkatan || sl.singkatanPembantu === s.singkatanPembantu))
+                            .reduce((t, sl) => t + (toMin(sl.tamat) - toMin(sl.mula)) / 60, 0);
+            tugasList.push({
+              kod: s.kod,
+              nama: s.subjek,
+              kelas: s.kelas,
+              jam: jamSlot || s.jam
+            });
+          }
+        }
+      });
+
+      DB.slot.forEach(sl => {
+        const isLec = (sl.singkatan && sl.singkatan.trim().toUpperCase() === singkatan.toUpperCase()) || 
+                      (sl.singkatanPembantu && sl.singkatanPembantu.trim().toUpperCase() === singkatan.toUpperCase());
+        if (isLec) {
+          const key = `${sl.kod}_${sl.kelas}`;
+          if (!keys.has(key)) {
+            keys.add(key);
+            const jamSlot = DB.slot.filter(x => x.kod === sl.kod && x.kelas === sl.kelas && (x.singkatan === sl.singkatan || x.singkatanPembantu === sl.singkatanPembantu))
+                            .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+            tugasList.push({
+              kod: sl.kod,
+              nama: sl.subjek,
+              kelas: sl.kelas,
+              jam: jamSlot
+            });
+          }
+        }
+      });
+
+      return tugasList;
+    }
+
+    function dapatkanTugasMengajarKelas(namaKelas) {
+      const tugasList = [];
+      const keys = new Set();
+      
+      DB.subjek.forEach(s => {
+        if (s.kelas && s.kelas.trim().toUpperCase() === namaKelas.toUpperCase()) {
+          const key = `${s.kod}_${s.kelas}`;
+          if (!keys.has(key)) {
+            keys.add(key);
+            const jamSlot = DB.slot.filter(sl => sl.kod === s.kod && sl.kelas === s.kelas)
+                            .reduce((t, sl) => t + (toMin(sl.tamat) - toMin(sl.mula)) / 60, 0);
+            tugasList.push({
+              kod: s.kod,
+              nama: s.subjek,
+              kelas: s.kelas,
+              jam: jamSlot || s.jam
+            });
+          }
+        }
+      });
+
+      DB.slot.forEach(sl => {
+        if (sl.kelas && sl.kelas.trim().toUpperCase() === namaKelas.toUpperCase()) {
+          const key = `${sl.kod}_${sl.kelas}`;
+          if (!keys.has(key)) {
+            keys.add(key);
+            const jamSlot = DB.slot.filter(x => x.kod === sl.kod && x.kelas === sl.kelas)
+                            .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+            tugasList.push({
+              kod: sl.kod,
+              nama: sl.subjek,
+              kelas: sl.kelas,
+              jam: jamSlot
+            });
+          }
+        }
+      });
+
+      return tugasList;
+    }
+
+    function dapatkanTugasMengajarLokasi(namaLokasi) {
+      const tugasList = [];
+      const keys = new Set();
+      
+      DB.slot.forEach(sl => {
+        if (sl.lokasi && sl.lokasi.trim().toUpperCase() === namaLokasi.toUpperCase()) {
+          const key = `${sl.kod}_${sl.kelas}`;
+          if (!keys.has(key)) {
+            keys.add(key);
+            const jamSlot = DB.slot.filter(x => x.kod === sl.kod && x.kelas === sl.kelas && x.lokasi === sl.lokasi)
+                            .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+            tugasList.push({
+              kod: sl.kod,
+              nama: sl.subjek,
+              kelas: sl.kelas,
+              jam: jamSlot
+            });
+          }
+        }
+      });
+
+      return tugasList;
+    }
+
+    function binaTugasMengajarTableHTML(tugasList) {
+      const totalHours = tugasList.reduce((sum, item) => sum + item.jam, 0);
+      let rowsHtml = tugasList.map(item => `
+        <tr>
+          <td style="border: 1px solid #000; padding: 4px 6px; font-weight: bold; text-align: center; font-size: 0.7rem;">${item.kod}</td>
+          <td style="border: 1px solid #000; padding: 4px 6px; font-size: 0.7rem;">${item.nama.toUpperCase()}</td>
+          <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-size: 0.7rem;">${item.kelas}</td>
+          <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: bold; font-size: 0.7rem;">${item.jam}</td>
+        </tr>
+      `).join('');
+
+      if (tugasList.length === 0) {
+        rowsHtml = `<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; color: #555; font-size: 0.7rem;">Tiada tugas mengajar didaftarkan.</td></tr>`;
+      }
+
+      return `
+        <div style="margin-top: 15px; font-family: 'Inter', sans-serif;">
+          <h3 style="font-size: 0.75rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 2px; margin-top: 0; margin-bottom: 6px; text-transform: uppercase;">TUGAS MENGAJAR</h3>
+          <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
+            <thead>
+              <tr style="background-color: #f1f5f9; font-size: 0.68rem;">
+                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KOD KURSUS</th>
+                <th style="border: 1px solid #000; padding: 4px; text-align: left; font-weight: bold; width: 55%;">NAMA KURSUS</th>
+                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KELAS</th>
+                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">JAM MENGAJAR</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${rowsHtml}
+              <tr style="font-weight: bold; background-color: #f8fafc; font-size: 0.7rem;">
+                <td colspan="3" style="border: 1px solid #000; padding: 4px 6px; text-align: right; font-weight: 800;">JUMLAH KESELURUHAN</td>
+                <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: 800;">${totalHours}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function binaSignaturesHTML() {
+      return ``;
+    }
+
+    function binaFormalHeaderHTML(title, leftMeta, dept, session) {
+      return `
+        <div class="print-header-container" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; font-family: 'Inter', sans-serif;">
+          <div style="width: 20%; text-align: left;">
+            <img src="Logo_KPT.png" alt="Logo KPT" style="height: 60px; object-fit: contain;">
+          </div>
+          <div style="width: 60%; text-align: center;">
+            <h3 style="margin: 0; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.3px;">KOLEJ KOMUNITI PAPAR</h3>
+            <h4 style="margin: 1px 0 0 0; font-size: 0.8rem; font-weight: 700; color: #1e293b;">KEMENTERIAN PENDIDIKAN TINGGI</h4>
+            <h5 style="margin: 4px 0 0 0; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 0.3px;">${title}</h5>
+          </div>
+          <div style="width: 20%; text-align: right;">
+            <img src="Logo_KKPPS.jpeg" alt="Logo KKPPS" style="height: 60px; object-fit: contain;">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; margin-bottom: 3px; font-family: 'Inter', sans-serif;">
+          <div>${leftMeta}</div>
+          <div style="text-align: right;">
+            <div>TARIKH KUATKUASA : ${formatKuatkuasaDate()}</div>
+            <div style="margin-top: 1px;">PROGRAM / UNIT : ${dept.toUpperCase()}</div>
+          </div>
+        </div>
+        <div style="text-align: center; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; font-family: 'Inter', sans-serif;">
+          SESI : ${session.toUpperCase()}
+        </div>
+      `;
+    }
+
     // Print Individual Lecturer timetable
     function cetakJadualPensyarah(singkatan) {
       const pensyarah = LECTURERS_DATA.find(l => l.shortName === singkatan);
       const nama = pensyarah ? pensyarah.name : singkatan;
+      const dept = pensyarah ? pensyarah.dept : 'STM';
       const filteredSlots = DB.slot.filter(s => s.singkatan === singkatan || s.singkatanPembantu === singkatan);
       const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
 
       const printWindow = window.open('', '_blank');
-      
+
       const css = `
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; }
-        h2 { font-size: 1.3rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 5px; text-transform: uppercase; }
-        .session-info { font-size: 0.9rem; margin-bottom: 20px; color: #334155; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.8rem; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: stretch; height: 1px; }
-        th { background: #f1f5f9; font-weight: 700; text-align: center; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
+        
+        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
+        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
+        
         .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 8px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; }
+        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
         .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.75rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.68rem; display: block; line-height: 1.3; }
-        .print-footer { text-align: center; font-size: 0.7rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
+        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
+        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
+        
+        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
       `;
 
       const gridHtml = buatJadualGridHTML(filteredSlots);
+      const headerHtml = binaFormalHeaderHTML("Jadual Waktu Pengajaran Pensyarah", `PENSYARAH : ${nama.toUpperCase()} (${singkatan})`, dept, sess);
+      const tugasList = dapatkanTugasMengajarLecturer(singkatan);
+      const tugasHtml = binaTugasMengajarTableHTML(tugasList);
+      const sigHtml = binaSignaturesHTML();
+      const footerHtml = `
+        <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
+          <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
+          <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
+        </div>
+      `;
+
       const printAutoTriggerScript = '<script>' + `
         window.onload = function() {
           window.print();
@@ -1539,13 +2266,11 @@
             <style>${css}</style>
           </head>
           <body>
-            <h2>Jadual Waktu Pengajaran Pensyarah: ${nama} (${singkatan})</h2>
-            <div class="session-info">Sesi Akademik: <strong>${sess}</strong></div>
+            ${headerHtml}
             ${gridHtml}
-            <div class="print-footer">
-              <div>JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-              <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-            </div>
+            ${tugasHtml}
+            ${sigHtml}
+            ${footerHtml}
             ${printAutoTriggerScript}
           </body>
         </html>
@@ -1556,7 +2281,7 @@
     // Print all Lecturers timetables simultaneously
     function cetakSemuaPensyarahSerentak() {
       const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
-      
+
       let senaraiPensyarah = {};
       DB.subjek.forEach(s => {
         if (s.nama && s.nama !== '-') senaraiPensyarah[s.singkatan] = s.nama;
@@ -1570,39 +2295,51 @@
       }
 
       const printWindow = window.open('', '_blank');
-      
+
       const css = `
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
         .page-section { page-break-after: always; margin-bottom: 40px; }
         .page-section:last-child { page-break-after: avoid; margin-bottom: 0; }
-        h2 { font-size: 1.3rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 5px; text-transform: uppercase; }
-        .session-info { font-size: 0.9rem; margin-bottom: 20px; color: #334155; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.8rem; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: stretch; height: 1px; }
-        th { background: #f1f5f9; font-weight: 700; text-align: center; }
+        
+        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
+        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
+        
         .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 8px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; }
+        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
         .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.75rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.68rem; display: block; line-height: 1.3; }
-        .print-footer { text-align: center; font-size: 0.7rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
+        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
+        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
+        
+        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
       `;
 
       let bodyHtml = '';
       keys.forEach(singk => {
         const nama = senaraiPensyarah[singk];
+        const pObj = LECTURERS_DATA.find(l => l.shortName === singk) || {};
+        const dept = pObj.dept || 'STM';
         const filteredSlots = DB.slot.filter(s => s.singkatan === singk || s.singkatanPembantu === singk);
         const gridHtml = buatJadualGridHTML(filteredSlots);
-        
+        const headerHtml = binaFormalHeaderHTML("Jadual Waktu Pengajaran Pensyarah", `PENSYARAH : ${nama.toUpperCase()} (${singk})`, dept, sess);
+        const tugasList = dapatkanTugasMengajarLecturer(singk);
+        const tugasHtml = binaTugasMengajarTableHTML(tugasList);
+        const sigHtml = binaSignaturesHTML();
+        const footerHtml = `
+          <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
+            <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
+            <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
+          </div>
+        `;
+
         bodyHtml += `
           <div class="page-section">
-            <h2>Jadual Waktu Pengajaran Pensyarah: ${nama} (${singk})</h2>
-            <div class="session-info">Sesi Akademik: <strong>${sess}</strong></div>
+            ${headerHtml}
             ${gridHtml}
-            <div class="print-footer">
-              <div>JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-              <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-            </div>
+            ${tugasHtml}
+            ${sigHtml}
+            ${footerHtml}
           </div>
         `;
       });
@@ -1633,24 +2370,39 @@
     function cetakJadualLokasi(namaLokasi) {
       const filteredSlots = DB.slot.filter(s => s.lokasi === namaLokasi);
       const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+      const locObj = LOCATIONS_DATA.find(l => l.name === namaLokasi) || {};
+      const dept = locObj.type || 'Umum';
       const printWindow = window.open('', '_blank');
 
       const css = `
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; }
-        h2 { font-size: 1.3rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 5px; text-transform: uppercase; }
-        .session-info { font-size: 0.9rem; margin-bottom: 20px; color: #334155; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.8rem; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: left; vertical-align: stretch; height: 1px; }
-        th { background: #f1f5f9; font-weight: 700; text-align: center; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
+        
+        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
+        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
+        
         .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 8px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; }
+        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
         .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.75rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.68rem; display: block; line-height: 1.3; }
-        .print-footer { text-align: center; font-size: 0.7rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
+        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
+        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
+        
+        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
       `;
 
       const gridHtml = buatJadualGridHTML(filteredSlots);
+      const headerHtml = binaFormalHeaderHTML("Jadual Penggunaan Lokasi", `LOKASI : ${namaLokasi.toUpperCase()}`, dept, sess);
+      const tugasList = dapatkanTugasMengajarLokasi(namaLokasi);
+      const tugasHtml = binaTugasMengajarTableHTML(tugasList);
+      const sigHtml = binaSignaturesHTML();
+      const footerHtml = `
+        <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
+          <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
+          <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
+        </div>
+      `;
+
       const printAutoTriggerScript = '<script>' + `
         window.onload = function() {
           window.print();
@@ -1665,18 +2417,174 @@
             <style>${css}</style>
           </head>
           <body>
-            <h2>Jadual Penggunaan Lokasi: ${namaLokasi}</h2>
-            <div class="session-info">Sesi Akademik: <strong>${sess}</strong></div>
+            ${headerHtml}
             ${gridHtml}
-            <div class="print-footer">
-              <div>JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-              <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-            </div>
+            ${tugasHtml}
+            ${sigHtml}
+            ${footerHtml}
             ${printAutoTriggerScript}
           </body>
         </html>
       `);
       printWindow.document.close();
+    }
+
+    // Print Individual Class timetable
+    function cetakJadualKelas(namaKelas) {
+      const filteredSlots = DB.slot.filter(s => s.kelas === namaKelas);
+      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+      const dept = namaKelas.includes('SLK') ? 'SLK' : 'STM';
+      const printWindow = window.open('', '_blank');
+
+      const css = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
+        
+        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
+        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
+        
+        .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
+        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
+        .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
+        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
+        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
+        
+        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
+      `;
+
+      const gridHtml = buatJadualGridHTML(filteredSlots);
+      const headerHtml = binaFormalHeaderHTML("Jadual Waktu Kelas", `KELAS : ${namaKelas.toUpperCase()}`, dept, sess);
+      const tugasList = dapatkanTugasMengajarKelas(namaKelas);
+      const tugasHtml = binaTugasMengajarTableHTML(tugasList);
+      const sigHtml = binaSignaturesHTML();
+      const footerHtml = `
+        <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
+          <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
+          <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
+        </div>
+      `;
+
+      const printAutoTriggerScript = '<script>' + `
+        window.onload = function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        }
+      ` + '<' + '/script>';
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Cetak Jadual Kelas - ${namaKelas}</title>
+            <style>${css}</style>
+          </head>
+          <body>
+            ${headerHtml}
+            ${gridHtml}
+            ${tugasHtml}
+            ${sigHtml}
+            ${footerHtml}
+            ${printAutoTriggerScript}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    // Print all Classes timetables simultaneously
+    function cetakSemuaKelasSerentak() {
+      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+      const classesToPrint = CLASSES_DATA || [];
+      if (classesToPrint.length === 0) {
+        alert("Tiada data kelas berdaftar untuk dicetak.");
+        return;
+      }
+
+      const printWindow = window.open('', '_blank');
+
+      const css = `
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
+        .page-section { page-break-after: always; margin-bottom: 40px; }
+        .page-section:last-child { page-break-after: avoid; margin-bottom: 0; }
+        
+        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
+        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
+        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
+        
+        .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
+        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
+        .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
+        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
+        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
+        
+        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
+      `;
+
+      let bodyHtml = '';
+      classesToPrint.forEach(namaKelas => {
+        const filteredSlots = DB.slot.filter(s => s.kelas === namaKelas);
+        if (filteredSlots.length > 0) {
+          const dept = namaKelas.includes('SLK') ? 'SLK' : 'STM';
+          const gridHtml = buatJadualGridHTML(filteredSlots);
+          const headerHtml = binaFormalHeaderHTML("Jadual Waktu Kelas", `KELAS : ${namaKelas.toUpperCase()}`, dept, sess);
+          const tugasList = dapatkanTugasMengajarKelas(namaKelas);
+          const tugasHtml = binaTugasMengajarTableHTML(tugasList);
+          const sigHtml = binaSignaturesHTML();
+          const footerHtml = `
+            <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
+              <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
+              <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
+            </div>
+          `;
+
+          bodyHtml += `
+            <div class="page-section">
+              ${headerHtml}
+              ${gridHtml}
+              ${tugasHtml}
+              ${sigHtml}
+              ${footerHtml}
+            </div>
+          `;
+        }
+      });
+
+      if (!bodyHtml) {
+        alert("Tiada slot jadual waktu bagi mana-mana kelas untuk dicetak.");
+        printWindow.close();
+        return;
+      }
+
+      const printAutoTriggerScript = '<script>' + `
+        window.onload = function() {
+          window.print();
+          setTimeout(function() { window.close(); }, 500);
+        }
+      ` + '<' + '/script>';
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Cetak Semua Jadual Kelas</title>
+            <style>${css}</style>
+          </head>
+          <body>
+            ${bodyHtml}
+            ${printAutoTriggerScript}
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    }
+
+    function cetakIndividuKelas() {
+      const select = document.getElementById('printSelectClass');
+      if (select && select.value) {
+        cetakJadualKelas(select.value);
+      } else {
+        alert("Sila pilih kelas terlebih dahulu.");
+      }
     }
 
     // Trigger action functions
@@ -1698,31 +2606,93 @@
       }
     }
 
+    window.renderJadualWaktuKelas = function () {
+      const selectVal = document.getElementById('pilihJadualKelas').value;
+      let slotsToRender = DB.slot;
+      if (selectVal !== 'SEMUA') {
+        slotsToRender = DB.slot.filter(s => s.kelas === selectVal);
+      }
+      document.getElementById('jadualWrap').innerHTML = buatJadualGridHTML(slotsToRender);
+    };
+
     // --- RENDER TABLE & SCHEDULE ---
     function render() {
       // Dropdown pilihan kod subjek in Add Slot form
       const sel = document.getElementById('pilihKod');
+      const availableSubjects = DB.subjek.filter(s => {
+        const dijadual = DB.slot.filter(x => x.kod === s.kod && x.singkatan === s.singkatan && x.kelas === s.kelas)
+          .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+
+        if (editSlotIndex !== null) {
+          const activeSlot = DB.slot[editSlotIndex];
+          if (activeSlot && s.kod === activeSlot.kod && s.singkatan === activeSlot.singkatan && s.kelas === activeSlot.kelas) {
+            return true;
+          }
+        }
+        return dijadual < s.jam;
+      });
       sel.innerHTML = '<option value="" disabled selected>Pilih Subjek (Kod)</option>' +
-        DB.subjek.map(s => `<option value="${s.kod}_${s.singkatan}">${s.kod} — ${s.subjek} (${s.singkatan}${s.singkatanPembantu !== '-' ? ' & ' + s.singkatanPembantu : ''})</option>`).join('');
+        availableSubjects.map(s => `<option value="${s.kod}_${s.singkatan}_${s.kelas}">${s.kod} — ${s.subjek} (${s.singkatan}${s.singkatanPembantu !== '-' ? ' & ' + s.singkatanPembantu : ''}) [${s.kelas}]</option>`).join('');
 
       // Render Table 1: Registered Subjects
-      document.getElementById('metaBody').innerHTML = DB.subjek.map(s => {
-        const dijadual = DB.slot.filter(x => x.kod === s.kod && x.singkatan === s.singkatan)
+      const formatHourLabel = hr => hr >= 12 ? (hr === 12 ? '12:00 PM' : (hr - 12) + ':00 PM') : String(hr).padStart(2, '0') + ':00 AM';
+      document.getElementById('metaBody').innerHTML = DB.subjek.map((s, idx) => {
+        const dijadual = DB.slot.filter(x => x.kod === s.kod && x.singkatan === s.singkatan && x.kelas === s.kelas)
           .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
-        const over = dijadual > s.jam;
+
+        let badgeClass = 'match';
+        if (dijadual < s.jam) {
+          badgeClass = 'under';
+        } else if (dijadual > s.jam) {
+          badgeClass = 'over';
+        }
+
+        const prefStartLabel = s.prefStart && s.prefStart > 8 
+          ? `<div style="font-size:0.7rem; color:#eab308; font-weight:600; margin-top:2px;">⏱️ Jam ${formatHourLabel(s.prefStart)} Ke Atas</div>` 
+          : '';
+
         return `<tr>
-      <td><strong>${s.nama}</strong> (${s.singkatan})</td>
+      <td><strong>${s.nama}</strong> (${s.singkatan})${prefStartLabel}</td>
       <td>${s.namaPembantu !== '-' ? '<strong>' + s.namaPembantu + '</strong>' : '-'} (${s.singkatanPembantu})</td>
       <td>${s.subjek}</td>
       <td><b>${s.kod}</b></td>
+      <td><span class="badge" style="background:var(--primary-soft); color:var(--primary-soft-text);">${s.kelas || '-'}</span></td>
       <td>${s.jam} jam</td>
-      <td><span class="badge ${over ? 'over' : ''}">${dijadual} jam</span></td>
-      <td><button class="btn btn-danger btn-icon-only" onclick="padamSubjek('${s.kod}', '${s.singkatan}')" style="padding:4px 8px;font-size:0.75rem;">Padam</button></td>
+      <td><span class="badge ${badgeClass}">${dijadual} jam</span></td>
+      <td>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-accent" onclick="editSubjek(${idx})" style="padding:4px 8px;font-size:0.75rem;">Ubah</button>
+          <button class="btn btn-danger btn-icon-only" onclick="padamSubjek('${s.kod}', '${s.singkatan}', '${s.kelas}')" style="padding:4px 8px;font-size:0.75rem;">Padam</button>
+        </div>
+      </td>
     </tr>`;
-      }).join('') || '<tr><td colspan="7" style="text-align:center; color:var(--text-muted);">Tiada subjek didaftarkan.</td></tr>';
+      }).join('') || '<tr><td colspan="8" style="text-align:center; color:var(--text-muted);">Tiada subjek didaftarkan.</td></tr>';
 
-      // Render Schedule Grid
-      document.getElementById('jadualWrap').innerHTML = buatJadualGridHTML(DB.slot);
+      // Populate Weekly Timetable Class Filter Dropdown
+      const dJadualKelas = document.getElementById('pilihJadualKelas');
+      if (dJadualKelas) {
+        const currentSel = dJadualKelas.value;
+        let uniqueClasses = [...new Set(DB.slot.map(s => s.kelas))].sort();
+        if (uniqueClasses.length === 0 && typeof CLASSES_DATA !== 'undefined') {
+          uniqueClasses = [...CLASSES_DATA].sort();
+        }
+
+        let selectHtml = '<option value="SEMUA">Semua Kelas</option>';
+        uniqueClasses.forEach(c => {
+          selectHtml += `<option value="${c}">${c}</option>`;
+        });
+        dJadualKelas.innerHTML = selectHtml;
+
+        if (currentSel && (currentSel === 'SEMUA' || uniqueClasses.includes(currentSel))) {
+          dJadualKelas.value = currentSel;
+        } else if (uniqueClasses.length > 0) {
+          dJadualKelas.value = uniqueClasses[0];
+        } else {
+          dJadualKelas.value = 'SEMUA';
+        }
+      }
+
+      window.renderJadualWaktuKelas();
 
       // Render Teaching Assignments by Lecturer
       let senaraiPensyarah = {};
@@ -1815,7 +2785,12 @@
       <td><span class="badge" style="background:var(--primary-soft); color:var(--primary-soft-text);">${s.kelas}</span></td>
       <td>📍 ${s.lokasi}</td>
       <td>👤 <b>${s.nama}</b> (${s.singkatan})${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</td>
-      <td><button class="btn btn-danger" onclick="padamSlot(${idx})" style="padding:4px 8px;font-size:0.75rem;">Hapus</button></td>
+      <td>
+        <div style="display: flex; gap: 6px;">
+          <button class="btn btn-accent" onclick="editSlot(${idx})" style="padding:4px 8px;font-size:0.75rem;">Ubah</button>
+          <button class="btn btn-danger" onclick="padamSlot(${idx})" style="padding:4px 8px;font-size:0.75rem;">Hapus</button>
+        </div>
+      </td>
     </tr>
   `).join('') || '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Tiada data slot aktif.</td></tr>';
 
@@ -1871,6 +2846,12 @@
         ).join('');
       }
 
+      // Tarikh Kuatkuasa Input
+      const inputEffDate = document.getElementById('inputEffectiveDate');
+      if (inputEffDate) {
+        inputEffDate.value = DB.effectiveDate || '';
+      }
+
       // TPA Select Dropdown
       const selectTpa = document.getElementById('selectTpaLec');
       if (selectTpa) {
@@ -1912,14 +2893,14 @@
           if (s.nama && s.nama !== '-') senaraiPensyarah[s.singkatan] = s.nama;
           if (s.namaPembantu && s.namaPembantu !== '-') senaraiPensyarah[s.singkatanPembantu] = s.namaPembantu;
         });
-        printSelectLec.innerHTML = Object.keys(senaraiPensyarah).map(singk => 
+        printSelectLec.innerHTML = Object.keys(senaraiPensyarah).map(singk =>
           `<option value="${singk}">${senaraiPensyarah[singk]} (${singk})</option>`
         ).join('') || '<option value="" disabled>Tiada Pensyarah Berdaftar</option>';
       }
 
       const printSelectLoc = document.getElementById('printSelectLoc');
       if (printSelectLoc) {
-        printSelectLoc.innerHTML = LOCATIONS_DATA.map(l => 
+        printSelectLoc.innerHTML = LOCATIONS_DATA.map(l =>
           `<option value="${l.name}">${l.name} (${l.code})</option>`
         ).join('');
       }
@@ -1968,6 +2949,12 @@
 
     function updateActiveSession(val) {
       DB.activeSession = val;
+      simpan();
+      render();
+    }
+
+    function updateEffectiveDate(val) {
+      DB.effectiveDate = val;
       simpan();
       render();
     }
@@ -2156,6 +3143,10 @@
             if (startHour + req.duration > 18) continue;
             if (overlapsLunch(startHour, req.duration)) continue;
 
+            // Lecturer preferred start hour constraint check
+            const prefStart = req.subject.prefStart || 8;
+            if (startHour < prefStart) continue;
+
             if (!hasConflict(day, startHour, req.duration, req, finalSlots)) {
               // Temporarily assign slot
               const mulaStr = String(startHour).padStart(2, '0') + ':00';
@@ -2328,11 +3319,16 @@
         tr.innerHTML = `
             <td>${idx + 1}</td>
             <td class="stud-name-admin" style="font-weight: 600;">${s.name}</td>
+            <td class="stud-matrix-admin" style="font-weight: 700; color: var(--accent);">${s.matrix || '-'}</td>
             <td class="stud-ic-admin">${s.ic}</td>
             <td>${s.gender}</td>
             <td class="stud-address-admin" style="font-size: 0.8rem; color: var(--text-secondary);">${s.address}</td>
-            <td style="text-align: center;">
-                <button onclick="padamPelajarAdmin(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer; background: var(--danger); border: none; color: white; border-radius: 4px;">Padam</button>
+            <td style="text-align: center; white-space: nowrap;">
+                <div style="display: inline-flex; gap: 6px; align-items: center; justify-content: center;">
+                    <button onclick="ubahPelajarAdmin(${idx})" class="btn btn-accent" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer; border-radius: 4px;">Ubah</button>
+                    <button onclick="cetakPelajarAdmin(${idx})" class="btn btn-primary" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer; border-radius: 4px;">🖨️ Cetak</button>
+                    <button onclick="padamPelajarAdmin(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer; background: var(--danger); border: none; color: white; border-radius: 4px;">Padam</button>
+                </div>
             </td>
         `;
         body.appendChild(tr);
@@ -2345,10 +3341,11 @@
 
       rows.forEach(row => {
         const name = row.querySelector(".stud-name-admin").textContent.toLowerCase();
+        const matrix = row.querySelector(".stud-matrix-admin").textContent.toLowerCase();
         const ic = row.querySelector(".stud-ic-admin").textContent.toLowerCase();
         const address = row.querySelector(".stud-address-admin").textContent.toLowerCase();
 
-        if (name.includes(query) || ic.includes(query) || address.includes(query)) {
+        if (name.includes(query) || matrix.includes(query) || ic.includes(query) || address.includes(query)) {
           row.style.display = "";
         } else {
           row.style.display = "none";
@@ -2356,32 +3353,169 @@
       });
     }
 
-    function tambahPelajarAdmin(event) {
-      event.preventDefault();
-      const name = document.getElementById("adminStudName").value.trim().toUpperCase();
-      const ic = document.getElementById("adminStudIc").value.trim();
-      const gender = document.getElementById("adminStudGender").value;
-      const address = document.getElementById("adminStudAddress").value.trim();
+    let editStudentIdx = -1;
 
-      if (STUDENTS.some(s => s.ic === ic)) {
-        alert("Pelajar dengan No. IC ini sudah didaftarkan!");
-        return;
+    window.ubahPelajarAdmin = function(idx) {
+      editStudentIdx = idx;
+      const s = STUDENTS[idx];
+      document.getElementById("adminStudName").value = s.name;
+      document.getElementById("adminStudMatrix").value = s.matrix || "";
+      document.getElementById("adminStudIc").value = s.ic;
+      document.getElementById("adminStudGender").value = s.gender;
+      document.getElementById("adminStudAddress").value = s.address;
+
+      const submitBtn = document.getElementById("btnSubmitStudentAdmin");
+      submitBtn.textContent = 'Kemaskini Pelajar';
+
+      if (!document.getElementById('btnCancelEditStudent')) {
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.id = 'btnCancelEditStudent';
+        cancelBtn.className = 'btn btn-light';
+        cancelBtn.textContent = 'Batal Ubah';
+        cancelBtn.onclick = window.batalEditStudent;
+        submitBtn.parentNode.appendChild(cancelBtn);
       }
 
-      const newStudent = { name, ic, gender, address };
-      STUDENTS.push(newStudent);
+      document.getElementById('formAddStudentAdmin').scrollIntoView({ behavior: 'smooth' });
+    };
 
-      saveStudentsAdmin();
-
-      // Reset form
+    window.batalEditStudent = function() {
+      editStudentIdx = -1;
       document.getElementById("adminStudName").value = "";
+      document.getElementById("adminStudMatrix").value = "";
       document.getElementById("adminStudIc").value = "";
       document.getElementById("adminStudGender").selectedIndex = 0;
       document.getElementById("adminStudAddress").value = "";
 
-      alert("Pelajar berjaya didaftarkan!");
+      const submitBtn = document.getElementById("btnSubmitStudentAdmin");
+      submitBtn.textContent = 'Daftar Pelajar Baru';
+
+      const cancelBtn = document.getElementById('btnCancelEditStudent');
+      if (cancelBtn) {
+        cancelBtn.remove();
+      }
+    };
+
+    function tambahPelajarAdmin(event) {
+      event.preventDefault();
+      const name = document.getElementById("adminStudName").value.trim().toUpperCase();
+      const matrix = document.getElementById("adminStudMatrix").value.trim().toUpperCase();
+      const ic = document.getElementById("adminStudIc").value.trim();
+      const gender = document.getElementById("adminStudGender").value;
+      const address = document.getElementById("adminStudAddress").value.trim();
+
+      if (editStudentIdx !== -1) {
+        if (STUDENTS.some((s, idx) => s.ic === ic && idx !== editStudentIdx)) {
+          alert("Pelajar dengan No. IC ini sudah didaftarkan!");
+          return;
+        }
+        if (matrix && STUDENTS.some((s, idx) => s.matrix === matrix && idx !== editStudentIdx)) {
+          alert("Pelajar dengan No. Kad Matriks ini sudah didaftarkan!");
+          return;
+        }
+        STUDENTS[editStudentIdx] = { name, matrix, ic, gender, address };
+        window.batalEditStudent();
+        alert("Rekod pelajar berjaya dikemaskini!");
+      } else {
+        if (STUDENTS.some(s => s.ic === ic)) {
+          alert("Pelajar dengan No. IC ini sudah didaftarkan!");
+          return;
+        }
+        if (matrix && STUDENTS.some(s => s.matrix === matrix)) {
+          alert("Pelajar dengan No. Kad Matriks ini sudah didaftarkan!");
+          return;
+        }
+        const newStudent = { name, matrix, ic, gender, address };
+        STUDENTS.push(newStudent);
+        
+        // Reset form
+        document.getElementById("adminStudName").value = "";
+        document.getElementById("adminStudMatrix").value = "";
+        document.getElementById("adminStudIc").value = "";
+        document.getElementById("adminStudGender").selectedIndex = 0;
+        document.getElementById("adminStudAddress").value = "";
+        alert("Pelajar berjaya didaftarkan!");
+      }
+
+      saveStudentsAdmin();
       renderStudentsAdmin();
     }
+
+    window.uploadExcelPelajar = function() {
+      const fileInput = document.getElementById('excelStudentFile');
+      if (!fileInput || fileInput.files.length === 0) {
+        alert("Sila pilih satu fail Excel terlebih dahulu!");
+        return;
+      }
+      const file = fileInput.files[0];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const firstSheetName = workbook.SheetNames[0];
+          const worksheet = workbook.Sheets[firstSheetName];
+          const jsonData = XLSX.utils.sheet_to_json(worksheet);
+
+          if (jsonData.length === 0) {
+            alert("Fail Excel kosong atau tidak sah!");
+            return;
+          }
+
+          let importedCount = 0;
+          let duplicateCount = 0;
+
+          jsonData.forEach(row => {
+            let name = "";
+            let matrix = "";
+            let ic = "";
+            let gender = "Lelaki";
+            let address = "";
+
+            for (let key in row) {
+              const lowerKey = key.toLowerCase().replace(/\s+/g, '');
+              const val = String(row[key]).trim();
+
+              if (lowerKey.includes("nama")) {
+                name = val.toUpperCase();
+              } else if (lowerKey.includes("matrik") || lowerKey.includes("matrix") || lowerKey.includes("kadmatrik")) {
+                matrix = val.toUpperCase();
+              } else if (lowerKey.includes("ic") || lowerKey.includes("kadpengenalan") || lowerKey.includes("nokp")) {
+                ic = val.replace(/[^0-9]/g, '');
+              } else if (lowerKey.includes("jantina") || lowerKey.includes("gender")) {
+                gender = (val.toLowerCase().startsWith("p") || val.toLowerCase().includes("perempuan")) ? "Perempuan" : "Lelaki";
+              } else if (lowerKey.includes("alamat")) {
+                address = val;
+              }
+            }
+
+            if (name && ic) {
+              if (STUDENTS.some(s => s.ic === ic || (matrix && s.matrix === matrix))) {
+                duplicateCount++;
+              } else {
+                STUDENTS.push({ name, matrix, ic, gender, address });
+                importedCount++;
+              }
+            }
+          });
+
+          if (importedCount > 0) {
+            saveStudentsAdmin();
+            renderStudentsAdmin();
+            alert(`Berjaya import ${importedCount} pelajar!${duplicateCount > 0 ? ` (${duplicateCount} bertindih/tidak diimport)` : ''}`);
+          } else {
+            alert("Tiada data pelajar baru yang sah untuk diimport. Sila pastikan tajuk lajur betul.");
+          }
+
+          fileInput.value = "";
+        } catch (err) {
+          console.error("Error parsing Excel:", err);
+          alert("Ralat semasa membaca fail Excel. Sila pastikan format betul.");
+        }
+      };
+      reader.readAsArrayBuffer(file);
+    };
 
     function padamPelajarAdmin(idx) {
       tanyaPengesahan("Adakah anda pasti mahu memadam rekod pelajar ini?", () => {
@@ -2390,6 +3524,141 @@
         renderStudentsAdmin();
       });
     }
+
+    window.cetakPelajarAdmin = function(idx) {
+      const s = STUDENTS[idx];
+      const printWindow = window.open('', '_blank');
+      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+
+      const css = `
+        body { font-family: 'Inter', sans-serif; padding: 40px; color: #0f172a; background: #fff; line-height: 1.5; }
+        .card { max-width: 600px; margin: 0 auto; border: 2px solid #0f172a; border-radius: 12px; padding: 30px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
+        .header { display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #0f172a; padding-bottom: 15px; margin-bottom: 25px; }
+        .header-text h2 { margin: 0; font-size: 1.25rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; }
+        .header-text p { margin: 3px 0 0 0; font-size: 0.8rem; color: #475569; font-weight: 500; }
+        .avatar-box { width: 70px; height: 70px; border-radius: 50%; border: 1px solid #cbd5e1; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; background: #f1f5f9; font-weight: bold; }
+        .field-group { display: grid; grid-template-columns: 150px 1fr; gap: 10px; margin-bottom: 15px; font-size: 0.9rem; }
+        .field-label { font-weight: 700; color: #475569; text-transform: uppercase; font-size: 0.75rem; letter-spacing: 0.5px; }
+        .field-value { font-weight: 600; color: #0f172a; }
+        .footer { text-align: center; font-size: 0.7rem; border-top: 1px solid #cbd5e1; padding-top: 15px; margin-top: 30px; color: #64748b; font-weight: 500; text-transform: uppercase; }
+      `;
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Slip Rekod Pelajar - ${s.name}</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            <style>${css}</style>
+          </head>
+          <body>
+            <div class="card">
+              <div class="header">
+                <div class="header-text">
+                  <h2>Kolej Komuniti Papar</h2>
+                  <p>Slip Rekod Profil Pelajar Rasmi</p>
+                </div>
+                <div class="avatar-box">🎓</div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Nama Penuh:</div>
+                <div class="field-value">${s.name}</div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">No. Matriks:</div>
+                <div class="field-value" style="font-size: 1rem; color: #0d9488; font-weight: 800;">${s.matrix || '-'}</div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">No. IC (KP):</div>
+                <div class="field-value">${s.ic}</div>
+              </div>
+              <div class="field-group">
+                <div class="field-label">Jantina:</div>
+                <div class="field-value">${s.gender}</div>
+              </div>
+              <div class="field-group" style="align-items: start;">
+                <div class="field-label">Alamat Tetap:</div>
+                <div class="field-value" style="font-weight: 500; line-height: 1.4;">${s.address}</div>
+              </div>
+              <div class="footer">
+                Sistem Jadual Waktu Akademik • ${sess}
+              </div>
+            </div>
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(function() { window.close(); }, 500);
+              };
+            <\/script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    };
+
+    window.cetakSenaraiPelajar = function() {
+      const printWindow = window.open('', '_blank');
+      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+
+      const css = `
+        body { font-family: 'Inter', sans-serif; padding: 25px; color: #000; background: #fff; }
+        h2 { font-size: 1.3rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 5px; text-transform: uppercase; }
+        .session-info { font-size: 0.9rem; margin-bottom: 20px; color: #334155; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.8rem; }
+        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
+        th { background: #f1f5f9; font-weight: 700; text-align: center; }
+        .print-footer { text-align: center; font-size: 0.7rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
+      `;
+
+      let tableRowsHtml = STUDENTS.map((s, idx) => `
+        <tr>
+          <td style="text-align: center;">${idx + 1}</td>
+          <td style="font-weight: 600;">${s.name}</td>
+          <td style="font-weight: 700; color: #0d9488;">${s.matrix || '-'}</td>
+          <td>${s.ic}</td>
+          <td style="text-align: center;">${s.gender}</td>
+          <td>${s.address}</td>
+        </tr>
+      `).join('');
+
+      printWindow.document.write(`
+        <html>
+          <head>
+            <title>Senarai Pelajar Berdaftar - Kolej Komuniti Papar</title>
+            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+            <style>${css}</style>
+          </head>
+          <body>
+            <h2>Senarai Rekod Pelajar Berdaftar</h2>
+            <div class="session-info">Kolej Komuniti Papar • ${sess}</div>
+            <table>
+              <thead>
+                <tr>
+                  <th style="width: 5%;">Bil</th>
+                  <th style="width: 25%;">Nama Penuh</th>
+                  <th style="width: 15%;">No. Matriks</th>
+                  <th style="width: 15%;">No. IC</th>
+                  <th style="width: 10%;">Jantina</th>
+                  <th style="width: 30%;">Alamat Tetap</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${tableRowsHtml || '<tr><td colspan="6" style="text-align: center; color: #475569;">Tiada rekod pelajar berdaftar.</td></tr>'}
+              </tbody>
+            </table>
+            <div class="print-footer">
+              Cetakan Dokumen Rasmi Portal Admin • Kolej Komuniti Papar
+            </div>
+            <script>
+              window.onload = function() {
+                window.print();
+                setTimeout(function() { window.close(); }, 500);
+              };
+            <\/script>
+          </body>
+        </html>
+      `);
+      printWindow.document.close();
+    };
 
     function saveStudentsAdmin() {
       if (isFirebaseActive()) {

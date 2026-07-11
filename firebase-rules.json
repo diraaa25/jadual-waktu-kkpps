@@ -1,0 +1,10 @@
+﻿{
+  "rules": {
+    ".read": "auth != null",
+    ".write": "auth != null",
+    "public_schedules": {
+      ".read": true,
+      ".write": "auth != null"
+    }
+  }
+}

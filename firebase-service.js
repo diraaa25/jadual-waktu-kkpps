@@ -128,6 +128,20 @@ const SEED_TIMETABLE = {
     ]
 };
 
+const SEED_SPAK_ACTIVITIES = [
+    {
+        id: "spak-seed-1",
+        title: "Taklimat 1 Latihan Industri Sesi 2:26/27",
+        date: "2026-07-24",
+        startTime: "08:00",
+        endTime: "11:30",
+        location: "Dewan Rafflesia",
+        category: "Penting",
+        coordinator: "DAILY BINTI TAYOK",
+        updatedAt: "2026-07-09 18:19"
+    }
+];
+
 // 3. Auto-seed if Firebase is active but empty
 if (isFirebaseActive()) {
     db.ref().once('value', snapshot => {
@@ -137,7 +151,8 @@ if (isFirebaseActive()) {
                 announcements: SEED_ANNOUNCEMENTS,
                 lecturers: SEED_LECTURERS,
                 students: SEED_STUDENTS,
-                timetable: SEED_TIMETABLE
+                timetable: SEED_TIMETABLE,
+                spakActivities: SEED_SPAK_ACTIVITIES
             }).then(() => {
                 console.log("Seeding complete.");
             }).catch(e => {
@@ -212,6 +227,20 @@ const firebaseSaveTimetable = (data) => {
     }
 };
 
+const firebaseWatchSpakActivities = (callback) => {
+    if (isFirebaseActive()) {
+        db.ref('spakActivities').on('value', snapshot => {
+            callback(snapshot.val());
+        });
+    }
+};
+
+const firebaseSaveSpakActivities = (data) => {
+    if (isFirebaseActive()) {
+        return db.ref('spakActivities').set(data);
+    }
+};
+
 // Function to upload existing local storage database to Firebase
 const firebaseUploadLocalToFirebase = (onSuccess, onError) => {
     if (!isFirebaseActive()) {
@@ -223,12 +252,14 @@ const firebaseUploadLocalToFirebase = (onSuccess, onError) => {
         const localLec = JSON.parse(localStorage.getItem('kkpapar_lecturers')) || SEED_LECTURERS;
         const localStud = JSON.parse(localStorage.getItem('kkpapar_students')) || SEED_STUDENTS;
         const localTimetable = JSON.parse(localStorage.getItem('jadualSistemV3')) || SEED_TIMETABLE;
+        const localSpak = JSON.parse(localStorage.getItem('kkpapar_spak_activities')) || SEED_SPAK_ACTIVITIES;
 
         db.ref().set({
             announcements: localAnn,
             lecturers: localLec,
             students: localStud,
-            timetable: localTimetable
+            timetable: localTimetable,
+            spakActivities: localSpak
         }).then(() => {
             if (onSuccess) onSuccess();
         }).catch(e => {

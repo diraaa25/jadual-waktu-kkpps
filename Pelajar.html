@@ -4,6 +4,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b3d5c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jadual KKPPS">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
     <title>Portal Pelajar - Kolej Komuniti Papar</title>
     <!-- Google Fonts Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -23,6 +32,10 @@
             #printable-area { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
             .print-footer { display: block !important; }
+            
+            img { max-width: 100%; height: auto; }
+            td, th { border-color: #000 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; border: 1px dashed #ca8a04 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -45,7 +58,8 @@
                 </div>
                 <div>
                     <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight">PORTAL PELAJAR</h1>
-                    <p class="text-xs text-slate-300 font-medium">Sistem Semakan Jadual Waktu & Pendaftaran Repeat</p>
+                    <p class="text-xs text-slate-300 font-medium">Sistem Semakan Jadual Waktu & Pendaftaran Subjek
+                        Repeat</p>
                     <div id="live-clock" class="text-[10px] text-teal-300/80 font-bold mt-1">
                         ⏱️ Memuatkan masa...
                     </div>
@@ -110,20 +124,20 @@
         </div>
 
         <!-- Schedule & Summary Area -->
-        <div id="kawasanPaparan" class="hidden grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <div id="kawasanPaparan" class="hidden flex flex-col gap-8">
 
             <!-- Printable / Timetable Grid Section -->
-            <div id="printable-area" class="lg:col-span-3">
+            <div id="printable-area" class="w-full min-w-0">
                 <!-- Timetable Header Card -->
+                <div id="printHeaderPersonal" class="hidden print:block mb-4"></div>
                 <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6 print:hidden">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
                                 📅 JADUAL WAKTU KELAS
                             </h2>
-                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Jadual waktu mingguan rasmi
-                                beserta subjek repeat berdaftar</p>
+                            <p class="text-sm text-slate-500 dark:text-slate-400 mt-1">Jadual waktu rasmi pelajar</p>
                         </div>
                         <span
                             class="bg-blue-900/10 text-blue-900 dark:bg-blue-400/20 dark:text-blue-300 font-extrabold text-sm px-4 py-1.5 rounded-full border border-blue-900/20"
@@ -136,20 +150,23 @@
                 <!-- Timetable Grid Table Container -->
                 <div
                     class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
-                    <div class="min-w-[800px]" id="jadualGridWrap">
+                    <div class="min-w-[750px] lg:min-w-0" id="jadualGridWrap">
                         <!-- Dynamic Grid generated via JavaScript -->
                     </div>
                 </div>
+                <div id="tugasMengajarPersonal" class="hidden print:block"></div>
+                <div id="signaturesPersonal" class="hidden print:block mt-6"></div>
 
                 <!-- Print Footer -->
-                <div class="print-footer mt-4 text-center border-t border-slate-200 pt-3 text-[10px] text-slate-500 font-semibold" style="display:none;">
+                <div class="print-footer mt-4 text-center border-t border-slate-200 pt-3 text-[10px] text-slate-500 font-semibold"
+                    style="display:none;">
                     <div class="print-footer-session">JADUAL DISAHKAN BAGI SESI _________</div>
                     <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
                 </div>
             </div>
 
-            <!-- Side Summary Panel -->
-            <div class="lg:col-span-1 flex flex-col gap-6 no-print">
+            <!-- Bottom Panels (2-column layout on desktop) -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 no-print">
                 <!-- Repeat Subjects Panel -->
                 <div
                     class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6">
@@ -237,7 +254,8 @@
     </main>
 
     <!-- System Footer -->
-    <footer class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800 mt-12 no-print">
+    <footer
+        class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 text-center text-xs text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800 mt-12 no-print">
         Hakcipta &copy; 2026 STM, KKPPS
     </footer>
 
@@ -409,6 +427,17 @@
             const footers = element.querySelectorAll(".print-footer");
             footers.forEach(f => f.style.display = "block");
 
+            const printHeader = document.getElementById("printHeaderPersonal");
+            const printTugas = document.getElementById("tugasMengajarPersonal");
+            const printSigs = document.getElementById("signaturesPersonal");
+            
+            if (printHeader) printHeader.classList.remove("hidden");
+            if (printTugas) printTugas.classList.remove("hidden");
+            if (printSigs) printSigs.classList.remove("hidden");
+
+            const onscreenHeader = element.querySelector(".print\\:hidden");
+            if (onscreenHeader) onscreenHeader.style.display = "none";
+
             const opt = {
                 margin: 10,
                 filename: `Jadual_Waktu_${selectedClass.replace(/\s+/g, '_')}.pdf`,
@@ -420,6 +449,10 @@
             showToast("Menjana fail PDF, sila tunggu...", "success");
             html2pdf().set(opt).from(element).save().then(() => {
                 footers.forEach(f => f.style.display = "none");
+                if (printHeader) printHeader.classList.add("hidden");
+                if (printTugas) printTugas.classList.add("hidden");
+                if (printSigs) printSigs.classList.add("hidden");
+                if (onscreenHeader) onscreenHeader.style.display = "";
             });
         }
 
@@ -610,6 +643,28 @@
                     other.hari === slot.hari &&
                     other.mula === slot.mula;
                 if (sameSlot) return false;
+                
+                // Check if they are combined classes for the same subject and lecturer in same location
+                const isSameSubject = (slot.kod === other.kod && slot.kod !== '-') || (slot.subjek === other.subjek);
+                const isCombinedClass = isSameSubject && (slot.singkatan === other.singkatan) && (slot.lokasi === other.lokasi);
+                if (isCombinedClass) return false;
+
+                // Check if they are parallel elective subjects (Islam vs Moral vs Kebangsaan)
+                const isParallelElective = (
+                    (slot.subjek && other.subjek) && (
+                        (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("MORAL")) ||
+                        (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("ISLAM")) ||
+                        (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                        (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("ISLAM")) ||
+                        (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                        (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("MORAL"))
+                    )
+                );
+                
+                if (isParallelElective && slot.kelas === other.kelas) {
+                    return false; // Not a clash
+                }
+
                 return isOverlapping(slot, other);
             });
         }
@@ -642,7 +697,7 @@
             const gridContainer = document.getElementById("jadualGridWrap");
 
             let gridHtml = `
-                <table class="w-full border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
+                <table class="w-full table-fixed border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
                     <thead>
                         <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                             <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
@@ -666,86 +721,123 @@
                         </td>
                 `;
 
-                hari.forEach(h => {
-                    // If this day-hour cell is already spanned from a previous row, skip td rendering
-                    if (rowspanTracker[h] > 0) {
-                        rowspanTracker[h]--;
-                        return;
-                    }
+                if (bMula === 720 && combinedSchedule.filter(s => toMin(s.mula) < 780 && toMin(s.tamat) > 720).length === 0) {
+                    gridHtml += `<td colspan="4" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT (12:00 PM - 01:00 PM)</span></div></td>`;
+                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                    rowspanTracker['Jumaat'] = 1;
+                } else {
+                    hari.forEach(h => {
+                        // If this day-hour cell is already spanned from a previous row, skip td rendering
+                        if (rowspanTracker[h] > 0) {
+                            rowspanTracker[h]--;
+                            return;
+                        }
 
-                    // Find slots starting at this exact hour
-                    const startingSlots = combinedSchedule.filter(s =>
-                        s.hari === h && toMin(s.mula) === bMula
-                    );
+                        // Find slots starting at this exact hour
+                        const startingSlots = combinedSchedule.filter(s =>
+                            s.hari === h && toMin(s.mula) === bMula
+                        );
 
-                    if (startingSlots.length > 0) {
-                        // Calculate maximum rowspan duration from slots starting here
-                        const durations = startingSlots.map(s => {
-                            const diffMin = toMin(s.tamat) - toMin(s.mula);
-                            return Math.max(1, Math.round(diffMin / 60));
-                        });
-                        const maxRowspan = Math.max(...durations);
-                        rowspanTracker[h] = maxRowspan - 1;
+                        if (startingSlots.length > 0) {
+                            // Calculate maximum rowspan duration from slots starting here
+                            const durations = startingSlots.map(s => {
+                                const diffMin = toMin(s.tamat) - toMin(s.mula);
+                                return Math.max(1, Math.round(diffMin / 60));
+                            });
+                            const maxRowspan = Math.max(...durations);
+                            rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/50 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
+                            gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/50 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
-                        startingSlots.forEach(s => {
-                            const isClashed = checkClash(s, combinedSchedule);
+                            startingSlots.forEach(s => {
+                                const isClashed = checkClash(s, combinedSchedule);
 
-                            let cardStyle = "";
-                            let tagLabel = "";
-                            let deleteBtn = "";
+                                let cardStyle = "";
+                                let tagLabel = "";
+                                let deleteBtn = "";
 
-                            if (isClashed) {
-                                cardStyle = "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-800 ring-2 ring-red-500/30";
-                                tagLabel = `<span class="bg-red-500 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-sm inline-flex items-center gap-1 animate-pulse">⚠️ CLASH</span>`;
-                            } else if (s.isRepeat) {
-                                cardStyle = "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-800 shadow-sm";
-                                tagLabel = `<span class="bg-teal-600 text-white font-bold text-[9px] px-1.5 py-0.5 rounded shadow-sm">REPEAT</span>`;
-                            } else {
-                                cardStyle = "bg-blue-50/70 text-blue-900 border-l-4 border-blue-600 dark:bg-blue-950/20 dark:text-blue-200 dark:border-blue-800 shadow-sm";
-                            }
+                                if (isClashed) {
+                                    cardStyle = "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-800 ring-2 ring-red-500/30";
+                                    tagLabel = `<span class="bg-red-500 text-white font-extrabold text-[9px] px-1.5 py-0.5 rounded shadow-sm inline-flex items-center gap-1 animate-pulse">⚠️ CLASH</span>`;
+                                } else if (s.isRepeat) {
+                                    cardStyle = "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-800 shadow-sm";
+                                    tagLabel = `<span class="bg-teal-600 text-white font-bold text-[9px] px-1.5 py-0.5 rounded shadow-sm">REPEAT</span>`;
+                                } else {
+                                    cardStyle = "bg-blue-50/70 text-blue-900 border-l-4 border-blue-600 dark:bg-blue-950/20 dark:text-blue-200 dark:border-blue-800 shadow-sm";
+                                }
 
-                            if (s.isRepeat) {
-                                const repIdx = repeatSlots.findIndex(r => r.kod === s.kod && r.hari === s.hari && r.mula === s.mula);
-                                deleteBtn = `
-                                    <button onclick="padamRepeat(${repIdx})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-950/50 dark:hover:bg-red-900/70 p-1 rounded transition no-print shadow-sm" title="Padam subjek repeat">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                                        </svg>
-                                    </button>
+                                if (s.isRepeat) {
+                                    const repIdx = repeatSlots.findIndex(r => r.kod === s.kod && r.hari === s.hari && r.mula === s.mula);
+                                    deleteBtn = `
+                                        <button onclick="padamRepeat(${repIdx})" class="absolute top-2 right-2 text-red-500 hover:text-red-700 bg-red-100 hover:bg-red-200 dark:bg-red-950/50 dark:hover:bg-red-900/70 p-1 rounded transition no-print shadow-sm" title="Padam subjek repeat">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                                            </svg>
+                                        </button>
+                                    `;
+                                }
+
+                                gridHtml += `
+                                    <div class="relative p-2 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-0.5">
+                                        ${deleteBtn}
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${tagLabel}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                        <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1">
+                                            <div>👤 <span>${s.singkatan}${s.singkatanPembantu && s.singkatanPembantu !== '-' ? '/' + s.singkatanPembantu : ''}</span></div>
+                                            <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
+                                            <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
+                                            ${s.isRepeat ? `<div class="text-teal-600 dark:text-teal-400">🏫 <span>Asal: ${s.kelas}</span></div>` : ''}
+                                        </div>
+                                    </div>
                                 `;
+                            });
+                            gridHtml += `</div></td>`;
+                        } else {
+                            // Check if it is rest time (12:00 PM) - individual fallback
+                            if (bMula === 720) {
+                                if (h === 'Jumaat') {
+                                    rowspanTracker[h] = 1;
+                                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                                } else {
+                                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 01:00 PM</span></div></td>`;
+                                }
+                            } else {
+                                gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]"></td>`;
                             }
-
-                            gridHtml += `
-                                <div class="relative p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
-                                    ${deleteBtn}
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${tagLabel}
-                                    </div>
-                                    <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
-                                        <div>👤 <span>${s.singkatan}</span></div>
-                                        <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
-                                        <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
-                                        ${s.isRepeat ? `<div class="text-teal-600 dark:text-teal-400">🏫 <span>Asal: ${s.kelas}</span></div>` : ''}
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        gridHtml += `</div></td>`;
-                    } else {
-                        gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/50 min-h-[90px]"></td>`;
-                    }
-                });
+                        }
+                    });
+                }
 
                 gridHtml += `</tr>`;
             });
 
             gridHtml += `</tbody></table>`;
             gridContainer.innerHTML = gridHtml;
+
+            // Populate print placeholders
+            const printHeader = document.getElementById("printHeaderPersonal");
+            const printTugas = document.getElementById("tugasMengajarPersonal");
+            const printSigs = document.getElementById("signaturesPersonal");
+            
+            if (printHeader && printTugas && printSigs) {
+                const dept = selectedClass.includes('SLK') ? 'SLK' : 'STM';
+                const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+                
+                printHeader.innerHTML = binaFormalHeaderHTML(
+                    "Jadual Waktu Kelas",
+                    `KELAS : ${selectedClass.toUpperCase()}`,
+                    dept,
+                    sess
+                );
+                
+                const tugasList = dapatkanTugasMengajarKelas(selectedClass, combinedSchedule);
+                printTugas.innerHTML = binaTugasMengajarTableHTML(tugasList);
+                printSigs.innerHTML = binaSignaturesHTML();
+            }
 
             // --- RENDER SIDEBAR REPEAT LIST ---
             const repeatList = document.getElementById("senaraiRepeat");
@@ -774,7 +866,7 @@
                             <div class="text-[10px] text-slate-500 mt-2 space-y-0.5 font-medium">
                                 <div>📅 <b>${s.hari}</b> (${format12Hour(s.mula)} - ${format12Hour(s.tamat)})</div>
                                 <div>📍 ${s.lokasi}</div>
-                                <div>👤 ${s.nama} (${s.singkatan})</div>
+                                <div>👤 ${s.nama} (${s.singkatan})${s.namaPembantu && s.namaPembantu !== '-' ? ` / ${s.namaPembantu} (${s.singkatanPembantu})` : ''}</div>
                                 <div class="text-teal-600 dark:text-teal-400">🏫 Kumpulan Asal: ${s.kelas}</div>
                             </div>
                         </div>
@@ -866,7 +958,7 @@
                                 <span class="bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-bold px-2 py-0.5 rounded">📍 ${s.lokasi}</span>
                             </div>
                             <div class="font-bold text-slate-800 dark:text-slate-200 mb-1">⏱️ ${s.hari}, ${format12Hour(s.mula)} - ${format12Hour(s.tamat)}</div>
-                            <div class="text-slate-450 dark:text-slate-400">Pengajar: 👤 ${s.nama} (${s.singkatan})</div>
+                            <div class="text-slate-450 dark:text-slate-400">Pengajar: 👤 ${s.nama} (${s.singkatan})${s.namaPembantu && s.namaPembantu !== '-' ? ` / ${s.namaPembantu} (${s.singkatanPembantu})` : ''}</div>
                         </div>
                     `;
                     // Store slot object JSON directly as data attribute
@@ -990,13 +1082,13 @@
         function startLiveClock() {
             const clockEl = document.getElementById("live-clock");
             if (!clockEl) return;
-            
-            window.tickClock = function() {
+
+            window.tickClock = function () {
                 const now = new Date();
-                const options = { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
+                const options = {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
                     day: 'numeric',
                     hour: '2-digit',
                     minute: '2-digit',
@@ -1013,7 +1105,7 @@
                     </span>
                 `;
             };
-            
+
             window.tickClock();
             setInterval(window.tickClock, 1000);
         }
@@ -1023,6 +1115,115 @@
             document.querySelectorAll(".print-footer-session").forEach(el => {
                 el.textContent = `JADUAL DISAHKAN BAGI SESI ${sess}`.toUpperCase();
             });
+        }
+
+        // --- PRINT HELPERS ---
+        function formatKuatkuasaDate() {
+            const months = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"];
+            if (DB && DB.effectiveDate) {
+                const parts = DB.effectiveDate.split('-');
+                if (parts.length === 3) {
+                    const y = parts[0];
+                    const m = parseInt(parts[1], 10) - 1;
+                    const d = parseInt(parts[2], 10);
+                    return `${d} ${months[m]} ${y}`;
+                }
+            }
+            const d = new Date();
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function dapatkanTugasMengajarKelas(namaKelas, combinedSchedule) {
+            const tugasList = [];
+            const keys = new Set();
+            
+            combinedSchedule.forEach(s => {
+                const key = `${s.kod}_${s.kelas}`;
+                if (!keys.has(key)) {
+                    keys.add(key);
+                    const jamSlot = combinedSchedule.filter(x => x.kod === s.kod && x.kelas === s.kelas)
+                                    .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+                    tugasList.push({
+                        kod: s.kod,
+                        nama: s.subjek,
+                        kelas: s.kelas,
+                        jam: jamSlot
+                    });
+                }
+            });
+
+            return tugasList;
+        }
+
+        function binaTugasMengajarTableHTML(tugasList) {
+            const totalHours = tugasList.reduce((sum, item) => sum + item.jam, 0);
+            let rowsHtml = tugasList.map(item => `
+                <tr>
+                    <td style="border: 1px solid #000; padding: 4px 6px; font-weight: bold; text-align: center; font-size: 0.7rem; color: #000;">${item.kod}</td>
+                    <td style="border: 1px solid #000; padding: 4px 6px; font-size: 0.7rem; color: #000;">${item.nama.toUpperCase()}</td>
+                    <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-size: 0.7rem; color: #000;">${item.kelas}</td>
+                    <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: bold; font-size: 0.7rem; color: #000;">${item.jam}</td>
+                </tr>
+            `).join('');
+
+            if (tugasList.length === 0) {
+                rowsHtml = `<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; color: #000; font-size: 0.7rem;">Tiada tugas mengajar didaftarkan.</td></tr>`;
+            }
+
+            return `
+                <div style="margin-top: 15px; font-family: 'Inter', sans-serif;">
+                    <h3 style="font-size: 0.75rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 2px; margin-top: 0; margin-bottom: 6px; text-transform: uppercase; color: #000;">TUGAS MENGAJAR</h3>
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; color: #000;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; font-size: 0.68rem; color: #000;">
+                                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KOD KURSUS</th>
+                                <th style="border: 1px solid #000; padding: 4px; text-align: left; font-weight: bold; width: 55%;">NAMA KURSUS</th>
+                                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KELAS</th>
+                                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">JAM MENGAJAR</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                            <tr style="font-weight: bold; background-color: #f8fafc; font-size: 0.7rem; color: #000;">
+                                <td colspan="3" style="border: 1px solid #000; padding: 4px 6px; text-align: right; font-weight: 800;">JUMLAH KESELURUHAN</td>
+                                <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: 800;">${totalHours}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function binaSignaturesHTML() {
+            return ``;
+        }
+
+        function binaFormalHeaderHTML(title, leftMeta, dept, session) {
+            return `
+                <div class="print-header-container" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; font-family: 'Inter', sans-serif; color: #000;">
+                    <div style="width: 20%; text-align: left;">
+                        <img src="Logo_KPT.png" alt="Logo KPT" style="height: 60px; object-fit: contain;">
+                    </div>
+                    <div style="width: 60%; text-align: center;">
+                        <h3 style="margin: 0; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.3px;">KOLEJ KOMUNITI PAPAR</h3>
+                        <h4 style="margin: 1px 0 0 0; font-size: 0.8rem; font-weight: 700; color: #000;">KEMENTERIAN PENDIDIKAN TINGGI</h4>
+                        <h5 style="margin: 4px 0 0 0; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #000; letter-spacing: 0.3px;">${title}</h5>
+                    </div>
+                    <div style="width: 20%; text-align: right;">
+                        <img src="Logo_KKPPS.jpeg" alt="Logo KKPPS" style="height: 60px; object-fit: contain;">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; margin-bottom: 3px; font-family: 'Inter', sans-serif; color: #000;">
+                    <div>${leftMeta}</div>
+                    <div style="text-align: right;">
+                        <div>TARIKH KUATKUASA : ${formatKuatkuasaDate()}</div>
+                        <div style="margin-top: 1px;">PROGRAM / UNIT : ${dept.toUpperCase()}</div>
+                    </div>
+                </div>
+                <div style="text-align: center; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; font-family: 'Inter', sans-serif; color: #000;">
+                    SESI : ${session.toUpperCase()}
+                </div>
+            `;
         }
     </script>
 </body>

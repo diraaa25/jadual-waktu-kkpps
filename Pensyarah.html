@@ -2,8 +2,25 @@
 <html lang="ms" class="">
 
 <head>
+    <script>
+        // Security session guard to prevent direct URL access without login
+        const role = sessionStorage.getItem("logged_role");
+        if (role !== "pensyarah" && role !== "admin" && role !== "programmer") {
+            alert("Akses ditolak. Sila log masuk terlebih dahulu.");
+            window.location.href = "index.html";
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b3d5c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jadual KKPPS">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
     <title>Portal Pensyarah - Kolej Komuniti Papar</title>
     <!-- Google Fonts Inter -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,6 +34,39 @@
         body {
             font-family: 'Inter', sans-serif;
         }
+        
+        /* Global Teal Blue Borders override for all parts */
+        .border-slate-200, .border-slate-300, .border-gray-200, .border-teal-200, th, td, .table-responsive, input, select, textarea {
+            border-color: rgba(13, 148, 136, 0.3) !important;
+        }
+        
+        /* Dark Mode Global Teal Blue Borders */
+        .dark .border-slate-800, .dark .border-slate-700, .dark .border-teal-800, .dark th, .dark td, .dark input, .dark select, .dark textarea {
+            border-color: rgba(20, 184, 166, 0.35) !important;
+        }
+        
+        /* Premium Card Borders & Transitions */
+        .rounded-2xl.border-slate-200, .rounded-xl.border-slate-200, .rounded-2xl.border-teal-200, .rounded-xl.border-teal-200 {
+            border-color: rgba(13, 148, 136, 0.3) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -2px rgba(0, 0, 0, 0.03) !important;
+            transition: border-color 0.22s ease-in-out, box-shadow 0.22s ease-in-out;
+        }
+        .rounded-2xl.border-slate-200:hover, .rounded-xl.border-slate-200:hover, .rounded-2xl.border-teal-200:hover, .rounded-xl.border-teal-200:hover {
+            border-color: #0d9488 !important; /* solid teal highlight */
+            box-shadow: 0 10px 15px -3px rgba(13, 148, 136, 0.12), 0 4px 6px -4px rgba(13, 148, 136, 0.12) !important;
+        }
+        
+        /* Dark Mode Card Borders */
+        .dark .rounded-2xl.border-slate-800, .dark .rounded-xl.border-slate-800, .dark .rounded-2xl.border-teal-800, .dark .rounded-xl.border-teal-800 {
+            border-color: rgba(20, 184, 166, 0.35) !important;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -2px rgba(0, 0, 0, 0.2) !important;
+            transition: border-color 0.22s ease-in-out, box-shadow 0.22s ease-in-out;
+        }
+        .dark .rounded-2xl.border-slate-800:hover, .dark .rounded-xl.border-slate-800:hover, .dark .rounded-2xl.border-teal-800:hover, .dark .rounded-xl.border-teal-800:hover {
+            border-color: #14b8a6 !important; /* teal-500 */
+            box-shadow: 0 10px 15px -3px rgba(20, 184, 166, 0.25), 0 4px 6px -4px rgba(20, 184, 166, 0.25) !important;
+        }
+
         @media print {
             body * { visibility: hidden; }
             body.print-personal #printable-area, body.print-personal #printable-area * { visibility: visible; }
@@ -25,6 +75,10 @@
             body.print-location #kawasanLokasi { position: absolute; left: 0; top: 0; width: 100%; }
             .no-print { display: none !important; }
             .print-footer { display: block !important; }
+            
+            img { max-width: 100%; height: auto; }
+            td, th { border-color: #000 !important; color: #000 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; border: 1px dashed #ca8a04 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
         }
     </style>
 </head>
@@ -34,13 +88,14 @@
 
     <!-- Header Navigation -->
     <header
-        class="bg-white dark:bg-slate-900 text-slate-800 dark:text-white border-b border-slate-200 dark:border-slate-800 shadow-sm no-print transition-colors duration-200">
+        class="border-b border-teal-950 shadow-sm no-print transition-colors duration-200"
+        style="background-color: #0b3d5c; color: white;">
         <div
             class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5 flex flex-col sm:flex-row justify-between items-center gap-4">
             <div class="flex items-center gap-3">
                 <div
-                    class="bg-teal-500/10 p-2.5 rounded-xl border border-teal-500/20 dark:bg-white/5 dark:border-white/10">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-teal-600 dark:text-teal-400"
+                    class="bg-white/10 p-2.5 rounded-xl border border-white/20">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-7 h-7 text-white"
                         viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"
                         stroke-linejoin="round">
                         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
@@ -48,11 +103,11 @@
                     </svg>
                 </div>
                 <div>
-                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">PORTAL
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white">PORTAL
                         PENSYARAH</h1>
-                    <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">Sistem Semakan Jadual Waktu &
+                    <p class="text-xs text-white/70 font-medium">Sistem Semakan Jadual Waktu &
                         Hebahan Akademik</p>
-                    <div id="live-clock" class="text-[10px] text-slate-400 dark:text-slate-500 font-bold mt-1">
+                    <div id="live-clock" class="text-[10px] text-white font-bold mt-1">
                         ⏱️ Memuatkan masa...
                     </div>
                 </div>
@@ -60,13 +115,23 @@
             <div class="flex items-center gap-3">
                 <div id="firebase-status-badge-container"></div>
                 <a href="index.html"
-                    class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 border border-slate-200 dark:bg-white/10 dark:hover:bg-white/20 dark:border-white/20 text-slate-700 dark:text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                    class="inline-flex items-center gap-2 bg-white/10 hover:bg-white/20 border border-white/20 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
                     <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
                         stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                         <polyline points="9 22 9 12 15 12 15 22"></polyline>
                     </svg>
                     Utama Dashboard
+                </a>
+                <a href="index.html" onclick="sessionStorage.clear();"
+                    class="inline-flex items-center gap-2 bg-red-600 hover:bg-red-700 border border-red-600 text-white text-sm font-semibold px-4 py-2 rounded-xl transition">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none"
+                        stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                        <polyline points="16 17 21 12 16 7"></polyline>
+                        <line x1="21" y1="12" x2="9" y2="12"></line>
+                    </svg>
+                    Log Keluar
                 </a>
             </div>
         </div>
@@ -218,8 +283,9 @@
             <!-- Tab 1: Personal Teaching Schedule -->
             <div id="printable-area" class="mb-8">
                 <!-- Timetable Header Card -->
+                <div id="printHeaderPersonal" class="hidden print:block mb-4"></div>
                 <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6 print:hidden">
                     <div class="flex justify-between items-center">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -239,10 +305,12 @@
                 <!-- Timetable Grid Table Container -->
                 <div
                     class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
-                    <div class="min-w-[800px]" id="jadualGridWrap">
+                    <div class="min-w-[750px] lg:min-w-0" id="jadualGridWrap">
                         <!-- Dynamic Grid generated via JavaScript -->
                     </div>
                 </div>
+                <div id="tugasMengajarPersonal" class="hidden print:block"></div>
+                <div id="signaturesPersonal" class="hidden print:block mt-6"></div>
 
                 <!-- Print Footer -->
                 <div class="print-footer mt-4 text-center border-t border-slate-200 pt-3 text-[10px] text-slate-500 font-semibold"
@@ -255,8 +323,9 @@
             <!-- Tab 2: Location Timetable Section -->
             <div class="mb-8" id="kawasanLokasi">
                 <!-- Timetable Header Card -->
+                <div id="printHeaderLocation" class="hidden print:block mb-4"></div>
                 <div
-                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6">
+                    class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-t-2xl shadow-sm p-6 print:hidden">
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <h2 class="text-xl font-bold text-slate-900 dark:text-white flex items-center gap-2">
@@ -277,10 +346,12 @@
                 <!-- Timetable Grid Table Container -->
                 <div
                     class="bg-white dark:bg-slate-900 border-x border-b border-slate-200 dark:border-slate-800 rounded-b-2xl shadow-sm overflow-x-auto">
-                    <div class="min-w-[800px]" id="lokasiGridWrap">
+                    <div class="min-w-[750px] lg:min-w-0" id="lokasiGridWrap">
                         <!-- Dynamic Location Grid generated via JavaScript -->
                     </div>
                 </div>
+                <div id="tugasMengajarLocation" class="hidden print:block"></div>
+                <div id="signaturesLocation" class="hidden print:block mt-6"></div>
 
                 <!-- Print Footer -->
                 <div class="print-footer mt-4 text-center border-t border-slate-200 pt-3 text-[10px] text-slate-500 font-semibold"
@@ -396,6 +467,102 @@
                             <!-- Loaded dynamically via JS -->
                         </tbody>
                     </table>
+                </div>
+            </div>
+
+            <!-- Tab 3: Urus Aktiviti KKPPS -->
+            <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-sm p-6 mb-8 no-print transition-colors duration-200">
+                <h3 class="font-extrabold text-lg text-slate-800 dark:text-white mb-4 pb-2 border-b border-slate-100 dark:border-slate-800 flex items-center gap-2">
+                    📅 Urus Kalendar & Aktiviti KKPPS
+                </h3>
+                
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                    <!-- Left: Calendar view -->
+                    <div class="lg:col-span-5 bg-slate-50 dark:bg-slate-950 p-4 rounded-xl border border-slate-200 dark:border-slate-800 transition-colors duration-200">
+                        <div class="flex justify-between items-center mb-4">
+                            <button type="button" onclick="navMonth(-1)" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full w-8 h-8 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-sm cursor-pointer">&lt;</button>
+                            <h4 id="calendarMonthYear" class="font-extrabold text-slate-800 dark:text-white text-sm">Julai 2026</h4>
+                            <button type="button" onclick="navMonth(1)" class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-full w-8 h-8 flex items-center justify-center font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 transition shadow-sm cursor-pointer">&gt;</button>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center font-extrabold text-slate-400 dark:text-slate-500 text-[10px] uppercase tracking-wider mb-2">
+                            <div>Ahd</div>
+                            <div>Isn</div>
+                            <div>Sel</div>
+                            <div>Rab</div>
+                            <div>Kha</div>
+                            <div>Jum</div>
+                            <div>Sab</div>
+                        </div>
+                        <div id="calendarDaysGrid" class="grid grid-cols-7 gap-1.5">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+                    
+                    <!-- Right: List and Add/Edit Form -->
+                    <div class="lg:col-span-7 flex flex-col gap-6">
+                        <!-- Subtabs -->
+                        <div class="flex gap-2 border-b border-slate-200 dark:border-slate-800 pb-2">
+                            <button id="tabSpakListBtn" onclick="switchSpakSubTab('list')" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white shadow-sm transition cursor-pointer">
+                                📋 Senarai Makluman
+                            </button>
+                            <button id="tabSpakFormBtn" onclick="switchSpakSubTab('form')" class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition cursor-pointer">
+                                ➕ Tambah / Edit Aktiviti
+                            </button>
+                        </div>
+                        
+                        <!-- List Pane -->
+                        <div id="spakListPane" class="block">
+                            <h4 id="spakInfoTitle" class="font-bold text-slate-800 dark:text-white text-xs mb-3 uppercase tracking-wider">Makluman pada tarikh...</h4>
+                            <div id="spakEventList" class="flex flex-col gap-3 overflow-y-auto max-h-[350px] pr-2">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+                        
+                        <!-- Form Pane -->
+                        <div id="spakFormPane" class="hidden">
+                            <form id="spakForm" onsubmit="simpanAktivitiSpak(event)" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div class="md:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Tajuk Aktiviti / Makluman</label>
+                                    <input type="text" id="spakTitle" placeholder="cth: Taklimat Latihan Industri Sesi 2:26/27" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Tarikh Terpilih</label>
+                                    <input type="date" id="spakDate" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Kategori / Keutamaan</label>
+                                    <select id="spakCategory" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-semibold">
+                                        <option value="Biasa">📢 Makluman Umum</option>
+                                        <option value="Penting">⚠️ Penting</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Masa Mula</label>
+                                    <input type="time" id="spakStartTime" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Masa Tamat</label>
+                                    <input type="time" id="spakEndTime" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Lokasi Aktiviti</label>
+                                    <input type="text" id="spakLocation" placeholder="cth: Dewan Rafflesia / Bilik TECC" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Penyelaras (Nama Penuh)</label>
+                                    <input type="text" id="spakCoordinator" placeholder="cth: Muhd Aqil Hamizan" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs">
+                                </div>
+                                <div class="md:col-span-2">
+                                    <label class="block text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-wider mb-1.5">Ulasan / Perincian Makluman</label>
+                                    <textarea id="spakDescription" placeholder="Masukkan huraian, perincian, agenda, ulasan, atau arahan lanjut mengenai aktiviti/makluman ini..." rows="3" required class="w-full p-2.5 border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-slate-100 rounded-xl outline-none focus:ring-2 focus:ring-teal-500 transition text-xs font-sans resize-none"></textarea>
+                                </div>
+                                <div class="md:col-span-2 flex justify-end gap-3 pt-2">
+                                    <button type="button" onclick="cancelSpakEdit()" class="bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 text-slate-800 dark:text-slate-200 font-bold px-4 py-2 rounded-xl transition text-xs cursor-pointer">Batal</button>
+                                    <button type="submit" id="btnSubmitSpak" class="bg-teal-700 hover:bg-teal-600 text-white font-bold px-6 py-2 rounded-xl transition shadow-sm text-xs cursor-pointer">Tambah Aktiviti</button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -529,28 +696,37 @@
         const KEY = 'jadualSistemV3';
         const ANN_KEY = 'kkpapar_announcements';
 
+        // SHA-256 Hashing Utility
+        async function hashPassword(password) {
+            if (!password) return "";
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         // Lecturer Profile DB
         let LECTURERS = JSON.parse(localStorage.getItem('kkpapar_lecturers'));
         if (!LECTURERS) {
             const INITIAL_LECTS = [
-                { name: "DAILY BINTI TAYOK", shortName: "DT", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "DEVIANA RADEN", shortName: "DR", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "FARHANA BINTI KAMIUS", shortName: "FBK", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "JUSDY BIN JUWAIT", shortName: "JBJ", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-                { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-                { name: "TIFFANY THU PEI YING", shortName: "TPY", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-                { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" }
+                { name: "DAILY BINTI TAYOK", shortName: "DT", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "DEVIANA RADEN", shortName: "DR", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "FARHANA BINTI KAMIUS", shortName: "FBK", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "JUSDY BIN JUWAIT", shortName: "JBJ", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", dept: "SLK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "TIFFANY THU PEI YING", shortName: "TPY", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", dept: "UPA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+                { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", dept: "STM", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" }
             ];
             LECTURERS = INITIAL_LECTS;
             localStorage.setItem('kkpapar_lecturers', JSON.stringify(LECTURERS));
@@ -692,6 +868,17 @@
             const footers = element.querySelectorAll(".print-footer");
             footers.forEach(f => f.style.display = "block");
 
+            const printHeader = document.getElementById("printHeaderPersonal");
+            const printTugas = document.getElementById("tugasMengajarPersonal");
+            const printSigs = document.getElementById("signaturesPersonal");
+            
+            if (printHeader) printHeader.classList.remove("hidden");
+            if (printTugas) printTugas.classList.remove("hidden");
+            if (printSigs) printSigs.classList.remove("hidden");
+
+            const onscreenHeader = element.querySelector(".print\\:hidden");
+            if (onscreenHeader) onscreenHeader.style.display = "none";
+
             const opt = {
                 margin: 10,
                 filename: `Jadual_Mengajar_${activeLecturer}.pdf`,
@@ -703,6 +890,10 @@
             showToast("Menjana fail PDF jadual peribadi, sila tunggu...", "success");
             html2pdf().set(opt).from(element).save().then(() => {
                 footers.forEach(f => f.style.display = "none");
+                if (printHeader) printHeader.classList.add("hidden");
+                if (printTugas) printTugas.classList.add("hidden");
+                if (printSigs) printSigs.classList.add("hidden");
+                if (onscreenHeader) onscreenHeader.style.display = "";
             });
         }
 
@@ -713,6 +904,17 @@
             updatePrintFooters();
             const footers = element.querySelectorAll(".print-footer");
             footers.forEach(f => f.style.display = "block");
+
+            const printHeader = document.getElementById("printHeaderLocation");
+            const printTugas = document.getElementById("tugasMengajarLocation");
+            const printSigs = document.getElementById("signaturesLocation");
+            
+            if (printHeader) printHeader.classList.remove("hidden");
+            if (printTugas) printTugas.classList.remove("hidden");
+            if (printSigs) printSigs.classList.remove("hidden");
+
+            const onscreenHeader = element.querySelector(".print\\:hidden");
+            if (onscreenHeader) onscreenHeader.style.display = "none";
 
             const opt = {
                 margin: 10,
@@ -725,6 +927,10 @@
             showToast("Menjana fail PDF jadual lokasi, sila tunggu...", "success");
             html2pdf().set(opt).from(element).save().then(() => {
                 footers.forEach(f => f.style.display = "none");
+                if (printHeader) printHeader.classList.add("hidden");
+                if (printTugas) printTugas.classList.add("hidden");
+                if (printSigs) printSigs.classList.add("hidden");
+                if (onscreenHeader) onscreenHeader.style.display = "";
             });
         }
 
@@ -750,6 +956,10 @@
                         renderAll();
                     }
                 });
+                firebaseWatchSpakActivities(data => {
+                    spakActivities = data || [];
+                    renderSpakCalendar();
+                });
             } else {
                 DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
                 DB.slot = DB.slot || [];
@@ -757,10 +967,30 @@
                 ANNOUNCEMENTS = JSON.parse(localStorage.getItem(ANN_KEY) || '[]');
                 LECTURERS = JSON.parse(localStorage.getItem('kkpapar_lecturers')) || [];
                 LECTURERS = LECTURERS.map(l => ({ ...l, short: l.shortName || l.short }));
+                const storedSpak = localStorage.getItem('kkpapar_spak_activities');
+                if (storedSpak && JSON.parse(storedSpak).length > 0) {
+                    spakActivities = JSON.parse(storedSpak);
+                } else {
+                    spakActivities = [
+                        {
+                            id: "spak-seed-1",
+                            title: "Taklimat 1 Latihan Industri Sesi 2:26/27",
+                            date: "2026-07-24",
+                            startTime: "08:00",
+                            endTime: "11:30",
+                            location: "Dewan Rafflesia",
+                            category: "Penting",
+                            coordinator: "DAILY BINTI TAYOK",
+                            updatedAt: "2026-07-09 18:19"
+                        }
+                    ];
+                    localStorage.setItem('kkpapar_spak_activities', JSON.stringify(spakActivities));
+                }
                 setupLecturerProfile();
                 setupLocationDropdown();
                 checkPublishState();
                 renderAll();
+                renderSpakCalendar();
             }
         }
 
@@ -1001,13 +1231,38 @@
                     const timeOverlap = toMin(other.mula) < toMin(slot.tamat) && toMin(slot.mula) < toMin(other.tamat);
                     if (other.hari !== slot.hari || !timeOverlap) return false;
 
-                    const sameClass = other.kelas === slot.kelas;
-                    const sameLoc = other.lokasi === slot.lokasi;
+                    // Combined Class Check
+                    const isSameSubject = (slot.kod === other.kod && slot.kod !== '-') || (slot.subjek === other.subjek);
+                    const isCombinedClass = isSameSubject && (slot.singkatan === other.singkatan) && (slot.lokasi === other.lokasi);
+                    if (isCombinedClass) return false;
+
+                    // Parallel Elective Check (Islam vs Moral vs Kebangsaan)
+                    const isParallelElective = (
+                        (slot.subjek && other.subjek) && (
+                            (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("MORAL")) ||
+                            (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("ISLAM")) ||
+                            (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                            (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("ISLAM")) ||
+                            (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                            (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("MORAL"))
+                        )
+                    );
+
+                    // Lecturer conflict check
                     const l1 = [slot.singkatan]; if (slot.singkatanPembantu && slot.singkatanPembantu !== '-') l1.push(slot.singkatanPembantu);
                     const l2 = [other.singkatan]; if (other.singkatanPembantu && other.singkatanPembantu !== '-') l2.push(other.singkatanPembantu);
                     const sameLec = l1.some(l => l2.includes(l));
 
-                    return sameClass || sameLoc || sameLec;
+                    const cPensyarah = !isCombinedClass && sameLec;
+                    const cKelas = (slot.kelas === other.kelas) && !isParallelElective;
+                    const cLokasi = !isCombinedClass && (slot.lokasi === other.lokasi);
+
+                    // Allow shared lecturer for parallel electives in same room
+                    if (isParallelElective && (slot.lokasi === other.lokasi) && sameLec) {
+                        return false;
+                    }
+
+                    return cPensyarah || cKelas || cLokasi;
                 });
             }
 
@@ -1038,53 +1293,69 @@
                         </td>
                 `;
 
-                hari.forEach(h => {
-                    if (rowspanTracker[h] > 0) {
-                        rowspanTracker[h]--;
-                        return;
-                    }
+                if (bMula === 720 && filteredSlots.filter(s => toMin(s.mula) < 780 && toMin(s.tamat) > 720).length === 0) {
+                    gridHtml += `<td colspan="4" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT (12:00 PM - 01:00 PM)</span></div></td>`;
+                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                    rowspanTracker['Jumaat'] = 1;
+                } else {
+                    hari.forEach(h => {
+                        if (rowspanTracker[h] > 0) {
+                            rowspanTracker[h]--;
+                            return;
+                        }
 
-                    const startingSlots = filteredSlots.filter(s =>
-                        s.hari === h && toMin(s.mula) === bMula
-                    );
+                        const startingSlots = filteredSlots.filter(s =>
+                            s.hari === h && toMin(s.mula) === bMula
+                        );
 
-                    if (startingSlots.length > 0) {
-                        const durations = startingSlots.map(s => {
-                            const diffMin = toMin(s.tamat) - toMin(s.mula);
-                            return Math.max(1, Math.round(diffMin / 60));
-                        });
-                        const maxRowspan = Math.max(...durations);
-                        rowspanTracker[h] = maxRowspan - 1;
+                        if (startingSlots.length > 0) {
+                            const durations = startingSlots.map(s => {
+                                const diffMin = toMin(s.tamat) - toMin(s.mula);
+                                return Math.max(1, Math.round(diffMin / 60));
+                            });
+                            const maxRowspan = Math.max(...durations);
+                            rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
+                            gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
-                        startingSlots.forEach(s => {
-                            const isClashed = checkConflict(s);
-                            const cardStyle = isClashed
-                                ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
-                                : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm";
+                            startingSlots.forEach(s => {
+                                const isClashed = checkConflict(s);
+                                const cardStyle = isClashed
+                                    ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
+                                    : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm";
 
-                            gridHtml += `
-                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                gridHtml += `
+                                    <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                        <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                            <div>🏫 <b>Kelas: ${s.kelas}</b></div>
+                                            <div>👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? '/' + s.singkatanPembantu : ''}</span></div>
+                                            <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
+                                            <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
+                                        </div>
                                     </div>
-                                    <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
-                                        <div>🏫 <b>Kelas: ${s.kelas}</b></div>
-                                        <div>👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
-                                        <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
-                                        <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        gridHtml += `</div></td>`;
-                    } else {
-                        gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
-                    }
-                });
+                                `;
+                            });
+                            gridHtml += `</div></td>`;
+                        } else {
+                            // Check if it is rest time (12:00 PM) - individual fallback
+                            if (bMula === 720) {
+                                if (h === 'Jumaat') {
+                                    rowspanTracker[h] = 1;
+                                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                                } else {
+                                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 01:00 PM</span></div></td>`;
+                                }
+                            } else {
+                                gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
+                            }
+                        }
+                    });
+                }
 
                 gridHtml += `</tr>`;
             });
@@ -1178,7 +1449,7 @@
 
             const gridWrap = document.getElementById("jadualGridWrap");
             let gridHtml = `
-                <table class="w-full border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
+                <table class="w-full table-fixed border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
                     <thead>
                         <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                             <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
@@ -1202,68 +1473,107 @@
                         </td>
                 `;
 
-                hari.forEach(h => {
-                    // If this day-hour cell is already spanned from a previous row, skip td rendering
-                    if (rowspanTracker[h] > 0) {
-                        rowspanTracker[h]--;
-                        return;
-                    }
+                if (bMula === 720 && personalSlots.filter(s => toMin(s.mula) < 780 && toMin(s.tamat) > 720).length === 0) {
+                    gridHtml += `<td colspan="4" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT (12:00 PM - 01:00 PM)</span></div></td>`;
+                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                    rowspanTracker['Jumaat'] = 1;
+                } else {
+                    hari.forEach(h => {
+                        // If this day-hour cell is already spanned from a previous row, skip td rendering
+                        if (rowspanTracker[h] > 0) {
+                            rowspanTracker[h]--;
+                            return;
+                        }
 
-                    // Find slots starting at this exact hour
-                    const startingSlots = personalSlots.filter(s =>
-                        s.hari === h && toMin(s.mula) === bMula
-                    );
+                        // Find slots starting at this exact hour
+                        const startingSlots = personalSlots.filter(s =>
+                            s.hari === h && toMin(s.mula) === bMula
+                        );
 
-                    if (startingSlots.length > 0) {
-                        // Calculate maximum rowspan duration from slots starting here
-                        const durations = startingSlots.map(s => {
-                            const diffMin = toMin(s.tamat) - toMin(s.mula);
-                            return Math.max(1, Math.round(diffMin / 60));
-                        });
-                        const maxRowspan = Math.max(...durations);
-                        rowspanTracker[h] = maxRowspan - 1;
+                        if (startingSlots.length > 0) {
+                            // Calculate maximum rowspan duration from slots starting here
+                            const durations = startingSlots.map(s => {
+                                const diffMin = toMin(s.tamat) - toMin(s.mula);
+                                return Math.max(1, Math.round(diffMin / 60));
+                            });
+                            const maxRowspan = Math.max(...durations);
+                            rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
+                            gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
-                        startingSlots.forEach(s => {
-                            const isClashed = checkConflict(s);
-                            const cardStyle = isClashed
-                                ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
-                                : (s.singkatanPembantu === activeLecturer
-                                    ? "bg-amber-50/70 text-amber-900 border-l-4 border-amber-500 dark:bg-amber-950/20 dark:text-amber-200 dark:border-amber-900 shadow-sm"
-                                    : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm");
+                            startingSlots.forEach(s => {
+                                const isClashed = checkConflict(s);
+                                const cardStyle = isClashed
+                                    ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
+                                    : (s.singkatanPembantu === activeLecturer
+                                        ? "bg-amber-50/70 text-amber-900 border-l-4 border-amber-500 dark:bg-amber-950/20 dark:text-amber-200 dark:border-amber-900 shadow-sm"
+                                        : "bg-teal-50/70 text-teal-900 border-l-4 border-teal-600 dark:bg-teal-950/20 dark:text-teal-200 dark:border-teal-900 shadow-sm");
 
-                            const roleTag = s.singkatanPembantu === activeLecturer
-                                ? `<span class="bg-amber-500 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">PEMBANTU</span>`
-                                : `<span class="bg-teal-700 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">UTAMA</span>`;
+                                const roleTag = s.singkatanPembantu === activeLecturer
+                                    ? `<span class="bg-amber-500 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">PEMBANTU</span>`
+                                    : `<span class="bg-teal-700 text-white font-bold text-[8px] px-1.5 py-0.5 rounded shadow-sm">UTAMA</span>`;
 
-                            gridHtml += `
-                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${roleTag}
-                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                gridHtml += `
+                                    <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${roleTag}
+                                            ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">PERTINDIHAN ⚠️</span>` : ''}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                        <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                            <div>🏫 <span>${s.kelas}</span></div>
+                                            <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
+                                            <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
+                                        </div>
                                     </div>
-                                    <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
-                                        <div>🏫 <span>${s.kelas}</span></div>
-                                        <div class="truncate max-w-[150px]" title="${s.lokasi}">📍 <span>${s.lokasi}</span></div>
-                                        <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        gridHtml += `</div></td>`;
-                    } else {
-                        gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
-                    }
-                });
+                                `;
+                            });
+                            gridHtml += `</div></td>`;
+                        } else {
+                            // Check if it is rest time (12:00 PM) - individual fallback
+                            if (bMula === 720) {
+                                if (h === 'Jumaat') {
+                                    rowspanTracker[h] = 1;
+                                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                                } else {
+                                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-205 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 01:00 PM</span></div></td>`;
+                                }
+                            } else {
+                                gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
+                            }
+                        }
+                    });
+                }
 
                 gridHtml += `</tr>`;
             });
 
             gridHtml += `</tbody></table>`;
             gridWrap.innerHTML = gridHtml;
+
+            // Populate print placeholders
+            const printHeader = document.getElementById("printHeaderPersonal");
+            const printTugas = document.getElementById("tugasMengajarPersonal");
+            const printSigs = document.getElementById("signaturesPersonal");
+            
+            if (printHeader && printTugas && printSigs) {
+                const lecObj = LECTURERS.find(l => l.short === activeLecturer);
+                const dept = lecObj ? (lecObj.program || lecObj.dept || 'STM') : 'STM';
+                const namaLec = lecObj ? lecObj.name : activeLecturer;
+                const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+                
+                printHeader.innerHTML = binaFormalHeaderHTML(
+                    "Jadual Mengajar Mingguan Pensyarah",
+                    `PENSYARAH : ${namaLec.toUpperCase()} (${activeLecturer})`,
+                    dept,
+                    sess
+                );
+                
+                const tugasList = dapatkanTugasMengajarLecturer(activeLecturer);
+                printTugas.innerHTML = binaTugasMengajarTableHTML(tugasList);
+                printSigs.innerHTML = binaSignaturesHTML();
+            }
         }
 
         // Render Location Schedule Grid
@@ -1292,15 +1602,35 @@
                         other.hari === slot.hari &&
                         other.mula === slot.mula;
                     if (sameSlot) return false;
-                    return other.hari === slot.hari &&
-                        toMin(other.mula) < toMin(slot.tamat) &&
-                        toMin(slot.mula) < toMin(other.tamat);
+                    
+                    const timeOverlap = toMin(other.mula) < toMin(slot.tamat) && toMin(slot.mula) < toMin(other.tamat);
+                    if (other.hari !== slot.hari || !timeOverlap) return false;
+
+                    // Combined Class Check
+                    const isSameSubject = (slot.kod === other.kod && slot.kod !== '-') || (slot.subjek === other.subjek);
+                    const isCombinedClass = isSameSubject && (slot.singkatan === other.singkatan) && (slot.lokasi === other.lokasi);
+                    if (isCombinedClass) return false;
+
+                    // Parallel Elective Check in same location
+                    const isParallelElective = (
+                        (slot.subjek && other.subjek) && (
+                            (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("MORAL")) ||
+                            (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("ISLAM")) ||
+                            (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                            (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("ISLAM")) ||
+                            (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                            (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("MORAL"))
+                        )
+                    );
+                    if (isParallelElective) return false;
+
+                    return true;
                 });
             }
 
             const gridWrap = document.getElementById("lokasiGridWrap");
             let gridHtml = `
-                <table class="w-full border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
+                <table class="w-full table-fixed border-collapse border-slate-200 dark:border-slate-800 text-xs sm:text-sm">
                     <thead>
                         <tr class="bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border-b border-slate-200 dark:border-slate-800">
                             <th class="p-3 text-center border-r border-slate-200 dark:border-slate-800 w-24">Masa</th>
@@ -1324,61 +1654,98 @@
                         </td>
                 `;
 
-                hari.forEach(h => {
-                    // If this day-hour cell is already spanned from a previous row, skip td rendering
-                    if (rowspanTracker[h] > 0) {
-                        rowspanTracker[h]--;
-                        return;
-                    }
+                if (bMula === 720 && locSlots.filter(s => toMin(s.mula) < 780 && toMin(s.tamat) > 720).length === 0) {
+                    gridHtml += `<td colspan="4" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT (12:00 PM - 01:00 PM)</span></div></td>`;
+                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                    rowspanTracker['Jumaat'] = 1;
+                } else {
+                    hari.forEach(h => {
+                        // If this day-hour cell is already spanned from a previous row, skip td rendering
+                        if (rowspanTracker[h] > 0) {
+                            rowspanTracker[h]--;
+                            return;
+                        }
 
-                    // Find slots starting at this exact hour
-                    const startingSlots = locSlots.filter(s =>
-                        s.hari === h && toMin(s.mula) === bMula
-                    );
+                        // Find slots starting at this exact hour
+                        const startingSlots = locSlots.filter(s =>
+                            s.hari === h && toMin(s.mula) === bMula
+                        );
 
-                    if (startingSlots.length > 0) {
-                        // Calculate maximum rowspan duration from slots starting here
-                        const durations = startingSlots.map(s => {
-                            const diffMin = toMin(s.tamat) - toMin(s.mula);
-                            return Math.max(1, Math.round(diffMin / 60));
-                        });
-                        const maxRowspan = Math.max(...durations);
-                        rowspanTracker[h] = maxRowspan - 1;
+                        if (startingSlots.length > 0) {
+                            // Calculate maximum rowspan duration from slots starting here
+                            const durations = startingSlots.map(s => {
+                                const diffMin = toMin(s.tamat) - toMin(s.mula);
+                                return Math.max(1, Math.round(diffMin / 60));
+                            });
+                            const maxRowspan = Math.max(...durations);
+                            rowspanTracker[h] = maxRowspan - 1;
 
-                        gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
+                            gridHtml += `<td rowspan="${maxRowspan}" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-white dark:bg-slate-900/20 h-px"><div class="h-full flex flex-col gap-2 justify-stretch">`;
 
-                        startingSlots.forEach(s => {
-                            const isClashed = checkLocConflict(s);
-                            const cardStyle = isClashed
-                                ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
-                                : "bg-indigo-50/70 text-indigo-900 border-l-4 border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-200 dark:border-indigo-900 shadow-sm";
+                            startingSlots.forEach(s => {
+                                const isClashed = checkLocConflict(s);
+                                const cardStyle = isClashed
+                                    ? "bg-red-50 text-red-900 border border-red-300 dark:bg-red-950/30 dark:text-red-200 dark:border-red-900 ring-2 ring-red-500/20"
+                                    : "bg-indigo-50/70 text-indigo-900 border-l-4 border-indigo-600 dark:bg-indigo-950/20 dark:text-indigo-200 dark:border-indigo-900 shadow-sm";
 
-                            gridHtml += `
-                                <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
-                                    <div class="flex flex-wrap items-center gap-1.5 mb-1">
-                                        <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
-                                        ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">BERTINDIHAN ⚠️</span>` : ''}
+                                gridHtml += `
+                                    <div class="p-2.5 rounded-xl text-left ${cardStyle} transition hover:shadow-md flex-1 flex flex-col justify-center items-start gap-1">
+                                        <div class="flex flex-wrap items-center gap-1.5 mb-1">
+                                            <span class="font-extrabold tracking-wide text-xs">${s.kod}</span>
+                                            ${isClashed ? `<span class="bg-red-500 text-white font-extrabold text-[8px] px-1.5 py-0.5 rounded animate-pulse">BERTINDIHAN ⚠️</span>` : ''}
+                                        </div>
+                                        <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
+                                        <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
+                                            <div>🏫 <b>Kelas: ${s.kelas}</b></div>
+                                            <div>👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? '/' + s.singkatanPembantu : ''}</span></div>
+                                            <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
+                                        </div>
                                     </div>
-                                    <div class="font-bold text-[11px] leading-tight text-slate-800 dark:text-slate-200">${s.subjek}</div>
-                                    <div class="text-[10px] text-slate-500 dark:text-slate-400 font-medium space-y-0.5 mt-1.5">
-                                        <div>🏫 <b>Kelas: ${s.kelas}</b></div>
-                                        <div>👤 <span>Pensyarah: ${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</span></div>
-                                        <div>⏱️ <span>${format12Hour(s.mula)} – ${format12Hour(s.tamat)}</span></div>
-                                    </div>
-                                </div>
-                            `;
-                        });
-                        gridHtml += `</div></td>`;
-                    } else {
-                        gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
-                    }
-                });
+                                `;
+                            });
+                            gridHtml += `</div></td>`;
+                        } else {
+                            // Check if it is rest time (12:00 PM) - individual fallback
+                            if (bMula === 720) {
+                                if (h === 'Jumaat') {
+                                    rowspanTracker[h] = 1;
+                                    gridHtml += `<td rowspan="2" class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT / SOLAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 02:00 PM</span></div></td>`;
+                                } else {
+                                    gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 bg-blue-100 dark:bg-blue-950/40 align-middle text-center select-none text-blue-800 dark:text-blue-200 font-bold text-xs border-dashed border-2 border-blue-300 dark:border-blue-900/50"><div class="flex flex-col items-center justify-center gap-1.5 h-full">🍽️ <span>REHAT</span><span class="text-[9px] opacity-75 font-normal">12:00 PM - 01:00 PM</span></div></td>`;
+                                }
+                            } else {
+                                gridHtml += `<td class="p-2 border-r border-slate-200 dark:border-slate-800 last:border-r-0 align-top bg-white dark:bg-slate-900/20 min-h-[90px]"></td>`;
+                            }
+                        }
+                    });
+                }
 
                 gridHtml += `</tr>`;
             });
 
             gridHtml += `</tbody></table>`;
             gridWrap.innerHTML = gridHtml;
+
+            // Populate print placeholders
+            const printHeader = document.getElementById("printHeaderLocation");
+            const printTugas = document.getElementById("tugasMengajarLocation");
+            const printSigs = document.getElementById("signaturesLocation");
+            
+            if (printHeader && printTugas && printSigs) {
+                const type = activeLocation.includes('LOGISTIK') ? 'SLK' : (activeLocation.includes('STM') || activeLocation.includes('MAKMAL') ? 'STM' : 'Umum');
+                const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+                
+                printHeader.innerHTML = binaFormalHeaderHTML(
+                    "Jadual Penggunaan Lokasi / Bilik",
+                    `LOKASI : ${activeLocation.toUpperCase()}`,
+                    type,
+                    sess
+                );
+                
+                const tugasList = dapatkanTugasMengajarLokasi(activeLocation);
+                printTugas.innerHTML = binaTugasMengajarTableHTML(tugasList);
+                printSigs.innerHTML = binaSignaturesHTML();
+            }
         }
 
         // Render Announcements
@@ -1706,7 +2073,7 @@
             document.getElementById("fileProfileImage").value = "";
         }
 
-        function simpanProfilUbahsuai() {
+        async function simpanProfilUbahsuai() {
             const passwordVal = document.getElementById("inputNewPassword").value.trim();
             const confirmVal = document.getElementById("inputConfirmPassword").value.trim();
 
@@ -1722,7 +2089,8 @@
                     showToast("Kata laluan baru dan sahkan kata laluan tidak sepadan!", "danger");
                     return;
                 }
-                LECTURERS[idx].password = passwordVal;
+                const hashed = await hashPassword(passwordVal);
+                LECTURERS[idx].password = hashed;
             }
 
             // Photo update
@@ -1732,6 +2100,349 @@
             setupLecturerProfile();
             tutupModalProfil();
             showToast("Perubahan profil berjaya disimpan!", "success");
+        }
+
+        // ==========================================================================
+        // SPAK CALENDAR & ACTIVITY MANAGEMENT FUNCTIONS
+        // ==========================================================================
+        let spakActivities = [];
+        let spakYear = 2026;
+        let spakMonth = 6; // Default to July
+        let selectedDateStr = "2026-07-24";
+        let editSpakIdx = -1;
+        const MALAY_MONTHS = ["Januari", "Februari", "Mac", "April", "Mei", "Jun", "Julai", "Ogos", "September", "Oktober", "November", "Disember"];
+
+        function navMonth(direction) {
+            spakMonth += direction;
+            if (spakMonth < 0) {
+                spakMonth = 11;
+                spakYear--;
+            } else if (spakMonth > 11) {
+                spakMonth = 0;
+                spakYear++;
+            }
+            renderSpakCalendar();
+        }
+
+        function renderSpakCalendar() {
+            const monthYearHeader = document.getElementById("calendarMonthYear");
+            const daysGrid = document.getElementById("calendarDaysGrid");
+            if (!monthYearHeader || !daysGrid) return;
+
+            monthYearHeader.textContent = `${MALAY_MONTHS[spakMonth]} ${spakYear}`;
+            daysGrid.innerHTML = "";
+
+            const firstDayIndex = new Date(spakYear, spakMonth, 1).getDay();
+            const totalDays = new Date(spakYear, spakMonth + 1, 0).getDate();
+            const prevTotalDays = new Date(spakYear, spakMonth, 0).getDate();
+
+            // Render previous month padding days
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const cell = document.createElement("div");
+                cell.className = "aspect-ratio-[1.1] bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col items-start p-2 text-xs font-semibold text-slate-400 dark:text-slate-600 opacity-40 cursor-default pointer-events-none";
+                const dayNum = prevTotalDays - i;
+                cell.innerHTML = `<span>${dayNum}</span>`;
+                daysGrid.appendChild(cell);
+            }
+
+            // Render current month active days
+            const today = new Date();
+            for (let day = 1; day <= totalDays; day++) {
+                const cell = document.createElement("div");
+
+                const dayStr = `${spakYear}-${String(spakMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+                const dayEvents = spakActivities.filter(act => act.date === dayStr);
+                const hasEvents = dayEvents.length > 0;
+                const hasPenting = dayEvents.some(act => act.category && (act.category.toLowerCase() === 'penting' || act.category.toLowerCase() === 'segera'));
+
+                let bgClass = "bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300";
+                if (hasEvents) {
+                    if (hasPenting) {
+                        bgClass = "bg-red-50/90 border-red-300 dark:bg-red-950/20 dark:border-red-900/50 text-red-900 dark:text-red-300";
+                    } else {
+                        bgClass = "bg-sky-50/90 border-sky-300 dark:bg-sky-950/20 dark:border-sky-900/50 text-sky-900 dark:text-sky-300";
+                    }
+                }
+
+                if (day === today.getDate() && spakMonth === today.getMonth() && spakYear === today.getFullYear()) {
+                    bgClass = "bg-teal-50 dark:bg-teal-950/20 border-teal-500 text-teal-600 dark:text-teal-400";
+                }
+                if (dayStr === selectedDateStr) {
+                    bgClass = "bg-teal-600 text-white dark:bg-teal-600 dark:text-white border-teal-600";
+                }
+
+                cell.className = `aspect-ratio-[1.1] ${bgClass} border rounded-lg flex flex-col justify-between items-start p-2 text-xs font-semibold relative cursor-pointer hover:border-teal-500 hover:-translate-y-0.5 transition duration-150 shadow-sm`;
+                cell.innerHTML = `<span>${day}</span>`;
+
+                if (hasEvents) {
+                    const indicator = document.createElement("div");
+                    const dotColor = (dayStr === selectedDateStr) ? "bg-white" : (hasPenting ? "bg-red-500" : "bg-sky-500");
+                    indicator.className = `w-1.5 h-1.5 ${dotColor} rounded-full self-center mt-auto`;
+                    cell.appendChild(indicator);
+                }
+
+                cell.addEventListener("click", () => {
+                    selectedDateStr = dayStr;
+                    document.getElementById("spakDate").value = selectedDateStr;
+                    renderSpakCalendar();
+                });
+
+                daysGrid.appendChild(cell);
+            }
+
+            // Render next month padding days
+            const gridCount = daysGrid.children.length;
+            const remaining = (gridCount <= 35) ? (35 - gridCount) : (42 - gridCount);
+            for (let i = 1; i <= remaining; i++) {
+                const cell = document.createElement("div");
+                cell.className = "aspect-ratio-[1.1] bg-slate-100/50 dark:bg-slate-800/30 border border-slate-200 dark:border-slate-800/80 rounded-lg flex flex-col items-start p-2 text-xs font-semibold text-slate-400 dark:text-slate-600 opacity-40 cursor-default pointer-events-none";
+                cell.innerHTML = `<span>${i}</span>`;
+                daysGrid.appendChild(cell);
+            }
+
+            renderSpakEventList();
+        }
+
+        function renderSpakEventList() {
+            const listEl = document.getElementById("spakEventList");
+            const titleEl = document.getElementById("spakInfoTitle");
+            if (!listEl || !titleEl) return;
+
+            const selectedDateObj = new Date(selectedDateStr);
+            const day = selectedDateObj.getDate();
+            const month = MALAY_MONTHS[selectedDateObj.getMonth()];
+            const year = selectedDateObj.getFullYear();
+
+            titleEl.textContent = `Aktiviti: ${day} ${month} ${year}`;
+
+            const dayEvents = spakActivities.filter(act => act.date === selectedDateStr);
+
+            if (dayEvents.length === 0) {
+                listEl.innerHTML = `
+                    <div class="text-center text-slate-400 dark:text-slate-500 py-10">
+                        <div class="text-3xl mb-2">📅</div>
+                        <p class="text-xs font-medium">Tiada aktiviti didaftarkan pada tarikh ini.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            dayEvents.forEach(evt => {
+                const isPenting = evt.category && (evt.category.toLowerCase() === "penting" || evt.category.toLowerCase() === "segera");
+                const badgeText = isPenting ? "⚠️ PENTING" : "📢 MAKLUMAN UMUM";
+                const badgeClass = isPenting ? "bg-red-50 text-red-600 dark:bg-red-950/20 dark:text-red-400" : "bg-teal-50 text-teal-600 dark:bg-teal-950/20 dark:text-teal-400";
+                const itemBorder = isPenting ? "border-l-red-500" : "border-l-teal-500";
+
+                const formattedStart = format12Hour(evt.startTime);
+                const formattedEnd = format12Hour(evt.endTime);
+                const timeDisplay = (formattedStart && formattedEnd) ? `${formattedStart} - ${formattedEnd}` : (evt.startTime || "");
+
+                html += `
+                    <div class="bg-slate-50 dark:bg-slate-900/50 border border-slate-200 dark:border-slate-800 border-l-4 ${itemBorder} rounded-xl p-4 flex flex-col gap-2 relative cursor-pointer" onclick="bukaDetailSpak('${evt.id}')">
+                        <div class="absolute top-3 right-3 flex gap-1.5 no-print">
+                            <button onclick="event.stopPropagation(); editSpakActivity('${evt.id}')" class="text-slate-400 hover:text-teal-600 p-1 rounded hover:bg-slate-200/50 dark:hover:bg-slate-800 transition text-[10px]" title="Edit">✏️</button>
+                            <button onclick="event.stopPropagation(); deleteSpakActivity('${evt.id}')" class="text-slate-400 hover:text-red-600 p-1 rounded hover:bg-slate-200/50 dark:hover:bg-slate-800 transition text-[10px]" title="Padam">🗑️</button>
+                        </div>
+
+                        <div class="flex items-center gap-2">
+                            <span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold ${badgeClass}">
+                                ${badgeText}
+                            </span>
+                        </div>
+                        <h4 class="font-extrabold text-sm text-slate-800 dark:text-white pr-14 leading-relaxed">${evt.title}</h4>
+                        <div class="text-[11px] text-slate-500 dark:text-slate-400 flex flex-col gap-1">
+                            <span>🏫 <strong>Lokasi:</strong> ${evt.location || '-'}</span>
+                            <span>⏱️ <strong>Masa:</strong> ${timeDisplay}</span>
+                        </div>
+                        <div class="text-[10px] text-slate-400 dark:text-slate-500 border-t border-slate-200 dark:border-slate-800 pt-2 flex justify-between items-center mt-1">
+                            <span>👤 Penyelaras: ${evt.coordinator || '-'}</span>
+                            <span>Kemas kini: ${evt.updatedAt || '-'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+        }
+
+        window.bukaDetailSpak = function(id) {
+            const evt = spakActivities.find(a => a.id === id);
+            if (!evt) return;
+
+            const isPenting = evt.category && (evt.category.toLowerCase() === "penting" || evt.category.toLowerCase() === "segera");
+            const categoryBadge = isPenting ? "⚠️ PENTING" : "📢 MAKLUMAN UMUM";
+            const badgeEl = document.getElementById("spakModalBadge");
+            
+            badgeEl.textContent = categoryBadge;
+            if (isPenting) {
+                badgeEl.style.cssText = "background:#fef2f2; color:#dc2626; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:50px; letter-spacing:0.3px; border:1px solid #fca5a5;";
+            } else {
+                badgeEl.style.cssText = "background:#f0fdfa; color:#0d9488; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:50px; letter-spacing:0.3px; border:1px solid #5eead4;";
+            }
+
+            document.getElementById("spakModalTitle").textContent = evt.title;
+            
+            // Format Date
+            const dateObj = new Date(evt.date);
+            const formattedDate = `${dateObj.getDate()} ${MALAY_MONTHS[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+            
+            document.getElementById("spakModalDate").textContent = formattedDate;
+            
+            // Format Time
+            const formattedStart = format12Hour(evt.startTime);
+            const formattedEnd = format12Hour(evt.endTime);
+            const timeDisplay = (formattedStart && formattedEnd) ? `${formattedStart} - ${formattedEnd}` : (evt.startTime || "");
+            document.getElementById("spakModalTime").textContent = timeDisplay;
+            
+            document.getElementById("spakModalLocation").textContent = evt.location || "-";
+            document.getElementById("spakModalCoordinator").textContent = evt.coordinator || "-";
+            document.getElementById("spakModalDescription").textContent = evt.description || "Tiada ulasan atau deskripsi lanjut disediakan.";
+            document.getElementById("spakModalId").textContent = evt.id;
+            document.getElementById("spakModalUpdated").textContent = evt.updatedAt || "-";
+
+            document.getElementById("modalSpakDetail").style.display = "flex";
+        };
+
+        window.tutupModalSpak = function() {
+            document.getElementById("modalSpakDetail").style.display = "none";
+        };
+
+        // Close modal if clicked outside card or escape key pressed
+        window.addEventListener("click", (e) => {
+            const modal = document.getElementById("modalSpakDetail");
+            if (e.target === modal) {
+                window.tutupModalSpak();
+            }
+        });
+        window.addEventListener("keydown", (e) => {
+            if (e.key === "Escape") {
+                window.tutupModalSpak();
+            }
+        });
+
+        function switchSpakSubTab(tab) {
+            const listBtn = document.getElementById("tabSpakListBtn");
+            const formBtn = document.getElementById("tabSpakFormBtn");
+            const listPane = document.getElementById("spakListPane");
+            const formPane = document.getElementById("spakFormPane");
+
+            if (tab === 'list') {
+                listBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white shadow-sm transition cursor-pointer";
+                formBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition cursor-pointer";
+                listPane.classList.remove("hidden");
+                formPane.classList.add("hidden");
+            } else {
+                formBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white shadow-sm transition cursor-pointer";
+                listBtn.className = "px-4 py-1.5 rounded-lg text-xs font-bold text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800 transition cursor-pointer";
+                formPane.classList.remove("hidden");
+                listPane.classList.add("hidden");
+
+                if (editSpakIdx === -1) {
+                    document.getElementById("spakTitle").value = "";
+                    document.getElementById("spakDate").value = selectedDateStr;
+                    document.getElementById("spakStartTime").value = "08:00";
+                    document.getElementById("spakEndTime").value = "10:00";
+                    document.getElementById("spakLocation").value = "";
+                    document.getElementById("spakDescription").value = "";
+                    
+                    const lecObj = LECTURERS.find(l => l.short === activeLecturer);
+                    document.getElementById("spakCoordinator").value = lecObj ? lecObj.name : activeLecturer;
+                    document.getElementById("btnSubmitSpak").textContent = "Tambah Aktiviti";
+                }
+            }
+        }
+
+        function simpanAktivitiSpak(e) {
+            e.preventDefault();
+            const title = document.getElementById("spakTitle").value.trim();
+            const date = document.getElementById("spakDate").value;
+            const category = document.getElementById("spakCategory").value;
+            const startTime = document.getElementById("spakStartTime").value;
+            const endTime = document.getElementById("spakEndTime").value;
+            const location = document.getElementById("spakLocation").value.trim();
+            const coordinator = document.getElementById("spakCoordinator").value.trim();
+            const description = document.getElementById("spakDescription").value.trim();
+
+            const now = new Date();
+            const updatedAt = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            if (editSpakIdx === -1) {
+                const newEvt = {
+                    id: "spak-" + Date.now(),
+                    title,
+                    date,
+                    category,
+                    startTime,
+                    endTime,
+                    location,
+                    coordinator,
+                    description,
+                    updatedAt
+                };
+                spakActivities.push(newEvt);
+                showToast("Aktiviti KKPPS baru berjaya ditambah!", "success");
+            } else {
+                const item = spakActivities[editSpakIdx];
+                item.title = title;
+                item.date = date;
+                item.category = category;
+                item.startTime = startTime;
+                item.endTime = endTime;
+                item.location = location;
+                item.coordinator = coordinator;
+                item.description = description;
+                item.updatedAt = updatedAt;
+
+                editSpakIdx = -1;
+                showToast("Kemas kini aktiviti KKPPS berjaya disimpan!", "success");
+            }
+
+            simpanSpakKeDatabase();
+            switchSpakSubTab('list');
+            renderSpakCalendar();
+        }
+
+        function editSpakActivity(id) {
+            const idx = spakActivities.findIndex(a => a.id === id);
+            if (idx === -1) return;
+
+            editSpakIdx = idx;
+            const item = spakActivities[idx];
+
+            switchSpakSubTab('form');
+
+            document.getElementById("spakTitle").value = item.title;
+            document.getElementById("spakDate").value = item.date;
+            document.getElementById("spakCategory").value = item.category;
+            document.getElementById("spakStartTime").value = item.startTime;
+            document.getElementById("spakEndTime").value = item.endTime;
+            document.getElementById("spakLocation").value = item.location;
+            document.getElementById("spakCoordinator").value = item.coordinator;
+            document.getElementById("spakDescription").value = item.description || "";
+            document.getElementById("btnSubmitSpak").textContent = "Simpan Kemas Kini";
+        }
+
+        function deleteSpakActivity(id) {
+            if (confirm("Adakah anda pasti untuk memadam aktiviti KKPPS ini?")) {
+                spakActivities = spakActivities.filter(a => a.id !== id);
+                simpanSpakKeDatabase();
+                renderSpakCalendar();
+                showToast("Aktiviti KKPPS berjaya dipadam!", "success");
+            }
+        }
+
+        function cancelSpakEdit() {
+            editSpakIdx = -1;
+            switchSpakSubTab('list');
+        }
+
+        function simpanSpakKeDatabase() {
+            if (isFirebaseActive()) {
+                firebaseSaveSpakActivities(spakActivities);
+            } else {
+                localStorage.setItem('kkpapar_spak_activities', JSON.stringify(spakActivities));
+            }
         }
 
         // Start Live Clock
@@ -1753,10 +2464,10 @@
                 };
                 const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
                 clockEl.innerHTML = `
-                    <span style="background: rgba(13, 148, 136, 0.15); border: 1px solid rgba(13, 148, 136, 0.25); color: #0d9488; padding: 3px 10px; border-radius: 50px; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.02);">
+                    <span style="background: rgba(255, 255, 255, 0.18); border: 1px solid rgba(255, 255, 255, 0.3); color: #ffffff; padding: 3px 10px; border-radius: 50px; font-weight: 700; font-size: 0.7rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 4px;">
                         🎓 SESI SEMASA: ${sess}
                     </span>
-                    <span style="color: #64748b; display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 500; margin-left: 6px;">
+                    <span style="color: #ffffff; display: inline-flex; align-items: center; gap: 6px; font-size: 0.75rem; font-weight: 600; margin-left: 6px; text-shadow: 0 1px 2px rgba(0,0,0,0.35);">
                         📅 ${now.toLocaleDateString('ms-MY', options)}
                     </span>
                 `;
@@ -1773,7 +2484,196 @@
                 el.textContent = `JADUAL DISAHKAN BAGI SESI ${sess}`.toUpperCase();
             });
         }
+
+        // --- PRINT HELPERS ---
+        function formatKuatkuasaDate() {
+            const months = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"];
+            if (DB && DB.effectiveDate) {
+                const parts = DB.effectiveDate.split('-');
+                if (parts.length === 3) {
+                    const y = parts[0];
+                    const m = parseInt(parts[1], 10) - 1;
+                    const d = parseInt(parts[2], 10);
+                    return `${d} ${months[m]} ${y}`;
+                }
+            }
+            const d = new Date();
+            return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+        }
+
+        function dapatkanTugasMengajarLecturer(singkatan) {
+            const tugasList = [];
+            const keys = new Set();
+            
+            DB.subjek.forEach(s => {
+                const isLec = (s.singkatan && s.singkatan.trim().toUpperCase() === singkatan.toUpperCase()) || 
+                              (s.singkatanPembantu && s.singkatanPembantu.trim().toUpperCase() === singkatan.toUpperCase());
+                if (isLec) {
+                    const key = `${s.kod}_${s.kelas}`;
+                    if (!keys.has(key)) {
+                        keys.add(key);
+                        const jamSlot = DB.slot.filter(sl => sl.kod === s.kod && sl.kelas === s.kelas && (sl.singkatan === s.singkatan || sl.singkatanPembantu === s.singkatanPembantu))
+                                        .reduce((t, sl) => t + (toMin(sl.tamat) - toMin(sl.mula)) / 60, 0);
+                        tugasList.push({
+                            kod: s.kod,
+                            nama: s.subjek,
+                            kelas: s.kelas,
+                            jam: jamSlot || s.jam
+                        });
+                    }
+                }
+            });
+
+            DB.slot.forEach(sl => {
+                const isLec = (sl.singkatan && sl.singkatan.trim().toUpperCase() === singkatan.toUpperCase()) || 
+                              (sl.singkatanPembantu && sl.singkatanPembantu.trim().toUpperCase() === singkatan.toUpperCase());
+                if (isLec) {
+                    const key = `${sl.kod}_${sl.kelas}`;
+                    if (!keys.has(key)) {
+                        keys.add(key);
+                        const jamSlot = DB.slot.filter(x => x.kod === sl.kod && x.kelas === sl.kelas && (x.singkatan === sl.singkatan || x.singkatanPembantu === sl.singkatanPembantu))
+                                        .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+                        tugasList.push({
+                            kod: sl.kod,
+                            nama: sl.subjek,
+                            kelas: sl.kelas,
+                            jam: jamSlot
+                        });
+                    }
+                }
+            });
+
+            return tugasList;
+        }
+
+        function dapatkanTugasMengajarLokasi(namaLokasi) {
+            const tugasList = [];
+            const keys = new Set();
+            
+            DB.slot.forEach(sl => {
+                if (sl.lokasi && sl.lokasi.trim().toUpperCase() === namaLokasi.toUpperCase()) {
+                    const key = `${sl.kod}_${sl.kelas}`;
+                    if (!keys.has(key)) {
+                        keys.add(key);
+                        const jamSlot = DB.slot.filter(x => x.kod === sl.kod && x.kelas === sl.kelas && x.lokasi === sl.lokasi)
+                                        .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+                        tugasList.push({
+                            kod: sl.kod,
+                            nama: sl.subjek,
+                            kelas: sl.kelas,
+                            jam: jamSlot
+                        });
+                    }
+                }
+            });
+
+            return tugasList;
+        }
+
+        function binaTugasMengajarTableHTML(tugasList) {
+            const totalHours = tugasList.reduce((sum, item) => sum + item.jam, 0);
+            let rowsHtml = tugasList.map(item => `
+                <tr>
+                    <td style="border: 1px solid #000; padding: 4px 6px; font-weight: bold; text-align: center; font-size: 0.7rem; color: #000;">${item.kod}</td>
+                    <td style="border: 1px solid #000; padding: 4px 6px; font-size: 0.7rem; color: #000;">${item.nama.toUpperCase()}</td>
+                    <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-size: 0.7rem; color: #000;">${item.kelas}</td>
+                    <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: bold; font-size: 0.7rem; color: #000;">${item.jam}</td>
+                </tr>
+            `).join('');
+
+            if (tugasList.length === 0) {
+                rowsHtml = `<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; color: #000; font-size: 0.7rem;">Tiada tugas mengajar didaftarkan.</td></tr>`;
+            }
+
+            return `
+                <div style="margin-top: 15px; font-family: 'Inter', sans-serif;">
+                    <h3 style="font-size: 0.75rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 2px; margin-top: 0; margin-bottom: 6px; text-transform: uppercase; color: #000;">TUGAS MENGAJAR</h3>
+                    <table style="width: 100%; border-collapse: collapse; border: 1px solid #000; color: #000;">
+                        <thead>
+                            <tr style="background-color: #f1f5f9; font-size: 0.68rem; color: #000;">
+                                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KOD KURSUS</th>
+                                <th style="border: 1px solid #000; padding: 4px; text-align: left; font-weight: bold; width: 55%;">NAMA KURSUS</th>
+                                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KELAS</th>
+                                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">JAM MENGAJAR</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${rowsHtml}
+                            <tr style="font-weight: bold; background-color: #f8fafc; font-size: 0.7rem; color: #000;">
+                                <td colspan="3" style="border: 1px solid #000; padding: 4px 6px; text-align: right; font-weight: 800;">JUMLAH KESELURUHAN</td>
+                                <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: 800;">${totalHours}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        }
+
+        function binaSignaturesHTML() {
+            return ``;
+        }
+
+        function binaFormalHeaderHTML(title, leftMeta, dept, session) {
+            return `
+                <div class="print-header-container" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; font-family: 'Inter', sans-serif; color: #000;">
+                    <div style="width: 20%; text-align: left;">
+                        <img src="Logo_KPT.png" alt="Logo KPT" style="height: 60px; object-fit: contain;">
+                    </div>
+                    <div style="width: 60%; text-align: center;">
+                        <h3 style="margin: 0; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.3px;">KOLEJ KOMUNITI PAPAR</h3>
+                        <h4 style="margin: 1px 0 0 0; font-size: 0.8rem; font-weight: 700; color: #000;">KEMENTERIAN PENDIDIKAN TINGGI</h4>
+                        <h5 style="margin: 4px 0 0 0; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #000; letter-spacing: 0.3px;">${title}</h5>
+                    </div>
+                    <div style="width: 20%; text-align: right;">
+                        <img src="Logo_KKPPS.jpeg" alt="Logo KKPPS" style="height: 60px; object-fit: contain;">
+                    </div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; margin-bottom: 3px; font-family: 'Inter', sans-serif; color: #000;">
+                    <div>${leftMeta}</div>
+                    <div style="text-align: right;">
+                        <div>TARIKH KUATKUASA : ${formatKuatkuasaDate()}</div>
+                        <div style="margin-top: 1px;">PROGRAM / UNIT : ${dept.toUpperCase()}</div>
+                    </div>
+                </div>
+                <div style="text-align: center; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; font-family: 'Inter', sans-serif; color: #000;">
+                    SESI : ${session.toUpperCase()}
+                </div>
+            `;
+        }
     </script>
+    <!-- Modal Perincian Makluman SPAK -->
+    <div id="modalSpakDetail" class="modal-overlay" style="display: none; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); align-items: center; justify-content: center; padding: 20px;">
+        <div class="bg-white dark:bg-slate-900 border-2 border-[#06b6d4] dark:border-[#06b6d4] rounded-2xl max-w-[550px] w-full shadow-2xl p-6 relative flex flex-col gap-4 text-left">
+            <div class="flex justify-between items-center border-b border-slate-100 dark:border-slate-800 pb-3">
+                <span id="spakModalBadge" class="text-xs px-2.5 py-1 rounded font-bold"></span>
+                <button onclick="tutupModalSpak()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 transition duration-150 cursor-pointer p-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <h3 id="spakModalTitle" class="font-extrabold text-slate-850 dark:text-white text-base leading-snug"></h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-slate-50 dark:bg-slate-950 p-3.5 rounded-xl border border-slate-200/60 dark:border-slate-800/80">
+                <div class="text-slate-600 dark:text-slate-400">📅 <b>Tarikh:</b> <span id="spakModalDate" class="text-slate-850 dark:text-slate-200 font-semibold ml-0.5"></span></div>
+                <div class="text-slate-600 dark:text-slate-400">⏱️ <b>Masa:</b> <span id="spakModalTime" class="text-slate-850 dark:text-slate-200 font-semibold ml-0.5"></span></div>
+                <div class="text-slate-600 dark:text-slate-400">🏫 <b>Lokasi:</b> <span id="spakModalLocation" class="text-slate-850 dark:text-slate-200 font-semibold ml-0.5"></span></div>
+                <div class="text-slate-600 dark:text-slate-400">👤 <b>Penyelaras:</b> <span id="spakModalCoordinator" class="text-slate-850 dark:text-slate-200 font-semibold ml-0.5"></span></div>
+            </div>
+            
+            <div>
+                <label class="block text-[10px] font-bold text-slate-400 dark:text-slate-500 uppercase tracking-wider mb-2">Ulasan / Perincian:</label>
+                <div id="spakModalDescription" class="text-xs leading-relaxed text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-900 border-l-4 border-[#06b6d4] pl-4 py-1.5 whitespace-pre-wrap font-sans"></div>
+            </div>
+            
+            <div class="flex justify-between items-center border-t border-slate-150 dark:border-slate-800 pt-3 text-[10px] text-slate-400 dark:text-slate-500">
+                <span>ID: <span id="spakModalId"></span></span>
+                <span>Kemaskini: <span id="spakModalUpdated"></span></span>
+            </div>
+        </div>
+    </div>
 </body>
 
 </html>

@@ -3,8 +3,18 @@
 
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Sistem Jadual Waktu - Kolej Komuniti Papar</title>
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b3d5c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jadual KKPPS">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <meta name="description" content="Sistem Jadual Waktu Kolej Komuniti Papar">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
@@ -61,6 +71,16 @@
                         </svg>
                         Jadual Lokasi
                     </button>
+                    <button class="nav-item" data-tab="spak">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                            <line x1="16" y1="2" x2="16" y2="6"></line>
+                            <line x1="8" y1="2" x2="8" y2="6"></line>
+                            <line x1="3" y1="10" x2="21" y2="10"></line>
+                        </svg>
+                        Aktiviti KKPPS
+                    </button>
                     <button class="nav-item" data-tab="login">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
                             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -96,14 +116,63 @@
             </div>
         </aside>
 
+        <!-- Mobile Bottom Navigation (shown only on mobile via CSS) -->
+        <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+            <button class="active" data-tab="home" onclick="switchMobileTab('home', this)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                    <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Utama
+            </button>
+            <button data-tab="pelajar" onclick="switchMobileTab('pelajar', this)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="9" cy="7" r="4"></circle>
+                </svg>
+                Pelajar
+            </button>
+            <button data-tab="lokasi" onclick="switchMobileTab('lokasi', this)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+                    <circle cx="12" cy="10" r="3"></circle>
+                </svg>
+                Lokasi
+            </button>
+            <button data-tab="spak" onclick="switchMobileTab('spak', this)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                    <line x1="16" y1="2" x2="16" y2="6"></line>
+                    <line x1="8" y1="2" x2="8" y2="6"></line>
+                    <line x1="3" y1="10" x2="21" y2="10"></line>
+                </svg>
+                SPAK
+            </button>
+            <button data-tab="login" onclick="switchMobileTab('login', this)">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path>
+                    <polyline points="10 17 15 12 10 7"></polyline>
+                    <line x1="15" y1="12" x2="3" y2="12"></line>
+                </svg>
+                Masuk
+            </button>
+        </nav>
+
         <!-- Main Window -->
         <main class="app-main">
             <!-- App Header -->
             <header class="app-header">
                 <div class="header-title-area">
                     <h2 id="header-title">Laman Utama</h2>
-                    <p id="header-subtitle"><i>"Tidak Penting Di mana Anda Bermula, Yang Penting Di mana Anda berakhir" - KKPPS</i></p>
-                    <div id="live-clock" style="font-size: 0.8rem; font-weight: 600; color: var(--text-secondary); margin-top: 6px; display: flex; align-items: center; gap: 6px;">
+                    <p id="header-subtitle"><i>"Tidak Penting Di mana Anda Bermula, Yang Penting Di mana Anda berakhir"
+                            - KKPPS</i></p>
+                    <div id="live-clock"
+                        style="font-size: 0.8rem; font-weight: 700; color: #ffffff; margin-top: 6px; display: flex; align-items: center; gap: 6px;">
                         ⏱️ Memuatkan masa...
                     </div>
                 </div>
@@ -112,6 +181,7 @@
                         style="height: 50px; width: auto; object-fit: contain; filter: drop-shadow(0px 2px 4px rgba(0,0,0,0.08));">
                 </div>
             </header>
+
 
             <!-- Content Body -->
             <div class="content-body">
@@ -133,7 +203,8 @@
                     </div>
 
                     <!-- Stats Section (3 di atas, 2 di bawah centralize) -->
-                    <div style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem; width: 100%;">
+                    <div
+                        style="display: flex; flex-direction: column; gap: 1.5rem; margin-bottom: 2.5rem; width: 100%;">
                         <!-- Top Row (3 items) -->
                         <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; width: 100%;">
                             <div class="stat-card" style="flex: 1; min-width: 250px; max-width: 380px;">
@@ -153,7 +224,8 @@
                                 </div>
                             </div>
 
-                            <div class="stat-card clickable" onclick="showLecturersModal('STM')" style="flex: 1; min-width: 250px; max-width: 380px;">
+                            <div class="stat-card clickable" onclick="showLecturersModal('STM')"
+                                style="flex: 1; min-width: 250px; max-width: 380px;">
                                 <div class="stat-info">
                                     <span class="stat-label">Pensyarah STM</span>
                                     <h2 class="stat-value" id="stat-stm-pensyarah">8</h2>
@@ -169,7 +241,8 @@
                                 </div>
                             </div>
 
-                            <div class="stat-card clickable" onclick="showLecturersModal('SLK')" style="flex: 1; min-width: 250px; max-width: 380px;">
+                            <div class="stat-card clickable" onclick="showLecturersModal('SLK')"
+                                style="flex: 1; min-width: 250px; max-width: 380px;">
                                 <div class="stat-info">
                                     <span class="stat-label">Pensyarah SLK</span>
                                     <h2 class="stat-value" id="stat-slk-pensyarah">6</h2>
@@ -189,7 +262,8 @@
 
                         <!-- Bottom Row (2 items, centralized) -->
                         <div style="display: flex; flex-wrap: wrap; gap: 1.5rem; justify-content: center; width: 100%;">
-                            <div class="stat-card clickable" onclick="showLecturersModal('UPA')" style="flex: 1; min-width: 250px; max-width: 380px;">
+                            <div class="stat-card clickable" onclick="showLecturersModal('UPA')"
+                                style="flex: 1; min-width: 250px; max-width: 380px;">
                                 <div class="stat-info">
                                     <span class="stat-label">Pensyarah UPA</span>
                                     <h2 class="stat-value" id="stat-upa-pensyarah">4</h2>
@@ -318,11 +392,15 @@
                         </div>
 
                         <!-- Unverified/Draft State Placeholder -->
-                        <div id="lokasi-unverified-state" style="display: none; padding: 3rem 1.5rem; text-align: center; max-width: 500px; margin: 0 auto;">
+                        <div id="lokasi-unverified-state"
+                            style="display: none; padding: 3rem 1.5rem; text-align: center; max-width: 500px; margin: 0 auto;">
                             <div style="font-size: 3rem; margin-bottom: 1rem;">⚠️</div>
-                            <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">Jadual Waktu Belum Diterbitkan</h3>
+                            <h3
+                                style="font-size: 1.15rem; font-weight: 800; margin-bottom: 0.5rem; color: var(--text-primary);">
+                                Jadual Waktu Belum Diterbitkan</h3>
                             <p style="font-size: 0.85rem; color: var(--text-secondary); line-height: 1.5;">
-                                Jadual waktu bagi sesi pengajian ini masih di peringkat deraf penyediaan atau sedang menunggu pengesahan kelulusan daripada Timbalan Pengarah Akademik (TPA).
+                                Jadual waktu bagi sesi pengajian ini masih di peringkat deraf penyediaan atau sedang
+                                menunggu pengesahan kelulusan daripada Timbalan Pengarah Akademik (TPA).
                             </p>
                         </div>
 
@@ -346,6 +424,40 @@
                                 <div id="lokasi-grid-wrap" style="min-width: 800px;">
                                     <!-- Grid generated dynamically -->
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2C. AKTIVITI KKPPS TAB -->
+                <div class="tab-pane" id="tab-spak">
+                    <div class="spak-container">
+                        <!-- Calendar Card -->
+                        <div class="spak-calendar-card">
+                            <div class="spak-calendar-header">
+                                <button type="button" class="spak-btn-nav" onclick="navMonth(-1)">&lt;</button>
+                                <h3 id="calendarMonthYear">Julai 2026</h3>
+                                <button type="button" class="spak-btn-nav" onclick="navMonth(1)">&gt;</button>
+                            </div>
+                            <div class="spak-weekdays">
+                                <div>Ahd</div>
+                                <div>Isn</div>
+                                <div>Sel</div>
+                                <div>Rab</div>
+                                <div>Kha</div>
+                                <div>Jum</div>
+                                <div>Sab</div>
+                            </div>
+                            <div class="spak-days-grid" id="calendarDaysGrid">
+                                <!-- Generated Dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Announcement / Info Card -->
+                        <div class="spak-info-card">
+                            <h3 class="spak-info-header" id="spakInfoTitle">Makluman Bulan Ini</h3>
+                            <div class="spak-event-list" id="spakEventList">
+                                <!-- Loaded Dynamically -->
                             </div>
                         </div>
                     </div>
@@ -386,13 +498,24 @@
                                 <div class="form-group">
                                     <label for="login-password">Kata Laluan</label>
                                     <div style="position: relative; display: flex; align-items: center; width: 100%;">
-                                        <input type="password" id="login-password" required placeholder="••••••••" style="width: 100%; padding-right: 40px;">
-                                        <button type="button" id="toggle-login-password" style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 2;">
-                                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <input type="password" id="login-password" required placeholder="••••••••"
+                                            style="width: 100%; padding-right: 40px;">
+                                        <button type="button" id="toggle-login-password"
+                                            style="position: absolute; right: 10px; background: transparent; border: none; cursor: pointer; color: var(--text-secondary); display: flex; align-items: center; justify-content: center; padding: 4px; z-index: 2;">
+                                            <svg id="eye-icon" xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                                stroke-linecap="round" stroke-linejoin="round">
                                                 <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
                                                 <circle cx="12" cy="12" r="3"></circle>
                                             </svg>
                                         </button>
+                                    </div>
+                                    <div style="text-align: right; margin-top: 6px;">
+                                        <a href="#"
+                                            onclick="if(typeof showToast === 'function') { showToast('Sila hubungi Admin / KKPPS untuk menetapkan semula kata laluan anda.', 'info'); } else { alert('Sila hubungi Admin / KKPPS untuk menetapkan semula kata laluan anda.'); } return false;"
+                                            style="font-size: 0.78rem; color: var(--primary); text-decoration: none; font-weight: 600; opacity: 0.85; transition: opacity 0.15s;"
+                                            onmouseover="this.style.opacity='1'"
+                                            onmouseout="this.style.opacity='0.85'">Lupa kata laluan?</a>
                                     </div>
                                 </div>
                                 <div class="form-group"
@@ -455,6 +578,61 @@
         </div>
     </div>
 
+    <!-- Modal Perincian Makluman SPAK -->
+    <div id="modalSpakDetail"
+        style="display: none; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px;">
+        <div
+            style="background: #ffffff; border: 2px solid #06b6d4; border-radius: 20px; max-width: 550px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.2); padding: 28px; position: relative; display: flex; flex-direction: column; gap: 16px; text-align: left;">
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px;">
+                <span id="spakModalBadge"
+                    style="font-size: 0.72rem; font-weight: 800; padding: 4px 12px; border-radius: 50px; letter-spacing: 0.3px;"></span>
+                <button onclick="tutupModalSpak()" title="Tutup"
+                    style="background: transparent; border: none; cursor: pointer; color: #94a3b8; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: background 0.15s, color 0.15s;"
+                    onmouseover="this.style.background='#f1f5f9'; this.style.color='#475569'"
+                    onmouseout="this.style.background='transparent'; this.style.color='#94a3b8'">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                        stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                        style="width: 20px; height: 20px;">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+
+            <h3 id="spakModalTitle"
+                style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.4;"></h3>
+
+            <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; color: #475569;">
+                <div>📅 <b style="color:#334155">Tarikh:</b> <span id="spakModalDate"
+                        style="color:#0f172a; font-weight:600;"></span></div>
+                <div>⏱️ <b style="color:#334155">Masa:</b> <span id="spakModalTime"
+                        style="color:#0f172a; font-weight:600;"></span></div>
+                <div>🏫 <b style="color:#334155">Lokasi:</b> <span id="spakModalLocation"
+                        style="color:#0f172a; font-weight:600;"></span></div>
+                <div>👤 <b style="color:#334155">Penyelaras:</b> <span id="spakModalCoordinator"
+                        style="color:#0f172a; font-weight:600;"></span></div>
+            </div>
+
+            <div>
+                <label
+                    style="display: block; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.6px;">Ulasan
+                    / Perincian:</label>
+                <div id="spakModalDescription"
+                    style="font-size: 0.82rem; line-height: 1.65; color: #334155; background: #f8fafc; border-left: 4px solid #06b6d4; padding: 12px 16px; border-radius: 0 10px 10px 0; white-space: pre-wrap; font-family: inherit; min-height: 40px;">
+                </div>
+            </div>
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 0.68rem; color: #94a3b8;">
+                <span>ID: <span id="spakModalId" style="font-family: monospace;"></span></span>
+                <span>Kemaskini: <span id="spakModalUpdated"></span></span>
+            </div>
+        </div>
+    </div>
+
     <script>
         function showLecturersModal(programCode) {
             const defaultLecturers = [
@@ -492,7 +670,7 @@
 
             listEl.innerHTML = list.map(l => {
                 const avatarLetters = l.shortName || l.short || "L";
-                const avatarHtml = l.photo 
+                const avatarHtml = l.photo
                     ? `<img src="${l.photo}" class="lecturer-avatar" style="object-fit: cover; background: none;">`
                     : `<div class="lecturer-avatar">${avatarLetters}</div>`;
                 return `
@@ -514,6 +692,34 @@
             document.getElementById("modalLecturers").style.display = "none";
         }
 
+        // Sync mobile bottom nav active state with tab switching
+        function switchMobileTab(tabId, mobileBtn) {
+            if (tabId === "pelajar") {
+                window.location.href = "Pelajar.html";
+                return;
+            }
+            // Trigger the app.js global switchTab logic
+            if (typeof switchTab === "function") {
+                switchTab(tabId);
+            }
+
+            // Update mobile nav active state
+            document.querySelectorAll('.mobile-bottom-nav button').forEach(b => b.classList.remove('active'));
+            if (mobileBtn) mobileBtn.classList.add('active');
+        }
+
+        // Sync mobile nav when desktop sidebar is clicked
+        document.addEventListener('DOMContentLoaded', () => {
+            document.querySelectorAll('.nav-item[data-tab]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const tab = btn.getAttribute('data-tab');
+                    document.querySelectorAll('.mobile-bottom-nav button').forEach(b => {
+                        b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+                    });
+                });
+            });
+        });
+
         // Close modal if clicked outside card or escape key pressed
         window.addEventListener("click", (e) => {
             const modal = document.getElementById("modalLecturers");
@@ -529,7 +735,8 @@
     </script>
 
     <!-- Print Footer -->
-    <div class="print-footer" style="display:none; text-align: center; font-size: 0.7rem; border-top: 1px solid #cbd5e1; padding-top: 8px; margin-top: 30px; font-weight: 600;">
+    <div class="print-footer"
+        style="display:none; text-align: center; font-size: 0.7rem; border-top: 1px solid #cbd5e1; padding-top: 8px; margin-top: 30px; font-weight: 600;">
         <div class="print-footer-session">JADUAL DISAHKAN BAGI SESI _________</div>
         <div>JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
     </div>

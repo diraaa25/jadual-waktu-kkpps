@@ -1,0 +1,40 @@
+﻿{
+  "name": "Sistem Jadual Waktu KKPPS",
+  "short_name": "Jadual KKPPS",
+  "description": "Sistem Jadual Waktu Kolej Komuniti Papar - Kementerian Pendidikan Tinggi",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0b3d5c",
+  "theme_color": "#0b3d5c",
+  "lang": "ms",
+  "scope": "./",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Portal Pelajar",
+      "short_name": "Pelajar",
+      "url": "./Pelajar.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Portal Pensyarah",
+      "short_name": "Pensyarah",
+      "url": "./Pensyarah.html",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ]
+}

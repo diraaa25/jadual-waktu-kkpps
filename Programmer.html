@@ -2,14 +2,32 @@
 <html lang="ms">
 
 <head>
+    <script>
+        // Security session guard to prevent direct URL access without login
+        if (sessionStorage.getItem("logged_role") !== "programmer") {
+            alert("Akses ditolak. Sila log masuk terlebih dahulu.");
+            window.location.href = "index.html";
+        }
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0b3d5c">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Jadual KKPPS">
+    <link rel="apple-touch-icon" href="icons/icon-192.png">
+    <link rel="icon" type="image/png" href="icons/icon-192.png">
     <title>Portal Programmer - Sistem Jadual Waktu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
     <link rel="stylesheet" href="style.css">
+    <!-- SheetJS for Excel Import -->
+    <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
         /* Additional custom adjustments for Programmer Portal */
         .credentials-table td {
@@ -166,10 +184,13 @@
                     <button class="nav-item" onclick="switchSection('pelajar')">
                         🎓 Urus Pelajar
                     </button>
+                    <button class="nav-item" onclick="switchSection('spak')">
+                        📅 Aktiviti KKPPS
+                    </button>
                     <button class="nav-item" onclick="switchSection('config')">
                         🛠️ Konfigurasi Sistem
                     </button>
-                    <a href="index.html" class="nav-item" style="margin-top: 2rem; color: var(--danger);">
+                    <a href="index.html" onclick="sessionStorage.clear();" class="nav-item" style="margin-top: 2rem; color: var(--danger);">
                         🚪 Log Keluar
                     </a>
                 </nav>
@@ -212,6 +233,15 @@
                 <div id="sec-dashboard" class="tab-section">
                     <div class="card">
                         <h2>➕ Tambah Pensyarah Baru</h2>
+                        <!-- Import Excel Section -->
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; padding: 14px 16px; background: var(--surface-hover); border: 1px dashed var(--surface-border); border-radius: var(--border-radius-md);">
+                            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">📥 Import dari Excel:</span>
+                            <label for="importLecExcel" class="btn btn-light" style="padding: 6px 14px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                                📂 Pilih Fail Excel
+                                <input type="file" id="importLecExcel" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importLecturerExcel(this)">
+                            </label>
+                            <span id="importLecStatus" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama | Singkatan | Jawatan | Emel | Program | Kata Laluan</span>
+                        </div>
                         <form id="formLecturer" onsubmit="tambahPensyarah(event)">
                             <div class="form-group-wrapper">
                                 <div class="form-group">
@@ -432,46 +462,24 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="slotKelas">Kelas Pelajar</label>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <label for="slotKelas" style="margin-bottom: 0;">Kelas Pelajar</label>
+                                        <div style="display: flex; gap: 4px;">
+                                            <button type="button" onclick="tambahKelasDropdown()" class="btn btn-light" style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px;">➕ Tambah Kelas</button>
+                                            <button type="button" onclick="padamKelasDropdown()" class="btn btn-light" style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px; color: var(--danger);">🗑️ Buang Kelas</button>
+                                        </div>
+                                    </div>
                                     <select id="slotKelas" class="programmer-select" required>
-                                        <option value="STM 1A">STM 1A</option>
-                                        <option value="STM 1B">STM 1B</option>
-                                        <option value="STM 1C">STM 1C</option>
-                                        <option value="STM 2A">STM 2A</option>
-                                        <option value="STM 2B">STM 2B</option>
-                                        <option value="STM 2C">STM 2C</option>
-                                        <option value="STM 3A">STM 3A</option>
-                                        <option value="STM 3B">STM 3B</option>
-                                        <option value="STM 3C">STM 3C</option>
-                                        <option value="SLK 1A">SLK 1A</option>
-                                        <option value="SLK 1B">SLK 1B</option>
-                                        <option value="SLK 2A">SLK 2A</option>
-                                        <option value="SLK 2B">SLK 2B</option>
-                                        <option value="SLK 3A">SLK 3A</option>
-                                        <option value="SLK 3B">SLK 3B</option>
+                                        <!-- Rendered dynamically -->
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <label for="slotLokasi">Lokasi / Bilik</label>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                        <label for="slotLokasi" style="margin-bottom: 0;">Lokasi / Bilik</label>
+                                        <button type="button" onclick="tambahLokasiDropdown()" class="btn btn-light" style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px;">➕ Tambah Lokasi</button>
+                                    </div>
                                     <select id="slotLokasi" class="programmer-select" required>
-                                        <option value="DEWAN KULIAH">DEWAN KULIAH</option>
-                                        <option value="MAKMAL BAHASA">MAKMAL BAHASA</option>
-                                        <option value="TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1">TECHNOLOGY ENABLE
-                                            COLLABORATIVE CLASSROOM 1</option>
-                                        <option value="TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2">TECHNOLOGY ENABLE
-                                            COLLABORATIVE CLASSROOM 2</option>
-                                        <option value="MAKMAL PENGATURCARAAN 1">MAKMAL PENGATURCARAAN 1</option>
-                                        <option value="MAKMAL PENGATURCARAAN 2">MAKMAL PENGATURCARAAN 2</option>
-                                        <option value="MAKMAL MULTIMEDIA">MAKMAL MULTIMEDIA</option>
-                                        <option value="MAKMAL BAIKPULIH DAN PEMASANGAN">MAKMAL BAIKPULIH DAN PEMASANGAN
-                                        </option>
-                                        <option value="MAKMAL RANGKAIAN">MAKMAL RANGKAIAN</option>
-                                        <option value="MAKMAL PENDAWAIAN RANGKAIAN">MAKMAL PENDAWAIAN RANGKAIAN</option>
-                                        <option value="MAKMAL AI">MAKMAL AI</option>
-                                        <option value="MAKMAL IOT">MAKMAL IOT</option>
-                                        <option value="MAKMAL LOGISTIK 1">MAKMAL LOGISTIK 1</option>
-                                        <option value="MAKMAL LOGISTIK 2">MAKMAL LOGISTIK 2</option>
-                                        <option value="MAKMAL SIMULASI LOGISTIK">MAKMAL SIMULASI LOGISTIK</option>
+                                        <!-- Rendered dynamically -->
                                     </select>
                                 </div>
                                 <div class="form-group">
@@ -657,9 +665,18 @@
                     <!-- Registration Form Card -->
                     <div class="card">
                         <h2>🎓 Daftar Pelajar Baru</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
                             Masukkan maklumat pelajar baru untuk didaftarkan ke dalam direktori pelajar sistem.
                         </p>
+                        <!-- Import Excel Section -->
+                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; padding: 14px 16px; background: var(--surface-hover); border: 1px dashed var(--surface-border); border-radius: var(--border-radius-md);">
+                            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">📥 Import dari Excel:</span>
+                            <label for="importStudentExcelProg" class="btn btn-light" style="padding: 6px 14px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                                📂 Pilih Fail Excel
+                                <input type="file" id="importStudentExcelProg" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importStudentExcelProg(this)">
+                            </label>
+                            <span id="importStudProgStatus" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama | No. IC | Jantina | Alamat | No. Matrik</span>
+                        </div>
                         <form id="formAddStudentProg" onsubmit="tambahPelajarProg(event)">
                             <div class="form-group-wrapper">
                                 <div class="form-group">
@@ -669,6 +686,10 @@
                                 <div class="form-group">
                                     <label for="progStudIc">No. Kad Pengenalan (12 Digit)</label>
                                     <input id="progStudIc" class="programmer-input" placeholder="cth: 080512125011" maxlength="12" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="progStudMatrik">No. Kad Matrik</label>
+                                    <input id="progStudMatrik" class="programmer-input" placeholder="cth: STM2026001">
                                 </div>
                                 <div class="form-group">
                                     <label for="progStudGender">Jantina</label>
@@ -682,33 +703,41 @@
                                 <label for="progStudAddress">Alamat Tetap</label>
                                 <textarea id="progStudAddress" class="programmer-input" placeholder="Masukkan alamat lengkap..." rows="2" required style="resize: none; font-family: inherit; font-size: 0.9rem;"></textarea>
                             </div>
-                            <div class="actions" style="margin-top: 1.5rem;">
-                                <button class="btn btn-accent" type="submit">Daftar Pelajar</button>
+                            <input type="hidden" id="editStudProgIndex" value="-1">
+                            <div class="actions" style="margin-top: 1.5rem; display: flex; gap: 10px;">
+                                <button class="btn btn-accent" type="submit" id="btnSubmitStudProg">Daftar Pelajar</button>
+                                <button class="btn btn-light" type="button" id="btnCancelStudProgEdit" onclick="cancelStudProgEdit()" style="display: none;">Batal Edit</button>
                             </div>
                         </form>
                     </div>
 
                     <!-- Students Directory list -->
                     <div class="card">
-                        <h2>📋 Direktori Pelajar Berdaftar</h2>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                            <h2 style="margin: 0; padding: 0; border: none;">📋 Direktori Pelajar Berdaftar</h2>
+                            <button onclick="cetakSenaraiPelajarProg()" class="btn btn-light" style="padding: 6px 14px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
+                                🖨️ Cetak Senarai
+                            </button>
+                        </div>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                            Semak dan padam maklumat pelajar berdaftar dalam sistem.
+                            Semak, edit dan padam maklumat pelajar berdaftar dalam sistem.
                         </p>
                         
                         <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
-                            <input id="searchStudentsProg" oninput="filterStudentsProg()" placeholder="Cari nama, no. IC, jantina atau alamat..." style="max-width: 400px; padding: 0.75rem 1rem; border: 1px solid var(--surface-border); border-radius: var(--border-radius-md); background: var(--surface); color: var(--text-primary);">
+                            <input id="searchStudentsProg" oninput="filterStudentsProg()" placeholder="Cari nama, no. IC, no. matrik atau alamat..." style="flex: 1; max-width: 500px; padding: 0.75rem 1rem; border: 1px solid var(--surface-border); border-radius: var(--border-radius-md); background: var(--surface); color: var(--text-primary);">
                         </div>
 
                         <div class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
                             <table class="custom-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 5%;">Bil</th>
-                                        <th style="width: 25%;">Nama Penuh</th>
-                                        <th style="width: 15%;">No. IC</th>
-                                        <th style="width: 10%;">Jantina</th>
-                                        <th style="width: 35%;">Alamat Tetap</th>
-                                        <th style="text-align: center; width: 10%;">Tindakan</th>
+                                        <th style="width: 4%;">Bil</th>
+                                        <th style="width: 20%;">Nama Penuh</th>
+                                        <th style="width: 12%;">No. IC</th>
+                                        <th style="width: 11%;">No. Matrik</th>
+                                        <th style="width: 8%;">Jantina</th>
+                                        <th style="width: 30%;">Alamat Tetap</th>
+                                        <th style="text-align: center; width: 15%;">Tindakan</th>
                                     </tr>
                                 </thead>
                                 <tbody id="studentsProgTableBody">
@@ -720,8 +749,143 @@
 
                 </div>
 
+                <!-- SECTION 7: URUS AKTIVITI KKPPS -->
+                <div id="sec-spak" class="tab-section" style="display: none;">
+                    <div class="card">
+                        <h2>📅 Urus Kalendar & Aktiviti KKPPS</h2>
+                        
+                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
+                            <!-- Left: Calendar view -->
+                            <div class="spak-calendar-card" style="border: 1px solid var(--surface-border); border-radius: var(--border-radius-lg); padding: 20px;">
+                                <div class="spak-calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                    <button type="button" onclick="navMonth(-1)" class="spak-btn-nav">&lt;</button>
+                                    <h3 id="calendarMonthYear">Julai 2026</h3>
+                                    <button type="button" onclick="navMonth(1)" class="spak-btn-nav">&gt;</button>
+                                </div>
+                                <div class="spak-weekdays">
+                                    <div>Ahd</div>
+                                    <div>Isn</div>
+                                    <div>Sel</div>
+                                    <div>Rab</div>
+                                    <div>Kha</div>
+                                    <div>Jum</div>
+                                    <div>Sab</div>
+                                </div>
+                                <div id="calendarDaysGrid" class="spak-days-grid">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+                            
+                            <!-- Right: List and Add/Edit Form -->
+                            <div style="display: flex; flex-direction: column; gap: 20px;">
+                                <!-- Subtabs -->
+                                <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--surface-border); padding-bottom: 8px;">
+                                    <button type="button" id="tabSpakListBtn" onclick="switchSpakSubTab('list')" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                                        📋 Senarai Makluman
+                                    </button>
+                                    <button type="button" id="tabSpakFormBtn" onclick="switchSpakSubTab('form')" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--surface-border); cursor: pointer;">
+                                        ➕ Tambah / Edit
+                                    </button>
+                                </div>
+                                
+                                <!-- List Pane -->
+                                <div id="spakListPane" style="display: block;">
+                                    <h4 id="spakInfoTitle" style="font-size: 0.85rem; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; text-transform: uppercase;">Makluman pada tarikh...</h4>
+                                    <div id="spakEventList" class="spak-event-list">
+                                        <!-- Populated dynamically -->
+                                    </div>
+                                </div>
+                                
+                                <!-- Form Pane -->
+                                <div id="spakFormPane" style="display: none;">
+                                    <form id="spakForm" onsubmit="simpanAktivitiSpak(event)" style="display: flex; flex-direction: column; gap: 12px;">
+                                        <div class="form-group">
+                                            <label>Tajuk Aktiviti / Makluman</label>
+                                            <input type="text" id="spakTitle" placeholder="cth: Taklimat Latihan Industri Sesi 2:26/27" required class="programmer-input">
+                                        </div>
+                                        <div class="form-group-wrapper">
+                                            <div class="form-group">
+                                                <label>Tarikh Terpilih</label>
+                                                <input type="date" id="spakDate" required class="programmer-input">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Kategori / Keutamaan</label>
+                                                <select id="spakCategory" required class="programmer-select">
+                                                    <option value="Biasa">📢 Makluman Umum</option>
+                                                    <option value="Penting">⚠️ Penting</option>
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div class="form-group-wrapper">
+                                            <div class="form-group">
+                                                <label>Masa Mula</label>
+                                                <input type="time" id="spakStartTime" required class="programmer-input">
+                                            </div>
+                                            <div class="form-group">
+                                                <label>Masa Tamat</label>
+                                                <input type="time" id="spakEndTime" required class="programmer-input">
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Lokasi Aktiviti</label>
+                                            <input type="text" id="spakLocation" placeholder="cth: Dewan Rafflesia / Bilik TECC" required class="programmer-input">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Penyelaras</label>
+                                            <input type="text" id="spakCoordinator" placeholder="cth: Programmer / Penyelaras SPAK" required class="programmer-input" value="Programmer">
+                                        </div>
+                                        <div class="form-group" style="grid-column: 1 / -1;">
+                                            <label>Ulasan / Perincian Makluman</label>
+                                            <textarea id="spakDescription" class="programmer-input" placeholder="Masukkan ulasan, agenda atau maklumat lanjut tentang aktiviti ini..." rows="3" style="resize: vertical; font-family: inherit; font-size: 0.88rem;"></textarea>
+                                        </div>
+                                        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                                            <button type="button" onclick="cancelSpakEdit()" class="btn" style="background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--surface-border); cursor: pointer;">Batal</button>
+                                            <button type="submit" id="btnSubmitSpak" class="btn btn-primary" style="cursor: pointer;">Tambah Aktiviti</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </main>
+    </div>
+
+    <!-- Modal Perincian Makluman SPAK -->
+    <div id="modalSpakDetailProg" style="display: none; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px;">
+        <div style="background: #ffffff; border: 2px solid #06b6d4; border-radius: 20px; max-width: 560px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.2); padding: 28px; position: relative; display: flex; flex-direction: column; gap: 16px; text-align: left;">
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px;">
+                <span id="progSpakModalBadge" style="font-size: 0.72rem; font-weight: 800; padding: 4px 12px; border-radius: 50px; letter-spacing: 0.3px;"></span>
+                <div style="display: flex; gap: 8px; align-items: center;">
+                    <button onclick="editSpakFromModal()" title="Edit Aktiviti" style="background: #f0fdfa; border: 1px solid #5eead4; color: #0d9488; cursor: pointer; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">✏️ Edit</button>
+                    <button onclick="tutupModalSpakProg()" title="Tutup" style="background: transparent; border: none; cursor: pointer; color: #94a3b8; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    </button>
+                </div>
+            </div>
+            
+            <h3 id="progSpakModalTitle" style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.4;"></h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; color: #475569;">
+                <div>📅 <b style="color:#334155">Tarikh:</b> <span id="progSpakModalDate" style="color:#0f172a; font-weight:600;"></span></div>
+                <div>⏱️ <b style="color:#334155">Masa:</b> <span id="progSpakModalTime" style="color:#0f172a; font-weight:600;"></span></div>
+                <div>🏫 <b style="color:#334155">Lokasi:</b> <span id="progSpakModalLocation" style="color:#0f172a; font-weight:600;"></span></div>
+                <div>👤 <b style="color:#334155">Penyelaras:</b> <span id="progSpakModalCoordinator" style="color:#0f172a; font-weight:600;"></span></div>
+            </div>
+            
+            <div>
+                <label style="display: block; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.6px;">Ulasan / Perincian:</label>
+                <div id="progSpakModalDescription" style="font-size: 0.82rem; line-height: 1.65; color: #334155; background: #f8fafc; border-left: 4px solid #06b6d4; padding: 12px 16px; border-radius: 0 10px 10px 0; white-space: pre-wrap; font-family: inherit; min-height: 40px;"></div>
+            </div>
+            
+            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 0.68rem; color: #94a3b8;">
+                <span>ID: <span id="progSpakModalId" style="font-family: monospace;"></span></span>
+                <span>Kemaskini: <span id="progSpakModalUpdated"></span></span>
+            </div>
+        </div>
     </div>
 
     <!-- Toast Notifications Container -->
@@ -743,6 +907,7 @@
         let DB = { subjek: [], slot: [] };
         let LECTURERS = [];
         let STUDENTS = [];
+        let spakActivities = [];
 
         // Dynamic Programs Dropdown Choice List
         let PROGRAMS_LIST = JSON.parse(localStorage.getItem('kkpapar_programs')) || [
@@ -751,30 +916,62 @@
             { code: "UPA", name: "Unit Pengajian Am (UPA)" }
         ];
 
+        // Dynamic Classes List
+        let CLASSES_LIST = JSON.parse(localStorage.getItem('kkpapar_classes')) || [
+            "STM 1A","STM 1B","STM 1C","STM 2A","STM 2B","STM 2C","STM 3A","STM 3B","STM 3C",
+            "SLK 1A","SLK 1B","SLK 2A","SLK 2B","SLK 3A","SLK 3B"
+        ];
+
+        // Dynamic Locations List
+        let LOCATIONS_LIST = JSON.parse(localStorage.getItem('kkpapar_locations')) || [
+            "DEWAN KULIAH","MAKMAL BAHASA",
+            "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1",
+            "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2",
+            "MAKMAL PENGATURCARAAN 1","MAKMAL PENGATURCARAAN 2",
+            "MAKMAL MULTIMEDIA","MAKMAL BAIKPULIH DAN PEMASANGAN",
+            "MAKMAL RANGKAIAN","MAKMAL PENDAWAIAN RANGKAIAN",
+            "MAKMAL AI","MAKMAL IOT","MAKMAL LOGISTIK 1",
+            "MAKMAL LOGISTIK 2","MAKMAL SIMULASI LOGISTIK"
+        ];
+
+        // Currently opened SPAK event id (for modal edit)
+        let currentSpakModalId = null;
+
+        // SHA-256 Hashing Utility
+        async function hashPassword(password) {
+            if (!password) return "";
+            const msgBuffer = new TextEncoder().encode(password);
+            const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+            const hashArray = Array.from(new Uint8Array(hashBuffer));
+            return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        }
+
         const INITIAL_LECTURERS = [
-            { name: "DAILY BINTI TAYOK", shortName: "DT", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "JUSDY BIN JUWAIT", shortName: "JBJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "pensyarah123" },
-            { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-            { name: "DEVIANA RADEN", shortName: "DR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-            { name: "FARHANA BINTI KAMIUS", shortName: "FBK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-            { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-            { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-            { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "pensyarah123" },
-            { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-            { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-            { name: "TIFFANY THU PEI YING", shortName: "TPY", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" },
-            { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "pensyarah123" }
+            { name: "DAILY BINTI TAYOK", shortName: "DT", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "daily.tayok@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "DARNI BINTI MOHAMED YUSOFF", shortName: "DMY", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "darni.yusoff@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "DG NUR AFIAH BINTI AWANG AHMAD", shortName: "DNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "dg.afiah@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "JUSDY BIN JUWAIT", shortName: "JBJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "jusdy.juwait@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "MOHAMMAD NOR IHSAN BIN MD ZIN", shortName: "MNI", designation: "Pegawai Pendidikan Pengajian Tinggi DH12", email: "ihsan.zin@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "MOHD AZLAN BIN HASHIM", shortName: "MAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "azlan.hashim@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "NADIRAH BINTI MOHAMAD", shortName: "NBM", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nadirah.mohamad@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "WAN AHMAD HILMI BIN A. RAHIM", shortName: "WAH", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "wan.hilmi@kolejkomuniti.edu.my", program: "STM", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "DAYANG NURSHAZANA BINTI DAUD", shortName: "DND", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.shazana@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "DEVIANA RADEN", shortName: "DR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "deviana.raden@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "FARHANA BINTI KAMIUS", shortName: "FBK", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "farhana.kamius@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "NURLIYANA HAMIZAH BINTI MOHD JEFFRI", shortName: "NHJ", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurliyana.jeffri@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "NURUL HUZAIFAH BINTI GIMSUN", shortName: "NHG", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "nurul.huzaifah@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "PUTERI NOR ARYSHA BINTI ARIFIN", shortName: "PNA", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "arysha.arifin@kolejkomuniti.edu.my", program: "SLK", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "DAYANG NOORLIZAH BT AWANG MAHMOOD", shortName: "DNL", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "d.noorlizah@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "LUQMANUL HAKIM BIN ROSMIN", shortName: "LHR", designation: "Pegawai Pendidikan Pengajian Tinggi DH9", email: "luqmanul.hakim@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "TIFFANY THU PEI YING", shortName: "TPY", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "tiffany.thu@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" },
+            { name: "TS. NURATIKA ASYURAH BINTI ABDULLAH", shortName: "NAA", designation: "Pegawai Pendidikan Pengajian Tinggi DH10", email: "nuratika.asyurah@kolejkomuniti.edu.my", program: "UPA", password: "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421" }
         ];
 
         document.addEventListener("DOMContentLoaded", () => {
             initTheme();
             renderProgramDropdown();
+            renderClassesDropdown();
+            renderLocationsDropdown();
             loadDB();
             setupProgRealTimeClash();
             startLiveClock();
@@ -787,6 +984,64 @@
                 renderStudentsProg();
             }
         });
+
+        // Initialize dynamic classes dropdown
+        function renderClassesDropdown() {
+            const sel = document.getElementById("slotKelas");
+            if (!sel) return;
+            const prev = sel.value;
+            sel.innerHTML = CLASSES_LIST.map(c => `<option value="${c}">${c}</option>`).join('');
+            if (prev) sel.value = prev;
+        }
+
+        // Initialize dynamic locations dropdown
+        function renderLocationsDropdown() {
+            const sel = document.getElementById("slotLokasi");
+            if (!sel) return;
+            const prev = sel.value;
+            sel.innerHTML = LOCATIONS_LIST.map(l => `<option value="${l}">${l}</option>`).join('');
+            if (prev) sel.value = prev;
+        }
+
+        // Add new class option to dropdown
+        function tambahKelasDropdown() {
+            const newKelas = prompt("Masukkan nama kelas baru (cth: STM 4A):")?.trim().toUpperCase();
+            if (!newKelas) return;
+            if (CLASSES_LIST.includes(newKelas)) { showToast("Kelas ini sudah ada dalam senarai!", "danger"); return; }
+            CLASSES_LIST.push(newKelas);
+            localStorage.setItem('kkpapar_classes', JSON.stringify(CLASSES_LIST));
+            renderClassesDropdown();
+            document.getElementById("slotKelas").value = newKelas;
+            showToast(`Kelas "${newKelas}" berjaya ditambah!`, "success");
+        }
+
+        // Delete selected class from dropdown
+        function padamKelasDropdown() {
+            const currentKelas = document.getElementById("slotKelas").value;
+            if (!currentKelas) {
+                showToast("Tiada kelas dipilih untuk dibuang!", "danger");
+                return;
+            }
+            
+            tanyaPengesahan(`Adakah anda pasti mahu membuang kelas "${currentKelas}" dari senarai pilihan dropdown?`, () => {
+                CLASSES_LIST = CLASSES_LIST.filter(c => c !== currentKelas);
+                localStorage.setItem('kkpapar_classes', JSON.stringify(CLASSES_LIST));
+                renderClassesDropdown();
+                showToast(`Kelas "${currentKelas}" berjaya dibuang!`, "success");
+            });
+        }
+
+        // Add new location option to dropdown
+        function tambahLokasiDropdown() {
+            const newLokasi = prompt("Masukkan nama lokasi/bilik baru (cth: MAKMAL SAINS):")?.trim().toUpperCase();
+            if (!newLokasi) return;
+            if (LOCATIONS_LIST.includes(newLokasi)) { showToast("Lokasi ini sudah ada dalam senarai!", "danger"); return; }
+            LOCATIONS_LIST.push(newLokasi);
+            localStorage.setItem('kkpapar_locations', JSON.stringify(LOCATIONS_LIST));
+            renderLocationsDropdown();
+            document.getElementById("slotLokasi").value = newLokasi;
+            showToast(`Lokasi "${newLokasi}" berjaya ditambah!", "success`);
+        }
 
         // Theme Loading
         function initTheme() {
@@ -846,6 +1101,10 @@
                         renderStudentsProg();
                     }
                 });
+                firebaseWatchSpakActivities(data => {
+                    spakActivities = data || [];
+                    if (typeof renderSpakCalendar === 'function') renderSpakCalendar();
+                });
             } else {
                 DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
                 DB.slot = DB.slot || [];
@@ -860,6 +1119,25 @@
                     localStorage.setItem(LECTURERS_KEY, JSON.stringify(LECTURERS));
                 }
                 STUDENTS = JSON.parse(localStorage.getItem('kkpapar_students')) || [];
+                const storedSpak = localStorage.getItem('kkpapar_spak_activities');
+                if (storedSpak && JSON.parse(storedSpak).length > 0) {
+                    spakActivities = JSON.parse(storedSpak);
+                } else {
+                    spakActivities = [
+                        {
+                            id: "spak-seed-1",
+                            title: "Taklimat 1 Latihan Industri Sesi 2:26/27",
+                            date: "2026-07-24",
+                            startTime: "08:00",
+                            endTime: "11:30",
+                            location: "Dewan Rafflesia",
+                            category: "Penting",
+                            coordinator: "DAILY BINTI TAYOK",
+                            updatedAt: "2026-07-09 18:19"
+                        }
+                    ];
+                    localStorage.setItem('kkpapar_spak_activities', JSON.stringify(spakActivities));
+                }
                 renderLecturers();
                 renderDropdowns();
                 renderSubjects();
@@ -867,6 +1145,7 @@
                 renderAdminPanel();
                 renderConfigSection();
                 renderStudentsProg();
+                if (typeof renderSpakCalendar === 'function') renderSpakCalendar();
             }
         }
 
@@ -917,7 +1196,7 @@
         }
 
         // 1. ADD / UPDATE LECTURER
-        function tambahPensyarah(e) {
+        async function tambahPensyarah(e) {
             e.preventDefault();
             const name = document.getElementById("lecName").value.trim().toUpperCase();
             const shortName = document.getElementById("lecShort").value.trim().toUpperCase();
@@ -926,6 +1205,13 @@
             const program = document.getElementById("lecProgram").value;
             const password = document.getElementById("lecPassword").value.trim();
             const editIdx = parseInt(document.getElementById("editLecIndex").value);
+
+            // Compute password hash if not already hashed
+            let finalPassword = password;
+            const isAlreadyHashed = /^[0-9a-fA-F]{64}$/.test(password);
+            if (!isAlreadyHashed) {
+                finalPassword = await hashPassword(password);
+            }
 
             if (editIdx === -1) {
                 // ADD ACTION
@@ -937,7 +1223,7 @@
                     showToast("E-mel pensyarah sudah didaftarkan!", "danger");
                     return;
                 }
-                LECTURERS.push({ name, shortName, designation, email, program, password });
+                LECTURERS.push({ name, shortName, designation, email, program, password: finalPassword });
                 showToast("Pensyarah baru berjaya didaftarkan!", "success");
             } else {
                 // EDIT/UPDATE ACTION
@@ -975,7 +1261,7 @@
                     saveDB();
                 }
 
-                LECTURERS[editIdx] = { name, shortName, designation, email, program, password };
+                LECTURERS[editIdx] = { name, shortName, designation, email, program, password: finalPassword };
                 showToast("Maklumat pensyarah berjaya dikemas kini!", "success");
                 cancelLecEdit();
             }
@@ -1174,7 +1460,7 @@
                     <td class="font-semibold creds-name">${l.name}</td>
                     <td><code>${l.shortName}</code></td>
                     <td class="creds-email">${l.email}</td>
-                    <td><span class="password-cell">${l.password || 'pensyarah123'}</span></td>
+                    <td><span class="password-cell" style="letter-spacing: 2px; font-weight: bold; color: var(--text-secondary);">••••••••</span></td>
                 </tr>
             `).join('') || `<tr><td colspan="4" class="p-6 text-center text-slate-400">Tiada rekod kredensial.</td></tr>`;
         }
@@ -1295,12 +1581,35 @@
 
             DB.slot.forEach(o => {
                 if (bertindih(targetSlot, o)) {
-                    const cPensyarah = (targetSlot.singkatan === o.singkatan) ||
-                        (targetSlot.singkatan !== '-' && targetSlot.singkatan === o.singkatanPembantu) ||
-                        (targetSlot.singkatanPembantu !== '-' && targetSlot.singkatanPembantu === o.singkatan) ||
-                        (targetSlot.singkatanPembantu !== '-' && targetSlot.singkatanPembantu === o.singkatanPembantu);
-                    const cKelas = (targetSlot.kelas === o.kelas);
-                    const cLokasi = (targetSlot.lokasi === o.lokasi);
+                    // Combined Class Check
+                    const isSameSubject = (targetSlot.kod === o.kod && targetSlot.kod !== '-') || (s.subjek === o.subjek);
+                    const isCombinedClass = isSameSubject && (targetSlot.singkatan === o.singkatan) && (targetSlot.lokasi === o.lokasi);
+
+                    // Lecturer conflict check
+                    const l1 = [targetSlot.singkatan]; if (targetSlot.singkatanPembantu && targetSlot.singkatanPembantu !== '-') l1.push(targetSlot.singkatanPembantu);
+                    const l2 = [o.singkatan]; if (o.singkatanPembantu && o.singkatanPembantu !== '-') l2.push(o.singkatanPembantu);
+                    const sameLec = l1.some(l => l2.includes(l));
+
+                    // Parallel Elective Check (Islam vs Moral vs Kebangsaan)
+                    const isParallelElective = (
+                        (s.subjek && o.subjek) && (
+                            (s.subjek.toUpperCase().includes("ISLAM") && o.subjek.toUpperCase().includes("MORAL")) ||
+                            (s.subjek.toUpperCase().includes("MORAL") && o.subjek.toUpperCase().includes("ISLAM")) ||
+                            (s.subjek.toUpperCase().includes("ISLAM") && o.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                            (s.subjek.toUpperCase().includes("KEBANGSAAN") && o.subjek.toUpperCase().includes("ISLAM")) ||
+                            (s.subjek.toUpperCase().includes("MORAL") && o.subjek.toUpperCase().includes("KEBANGSAAN")) ||
+                            (s.subjek.toUpperCase().includes("KEBANGSAAN") && o.subjek.toUpperCase().includes("MORAL"))
+                        )
+                    );
+
+                    // Allow shared lecturer for parallel electives in same room
+                    if (isParallelElective && (targetSlot.lokasi === o.lokasi) && sameLec) {
+                        return; // No conflict
+                    }
+
+                    const cPensyarah = !isCombinedClass && sameLec;
+                    const cKelas = (targetSlot.kelas === o.kelas) && !isParallelElective;
+                    const cLokasi = !isCombinedClass && (targetSlot.lokasi === o.lokasi);
 
                     if (cPensyarah) {
                         conflicts.push(`<b>Pensyarah bertindih:</b> ${targetSlot.singkatan} juga mengajar <b>${o.subjek}</b> (${o.kod}) di kelas <b>${o.kelas}</b> pada waktu ini.`);
@@ -1355,7 +1664,7 @@
                         <td><code>${s.kod}</code></td>
                         <td><span class="badge bg-blue-600" style="color:white; padding: 2px 8px; border-radius: 4px; font-size:0.7rem;">${s.kelas}</span></td>
                         <td>📍 ${s.lokasi}</td>
-                        <td class="font-medium text-slate-700 dark:text-slate-300">${s.singkatan}${s.singkatanPembantu !== '-' ? ' + ' + s.singkatanPembantu : ''}</td>
+                        <td class="font-medium text-slate-700 dark:text-slate-300">${s.singkatan}${s.singkatanPembantu !== '-' ? '/' + s.singkatanPembantu : ''}</td>
                         <td style="text-align: center;">
                             <button onclick="padamSlotJadual(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem;">Hapus</button>
                         </td>
@@ -1476,7 +1785,7 @@
                     <span style="background: var(--primary-soft); border: 1px solid rgba(59, 130, 246, 0.15); color: var(--primary-soft-text); padding: 4px 12px; border-radius: 50px; font-weight: 700; font-size: 0.72rem; letter-spacing: 0.5px; display: inline-flex; align-items: center; gap: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.02);">
                         🎓 SESI SEMASA: ${sess}
                     </span>
-                    <span style="color: var(--text-secondary); display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 500;">
+                    <span style="color: #ffffff; display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; text-shadow: 0 1px 2px rgba(0,0,0,0.3);">
                         📅 ${now.toLocaleDateString('ms-MY', options)}
                     </span>
                 `;
@@ -1622,10 +1931,15 @@
                     <td>${idx + 1}</td>
                     <td class="stud-name" style="font-weight: 600;">${s.name}</td>
                     <td class="stud-ic">${s.ic}</td>
+                    <td class="stud-matrik">${s.matrik || '-'}</td>
                     <td>${s.gender}</td>
                     <td class="stud-address" style="font-size: 0.8rem; color: var(--text-secondary);">${s.address}</td>
                     <td style="text-align: center;">
-                        <button onclick="padamPelajarProg(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem; cursor: pointer;">Padam</button>
+                        <div style="display: flex; gap: 4px; justify-content: center; flex-wrap: wrap;">
+                            <button onclick="editPelajarProg(${idx})" class="btn btn-light" style="padding: 3px 8px; font-size: 0.72rem; cursor: pointer;">Edit</button>
+                            <button onclick="cetakPelajarProgIndividu(${idx})" class="btn btn-light" style="padding: 3px 8px; font-size: 0.72rem; cursor: pointer;">🖨️</button>
+                            <button onclick="padamPelajarProg(${idx})" class="btn btn-danger" style="padding: 3px 8px; font-size: 0.72rem; cursor: pointer;">Padam</button>
+                        </div>
                     </td>
                 `;
                 body.appendChild(tr);
@@ -1639,9 +1953,10 @@
             rows.forEach(row => {
                 const name = row.querySelector(".stud-name").textContent.toLowerCase();
                 const ic = row.querySelector(".stud-ic").textContent.toLowerCase();
+                const matrik = row.querySelector(".stud-matrik").textContent.toLowerCase();
                 const address = row.querySelector(".stud-address").textContent.toLowerCase();
                 
-                if (name.includes(query) || ic.includes(query) || address.includes(query)) {
+                if (name.includes(query) || ic.includes(query) || matrik.includes(query) || address.includes(query)) {
                     row.style.display = "";
                 } else {
                     row.style.display = "none";
@@ -1649,30 +1964,55 @@
             });
         }
 
+        function editPelajarProg(idx) {
+            const s = STUDENTS[idx];
+            document.getElementById("progStudName").value = s.name;
+            document.getElementById("progStudIc").value = s.ic;
+            document.getElementById("progStudMatrik").value = s.matrik || '';
+            document.getElementById("progStudGender").value = s.gender;
+            document.getElementById("progStudAddress").value = s.address;
+            document.getElementById("editStudProgIndex").value = idx;
+            document.getElementById("btnSubmitStudProg").textContent = "Simpan Perubahan";
+            document.getElementById("btnCancelStudProgEdit").style.display = "inline-flex";
+            document.getElementById("formAddStudentProg").scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function cancelStudProgEdit() {
+            document.getElementById("formAddStudentProg").reset();
+            document.getElementById("editStudProgIndex").value = "-1";
+            document.getElementById("btnSubmitStudProg").textContent = "Daftar Pelajar";
+            document.getElementById("btnCancelStudProgEdit").style.display = "none";
+        }
+
         function tambahPelajarProg(event) {
             event.preventDefault();
             const name = document.getElementById("progStudName").value.trim().toUpperCase();
             const ic = document.getElementById("progStudIc").value.trim();
+            const matrik = document.getElementById("progStudMatrik").value.trim();
             const gender = document.getElementById("progStudGender").value;
             const address = document.getElementById("progStudAddress").value.trim();
+            const editIdx = parseInt(document.getElementById("editStudProgIndex").value);
             
-            if (STUDENTS.some(s => s.ic === ic)) {
-                showToast("Pelajar dengan No. IC ini sudah didaftarkan!", "danger");
-                return;
+            if (editIdx === -1) {
+                // ADD mode
+                if (STUDENTS.some(s => s.ic === ic)) {
+                    showToast("Pelajar dengan No. IC ini sudah didaftarkan!", "danger");
+                    return;
+                }
+                STUDENTS.push({ name, ic, matrik, gender, address });
+                showToast("Pelajar berjaya didaftarkan!", "success");
+            } else {
+                // EDIT mode
+                if (ic !== STUDENTS[editIdx].ic && STUDENTS.some(s => s.ic === ic)) {
+                    showToast("No. IC ini sudah digunakan pelajar lain!", "danger");
+                    return;
+                }
+                STUDENTS[editIdx] = { name, ic, matrik, gender, address };
+                showToast("Rekod pelajar berjaya dikemaskini!", "success");
+                cancelStudProgEdit();
             }
             
-            const newStudent = { name, ic, gender, address };
-            STUDENTS.push(newStudent);
-            
             saveStudentsProg();
-            
-            // Reset form
-            document.getElementById("progStudName").value = "";
-            document.getElementById("progStudIc").value = "";
-            document.getElementById("progStudGender").selectedIndex = 0;
-            document.getElementById("progStudAddress").value = "";
-            
-            showToast("Pelajar berjaya didaftarkan!", "success");
             renderStudentsProg();
         }
 
@@ -1692,6 +2032,539 @@
                 localStorage.setItem('kkpapar_students', JSON.stringify(STUDENTS));
             }
         }
+
+        // Import Excel for Students (Programmer)
+        function importStudentExcelProg(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const statusEl = document.getElementById("importStudProgStatus");
+            statusEl.style.color = "orange";
+            statusEl.textContent = "Memproses fail...";
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const wb = XLSX.read(e.target.result, { type: 'binary' });
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+                    
+                    let added = 0, skipped = 0;
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (!row || row.length < 2) continue;
+                        
+                        // Map columns flexibly
+                        const headers = rows[0].map(h => String(h).toLowerCase().trim());
+                        const get = (keys) => {
+                            for (const k of keys) {
+                                const idx = headers.findIndex(h => h.includes(k));
+                                if (idx !== -1) return String(row[idx] || '').trim();
+                            }
+                            return '';
+                        };
+
+                        const name = get(['nama','name']).toUpperCase();
+                        const ic = get(['ic','kad pengenalan','no. ic','no ic','kad']);
+                        const matrik = get(['matrik','no. matrik','nombor matrik','matrix']);
+                        const gender = get(['jantina','gender']);
+                        const address = get(['alamat','address']);
+
+                        if (!name || !ic) continue;
+                        if (STUDENTS.some(s => s.ic === ic)) { skipped++; continue; }
+
+                        STUDENTS.push({ name, ic, matrik, gender: gender || 'Lelaki', address });
+                        added++;
+                    }
+
+                    saveStudentsProg();
+                    renderStudentsProg();
+                    statusEl.style.color = "var(--success, green)";
+                    statusEl.textContent = `✅ ${added} pelajar ditambah, ${skipped} dilangkau (duplikasi).`;
+                    showToast(`${added} pelajar berjaya diimport!`, added > 0 ? "success" : "danger");
+                } catch (err) {
+                    statusEl.style.color = "red";
+                    statusEl.textContent = "❌ Ralat membaca fail Excel.";
+                }
+                input.value = '';
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        // Import Excel for Lecturers (Programmer)
+        function importLecturerExcel(input) {
+            const file = input.files[0];
+            if (!file) return;
+            const statusEl = document.getElementById("importLecStatus");
+            statusEl.style.color = "orange";
+            statusEl.textContent = "Memproses fail...";
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const wb = XLSX.read(e.target.result, { type: 'binary' });
+                    const ws = wb.Sheets[wb.SheetNames[0]];
+                    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+                    
+                    const headers = rows[0].map(h => String(h).toLowerCase().trim());
+                    const get = (row, keys) => {
+                        for (const k of keys) {
+                            const idx = headers.findIndex(h => h.includes(k));
+                            if (idx !== -1) return String(row[idx] || '').trim();
+                        }
+                        return '';
+                    };
+
+                    let added = 0, skipped = 0;
+                    for (let i = 1; i < rows.length; i++) {
+                        const row = rows[i];
+                        if (!row || row.length < 2) continue;
+                        const name = get(row, ['nama','name']).toUpperCase();
+                        const shortName = get(row, ['singkatan','short','kod']).toUpperCase();
+                        const designation = get(row, ['jawatan','designation','gred']);
+                        const email = get(row, ['emel','email','e-mel']);
+                        const program = get(row, ['program','jabatan']).toUpperCase() || 'STM';
+                        const password = get(row, ['kata laluan','password','kata']) || 'pensyarah123';
+
+                        if (!name || !shortName) continue;
+                        if (LECTURERS.some(l => l.shortName === shortName)) { skipped++; continue; }
+
+                        LECTURERS.push({ name, shortName, designation, email, program, password });
+                        added++;
+                    }
+
+                    saveLecturers();
+                    renderLecturers();
+                    renderDropdowns();
+                    renderCredentials();
+                    statusEl.style.color = "var(--success, green)";
+                    statusEl.textContent = `✅ ${added} pensyarah ditambah, ${skipped} dilangkau.`;
+                    showToast(`${added} pensyarah berjaya diimport!`, added > 0 ? "success" : "danger");
+                } catch (err) {
+                    statusEl.style.color = "red";
+                    statusEl.textContent = "❌ Ralat membaca fail Excel.";
+                }
+                input.value = '';
+            };
+            reader.readAsBinaryString(file);
+        }
+
+        // Print full student list
+        function cetakSenaraiPelajarProg() {
+            const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+            const rows = STUDENTS.map((s, i) => `
+                <tr>
+                    <td>${i + 1}</td>
+                    <td>${s.name}</td>
+                    <td>${s.ic}</td>
+                    <td>${s.matrik || '-'}</td>
+                    <td>${s.gender}</td>
+                    <td>${s.address}</td>
+                </tr>
+            `).join('');
+
+            const html = `
+                <html><head><title>Senarai Pelajar</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 20px; font-size: 11px; }
+                    h2 { text-align: center; font-size: 14px; margin-bottom: 4px; }
+                    p.sub { text-align: center; color: #555; margin-bottom: 16px; font-size: 10px; }
+                    table { width: 100%; border-collapse: collapse; }
+                    th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+                    th { background: #1e3a5f; color: white; font-size: 10px; }
+                    tr:nth-child(even) { background: #f5f5f5; }
+                </style></head>
+                <body>
+                    <h2>SENARAI PELAJAR BERDAFTAR</h2>
+                    <p class="sub">Kolej Komuniti Papar | ${sess} | Tarikh Cetak: ${new Date().toLocaleDateString('ms-MY')}</p>
+                    <table>
+                        <thead><tr><th>Bil</th><th>Nama Penuh</th><th>No. IC</th><th>No. Matrik</th><th>Jantina</th><th>Alamat</th></tr></thead>
+                        <tbody>${rows}</tbody>
+                    </table>
+                </body></html>
+            `;
+
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.print();
+        }
+
+        // Print individual student slip
+        function cetakPelajarProgIndividu(idx) {
+            const s = STUDENTS[idx];
+            const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
+            const html = `
+                <html><head><title>Slip Pelajar - ${s.name}</title>
+                <style>
+                    body { font-family: Arial, sans-serif; padding: 30px; font-size: 12px; }
+                    .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1e3a5f; padding-bottom: 12px; margin-bottom: 20px; }
+                    .header h1 { font-size: 15px; margin: 0; color: #1e3a5f; }
+                    .header p { margin: 2px 0; font-size: 10px; color: #555; }
+                    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+                    .info-item label { font-size: 9px; font-weight: bold; text-transform: uppercase; color: #888; display: block; }
+                    .info-item span { font-size: 13px; font-weight: 600; color: #111; }
+                    .footer { margin-top: 30px; border-top: 1px solid #ccc; padding-top: 14px; font-size: 9px; color: #888; text-align: center; }
+                </style></head>
+                <body>
+                    <div class="header">
+                        <div>
+                            <h1>KOLEJ KOMUNITI PAPAR</h1>
+                            <p>Slip Maklumat Pelajar</p>
+                            <p>${sess}</p>
+                        </div>
+                    </div>
+                    <div class="info-grid">
+                        <div class="info-item"><label>Nama Penuh</label><span>${s.name}</span></div>
+                        <div class="info-item"><label>No. IC</label><span>${s.ic}</span></div>
+                        <div class="info-item"><label>No. Kad Matrik</label><span>${s.matrik || '-'}</span></div>
+                        <div class="info-item"><label>Jantina</label><span>${s.gender}</span></div>
+                        <div class="info-item" style="grid-column: 1/-1"><label>Alamat Tetap</label><span>${s.address}</span></div>
+                    </div>
+                    <div class="footer">Dokumen ini dijanakan secara automatik oleh Sistem Jadual Waktu KKPPS &bull; Tarikh Cetak: ${new Date().toLocaleDateString('ms-MY')}</div>
+                </body></html>
+            `;
+            const w = window.open('', '_blank');
+            w.document.write(html);
+            w.document.close();
+            w.print();
+        }
+
+        // ==========================================================================
+        // SPAK CALENDAR & ACTIVITY MANAGEMENT FUNCTIONS
+        // ==========================================================================
+        let spakYear = 2026;
+        let spakMonth = 6; // Default to July
+        let selectedDateStr = "2026-07-24";
+        let editSpakIdx = -1;
+
+        const MALAY_MONTHS = [
+            "Januari", "Februari", "Mac", "April", "Mei", "Jun",
+            "Julai", "Ogos", "September", "Oktober", "November", "Disember"
+        ];
+
+        function navMonth(direction) {
+            spakMonth += direction;
+            if (spakMonth < 0) {
+                spakMonth = 11;
+                spakYear--;
+            } else if (spakMonth > 11) {
+                spakMonth = 0;
+                spakYear++;
+            }
+            renderSpakCalendar();
+        }
+
+        function renderSpakCalendar() {
+            const monthYearHeader = document.getElementById("calendarMonthYear");
+            const daysGrid = document.getElementById("calendarDaysGrid");
+            if (!monthYearHeader || !daysGrid) return;
+
+            monthYearHeader.textContent = `${MALAY_MONTHS[spakMonth]} ${spakYear}`;
+            daysGrid.innerHTML = "";
+
+            const firstDayIndex = new Date(spakYear, spakMonth, 1).getDay();
+            const totalDays = new Date(spakYear, spakMonth + 1, 0).getDate();
+            const prevTotalDays = new Date(spakYear, spakMonth, 0).getDate();
+
+            // Render previous month padding days
+            for (let i = firstDayIndex - 1; i >= 0; i--) {
+                const cell = document.createElement("div");
+                cell.className = "spak-day-cell inactive";
+                const dayNum = prevTotalDays - i;
+                cell.innerHTML = `<span class="spak-day-num">${dayNum}</span>`;
+                daysGrid.appendChild(cell);
+            }
+
+            // Render current month active days
+            const today = new Date();
+            for (let day = 1; day <= totalDays; day++) {
+                const cell = document.createElement("div");
+                cell.className = "spak-day-cell";
+
+                const dayStr = `${spakYear}-${String(spakMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+
+                if (day === today.getDate() && spakMonth === today.getMonth() && spakYear === today.getFullYear()) {
+                    cell.classList.add("today");
+                }
+                if (dayStr === selectedDateStr) {
+                    cell.classList.add("selected");
+                }
+
+                cell.innerHTML = `<span class="spak-day-num">${day}</span>`;
+
+                const dayEvents = spakActivities.filter(act => act.date === dayStr);
+                if (dayEvents.length > 0) {
+                    const indicator = document.createElement("div");
+                    indicator.className = "spak-event-indicator";
+                    cell.appendChild(indicator);
+                }
+
+                cell.addEventListener("click", () => {
+                    selectedDateStr = dayStr;
+                    document.querySelectorAll("#calendarDaysGrid .spak-day-cell").forEach(c => c.classList.remove("selected"));
+                    cell.classList.add("selected");
+                    
+                    document.getElementById("spakDate").value = selectedDateStr;
+                    renderSpakEventList();
+                });
+
+                daysGrid.appendChild(cell);
+            }
+
+            // Render next month padding days
+            const gridCount = daysGrid.children.length;
+            const remaining = (gridCount <= 35) ? (35 - gridCount) : (42 - gridCount);
+            for (let i = 1; i <= remaining; i++) {
+                const cell = document.createElement("div");
+                cell.className = "spak-day-cell inactive";
+                cell.innerHTML = `<span class="spak-day-num">${i}</span>`;
+                daysGrid.appendChild(cell);
+            }
+
+            renderSpakEventList();
+        }
+
+        function renderSpakEventList() {
+            const listEl = document.getElementById("spakEventList");
+            const titleEl = document.getElementById("spakInfoTitle");
+            if (!listEl || !titleEl) return;
+
+            const selectedDateObj = new Date(selectedDateStr);
+            const day = selectedDateObj.getDate();
+            const month = MALAY_MONTHS[selectedDateObj.getMonth()];
+            const year = selectedDateObj.getFullYear();
+
+            titleEl.textContent = `Aktiviti: ${day} ${month} ${year}`;
+
+            const dayEvents = spakActivities.filter(act => act.date === selectedDateStr);
+
+            if (dayEvents.length === 0) {
+                listEl.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 40px 20px;">
+                        <div style="font-size: 2.5rem; margin-bottom: 10px;">📅</div>
+                        <p style="font-size: 0.85rem; font-weight: 500;">Tiada aktiviti didaftarkan pada tarikh ini.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            let html = "";
+            dayEvents.forEach(evt => {
+                const isPenting = evt.category && (evt.category.toLowerCase() === "penting" || evt.category.toLowerCase() === "segera");
+                const badgeText = isPenting ? "⚠️ PENTING" : "📢 MAKLUMAN UMUM";
+                const badgeClass = isPenting ? "spak-cat-penting" : "spak-cat-umum";
+                const itemClass = isPenting ? "spak-event-item spak-penting" : "spak-event-item";
+
+                const formattedStart = format12Hour(evt.startTime);
+                const formattedEnd = format12Hour(evt.endTime);
+                const timeDisplay = (formattedStart && formattedEnd) ? `${formattedStart} - ${formattedEnd}` : (evt.startTime || "");
+
+                html += `
+                    <div class="${itemClass}" style="position: relative; cursor: pointer;" onclick="bukaDetailSpakProg('${evt.id}')">
+                        <div style="position: absolute; top: 12px; right: 12px; display: flex; gap: 6px; z-index: 10;">
+                            <button type="button" onclick="event.stopPropagation(); editSpakActivity('${evt.id}')" style="background: transparent; border: none; cursor: pointer; font-size: 0.85rem;" title="Edit">✏️</button>
+                            <button type="button" onclick="event.stopPropagation(); deleteSpakActivity('${evt.id}')" style="background: transparent; border: none; cursor: pointer; font-size: 0.85rem;" title="Padam">🗑️</button>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span class="spak-event-category ${badgeClass}">
+                                ${badgeText}
+                            </span>
+                        </div>
+                        <h4 class="spak-event-title" style="margin-top: 8px; padding-right: 50px;">${evt.title}</h4>
+                        <div class="spak-event-meta" style="margin-top: 8px;">
+                            <span>🏫 <strong>Lokasi:</strong> ${evt.location || '-'}</span>
+                            <span>⏱️ <strong>Masa:</strong> ${timeDisplay}</span>
+                        </div>
+                        <div class="spak-event-footer">
+                            <span>👤 Penyelaras: ${evt.coordinator || '-'}</span>
+                            <span>Kemas kini: ${evt.updatedAt || '-'}</span>
+                        </div>
+                    </div>
+                `;
+            });
+
+            listEl.innerHTML = html;
+        }
+
+        function switchSpakSubTab(tab) {
+            const listBtn = document.getElementById("tabSpakListBtn");
+            const formBtn = document.getElementById("tabSpakFormBtn");
+            const listPane = document.getElementById("spakListPane");
+            const formPane = document.getElementById("spakFormPane");
+
+            if (tab === 'list') {
+                listBtn.className = "btn btn-primary";
+                formBtn.className = "btn";
+                formBtn.style.background = "var(--surface-hover)";
+                formBtn.style.color = "var(--text-primary)";
+                formBtn.style.borderColor = "var(--surface-border)";
+                listPane.style.display = "block";
+                formPane.style.display = "none";
+            } else {
+                formBtn.className = "btn btn-primary";
+                listBtn.className = "btn";
+                listBtn.style.background = "var(--surface-hover)";
+                listBtn.style.color = "var(--text-primary)";
+                listBtn.style.borderColor = "var(--surface-border)";
+                formPane.style.display = "block";
+                listPane.style.display = "none";
+
+                if (editSpakIdx === -1) {
+                    document.getElementById("spakTitle").value = "";
+                    document.getElementById("spakDate").value = selectedDateStr;
+                    document.getElementById("spakStartTime").value = "08:00";
+                    document.getElementById("spakEndTime").value = "10:00";
+                    document.getElementById("spakLocation").value = "";
+                    document.getElementById("spakCoordinator").value = "Programmer";
+                    document.getElementById("btnSubmitSpak").textContent = "Tambah Aktiviti";
+                }
+            }
+        }
+
+        function simpanAktivitiSpak(e) {
+            e.preventDefault();
+            const title = document.getElementById("spakTitle").value.trim();
+            const date = document.getElementById("spakDate").value;
+            const category = document.getElementById("spakCategory").value;
+            const startTime = document.getElementById("spakStartTime").value;
+            const endTime = document.getElementById("spakEndTime").value;
+            const location = document.getElementById("spakLocation").value.trim();
+            const coordinator = document.getElementById("spakCoordinator").value.trim();
+            const description = document.getElementById("spakDescription").value.trim();
+
+            const now = new Date();
+            const updatedAt = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+
+            if (editSpakIdx === -1) {
+                const newEvt = {
+                    id: "spak-" + Date.now(),
+                    title, date, category, startTime, endTime, location, coordinator, description, updatedAt
+                };
+                spakActivities.push(newEvt);
+                showToast("Aktiviti KKPPS baru berjaya ditambah!", "success");
+            } else {
+                const item = spakActivities[editSpakIdx];
+                item.title = title;
+                item.date = date;
+                item.category = category;
+                item.startTime = startTime;
+                item.endTime = endTime;
+                item.location = location;
+                item.coordinator = coordinator;
+                item.description = description;
+                item.updatedAt = updatedAt;
+
+                editSpakIdx = -1;
+                showToast("Kemas kini aktiviti KKPPS berjaya disimpan!", "success");
+            }
+
+            simpanSpakKeDatabase();
+            switchSpakSubTab('list');
+            renderSpakCalendar();
+        }
+
+        function editSpakActivity(id) {
+            const idx = spakActivities.findIndex(a => a.id === id);
+            if (idx === -1) return;
+
+            editSpakIdx = idx;
+            const item = spakActivities[idx];
+
+            switchSpakSubTab('form');
+
+            document.getElementById("spakTitle").value = item.title;
+            document.getElementById("spakDate").value = item.date;
+            document.getElementById("spakCategory").value = item.category;
+            document.getElementById("spakStartTime").value = item.startTime;
+            document.getElementById("spakEndTime").value = item.endTime;
+            document.getElementById("spakLocation").value = item.location;
+            document.getElementById("spakCoordinator").value = item.coordinator;
+            document.getElementById("spakDescription").value = item.description || '';
+            document.getElementById("btnSubmitSpak").textContent = "Simpan Kemas Kini";
+        }
+
+        function deleteSpakActivity(id) {
+            tanyaPengesahan("Adakah anda pasti untuk memadam aktiviti KKPPS ini?", () => {
+                spakActivities = spakActivities.filter(a => a.id !== id);
+                simpanSpakKeDatabase();
+                renderSpakCalendar();
+                showToast("Aktiviti KKPPS berjaya dipadam!", "success");
+            });
+        }
+
+        function cancelSpakEdit() {
+            editSpakIdx = -1;
+            const descEl = document.getElementById("spakDescription");
+            if (descEl) descEl.value = '';
+            switchSpakSubTab('list');
+        }
+
+        function simpanSpakKeDatabase() {
+            if (isFirebaseActive()) {
+                firebaseSaveSpakActivities(spakActivities);
+            } else {
+                localStorage.setItem('kkpapar_spak_activities', JSON.stringify(spakActivities));
+            }
+        }
+
+        // SPAK Detail Modal for Programmer
+        function bukaDetailSpakProg(id) {
+            const evt = spakActivities.find(a => a.id === id);
+            if (!evt) return;
+            currentSpakModalId = id;
+
+            const isPenting = evt.category && (evt.category.toLowerCase() === "penting" || evt.category.toLowerCase() === "segera");
+            const badgeEl = document.getElementById("progSpakModalBadge");
+            badgeEl.textContent = isPenting ? "⚠️ PENTING" : "📢 MAKLUMAN UMUM";
+            if (isPenting) {
+                badgeEl.style.cssText = "background:#fef2f2; color:#dc2626; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:50px; letter-spacing:0.3px; border:1px solid #fca5a5;";
+            } else {
+                badgeEl.style.cssText = "background:#f0fdfa; color:#0d9488; font-size:0.72rem; font-weight:800; padding:4px 12px; border-radius:50px; letter-spacing:0.3px; border:1px solid #5eead4;";
+            }
+
+            document.getElementById("progSpakModalTitle").textContent = evt.title;
+
+            const dateObj = new Date(evt.date);
+            const formattedDate = `${dateObj.getDate()} ${MALAY_MONTHS[dateObj.getMonth()]} ${dateObj.getFullYear()}`;
+            document.getElementById("progSpakModalDate").textContent = formattedDate;
+
+            const format12 = (t) => {
+                if (!t) return '';
+                const [h, m] = t.split(':').map(Number);
+                const ampm = h >= 12 ? 'PTG' : 'PG';
+                return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+            };
+            const fStart = format12(evt.startTime);
+            const fEnd = format12(evt.endTime);
+            const timeDisplay = (fStart && fEnd) ? `${fStart} - ${fEnd}` : (evt.startTime || '');
+            document.getElementById("progSpakModalTime").textContent = timeDisplay;
+
+            document.getElementById("progSpakModalLocation").textContent = evt.location || '-';
+            document.getElementById("progSpakModalCoordinator").textContent = evt.coordinator || '-';
+            document.getElementById("progSpakModalDescription").textContent = evt.description || 'Tiada ulasan atau perincian lanjut disediakan.';
+            document.getElementById("progSpakModalId").textContent = evt.id;
+            document.getElementById("progSpakModalUpdated").textContent = evt.updatedAt || '-';
+
+            document.getElementById("modalSpakDetailProg").style.display = "flex";
+        }
+
+        function tutupModalSpakProg() {
+            document.getElementById("modalSpakDetailProg").style.display = "none";
+            currentSpakModalId = null;
+        }
+
+        function editSpakFromModal() {
+            if (!currentSpakModalId) return;
+            tutupModalSpakProg();
+            editSpakActivity(currentSpakModalId);
+        }
+
+        // Close modal on backdrop click
+        window.addEventListener("click", function(e) {
+            const modal = document.getElementById("modalSpakDetailProg");
+            if (modal && e.target === modal) tutupModalSpakProg();
+        });
     </script>
 </body>
 
