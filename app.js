@@ -526,7 +526,7 @@ function renderAll() {
 
     const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
     document.querySelectorAll(".print-footer-session").forEach(el => {
-        el.textContent = `JADUAL DISAHKAN BAGI SESI ${sess}`.toUpperCase();
+        el.textContent = `JADUAL DISAHKAN BAGI ${sess}`.toUpperCase();
     });
 
     if (typeof populateLocationDropdown === 'function') populateLocationDropdown();
