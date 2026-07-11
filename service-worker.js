@@ -1,9 +1,9 @@
 // Service Worker — Sistem Jadual Waktu KKPPS
-// Install-only mode (no offline cache — data stays live from Firebase)
+// Strategi: Network-first untuk semua, fallback ke cache (tiada delay data lama)
 
-const CACHE_NAME = 'kkpps-jadual-v7';
+const CACHE_NAME = 'kkpps-jadual-v8';
 
-// Only cache static shell assets (not Firebase data)
+// Aset statik sahaja yang di-cache (bukan data Firebase)
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -15,23 +15,23 @@ const STATIC_ASSETS = [
   './icons/icon-192.png',
   './icons/icon-512.png',
   './Logo_KKPPS.jpeg',
-  './Logo_KPT.png',
-  'https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap'
+  './Logo_KPT.png'
 ];
 
-// Install: cache static shell
+// Install: cache aset statik
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS).catch(() => {
-        // Fail silently — some assets may not be available offline
+      return cache.addAll(STATIC_ASSETS).catch((err) => {
+        console.warn('Cache addAll error (non-fatal):', err);
       });
     })
   );
+  // Aktif serta-merta tanpa menunggu tab lama ditutup
   self.skipWaiting();
 });
 
-// Activate: clean old caches
+// Activate: buang cache lama serta-merta
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
@@ -40,30 +40,39 @@ self.addEventListener('activate', (event) => {
       );
     })
   );
+  // Ambil alih semua klien serta-merta (tiada delay selepas update)
   self.clients.claim();
 });
 
-// Fetch: network-first for Firebase, cache-first for static assets
+// Fetch: strategi network-first untuk semua permintaan
 self.addEventListener('fetch', (event) => {
   const url = event.request.url;
 
-  // Always fetch Firebase requests from network (live data)
-  if (url.includes('firebaseio.com') || url.includes('googleapis.com/identitytoolkit')) {
-    return; // Let browser handle it normally
+  // Biarkan Firebase Realtime Database & Auth melalui network terus
+  if (
+    url.includes('firebaseio.com') ||
+    url.includes('googleapis.com/identitytoolkit') ||
+    url.includes('securetoken.googleapis.com') ||
+    url.includes('firebaseapp.com/__/auth')
+  ) {
+    return; // Browser handle secara langsung
   }
+
+  // Untuk permintaan GET sahaja
+  if (event.request.method !== 'GET') return;
 
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        // Cache updated static assets
-        if (response && response.status === 200 && event.request.method === 'GET') {
-          const clone = response.clone();
+      .then((networkResponse) => {
+        // Simpan salinan baharu ke cache
+        if (networkResponse && networkResponse.status === 200) {
+          const clone = networkResponse.clone();
           caches.open(CACHE_NAME).then(cache => cache.put(event.request, clone));
         }
-        return response;
+        return networkResponse;
       })
       .catch(() => {
-        // Fallback to cache if network fails
+        // Jika tiada rangkaian, guna cache sebagai fallback
         return caches.match(event.request);
       })
   );
