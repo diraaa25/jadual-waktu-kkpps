@@ -40,7 +40,7 @@ echo [3/3] Menyemak Firebase...
 firebase login:list 2>&1 | findstr /i "No authorized" >nul
 IF %ERRORLEVEL% EQU 0 (
     echo Belum log masuk Firebase. Login dahulu...
-    firebase login --no-localhost
+    firebase login
 )
 firebase deploy --only hosting 2>nul
 
