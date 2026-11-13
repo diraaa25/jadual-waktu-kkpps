@@ -171,12 +171,6 @@ const firebaseWatchAnnouncements = (callback) => {
     }
 };
 
-const firebaseSaveAnnouncements = (data) => {
-    if (isFirebaseActive()) {
-        return db.ref('announcements').set(data);
-    }
-};
-
 const firebaseWatchLecturers = (callback) => {
     if (isFirebaseActive()) {
         db.ref('lecturers').on('value', snapshot => {
@@ -187,7 +181,7 @@ const firebaseWatchLecturers = (callback) => {
 
 const firebaseGetLecturersOnce = (callback) => {
     if (isFirebaseActive()) {
-        db.ref('lecturers').once('value').then(snapshot => {
+        return db.ref('lecturers').once('value').then(snapshot => {
             callback(snapshot.val());
         });
     }

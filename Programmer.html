@@ -12,20 +12,20 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=17">
     <meta name="theme-color" content="#0b3d5c">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Jadual KKPPS">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/sijawap-192.png">
+    <link rel="icon" type="image/png" href="icons/sijawap-192.png">
     <title>Portal Programmer - Sistem Jadual Waktu</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=17">
     <!-- SheetJS for Excel Import -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
@@ -154,14 +154,7 @@
         <aside class="app-sidebar">
             <div>
                 <div class="sidebar-brand">
-                    <div class="brand-logo">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                            <polyline points="16 18 22 12 16 6"></polyline>
-                            <polyline points="8 6 2 12 8 18"></polyline>
-                            <line x1="12" y1="2" x2="12" y2="22"></line>
-                        </svg>
-                    </div>
+                    <img class="brand-logo" src="icons/sijawap-192.png" width="42" height="42" alt="SIJAWAP">
                     <div>
                         <div class="brand-title">KK PAPAR</div>
                         <div class="brand-subtitle">Programmer Portal</div>
@@ -187,6 +180,7 @@
                     <button class="nav-item" onclick="switchSection('spak')">
                         📅 Aktiviti KKPPS
                     </button>
+                    <button class="nav-item" onclick="switchSection('notices')">Hebahan Awam</button>
                     <button class="nav-item" onclick="switchSection('config')">
                         🛠️ Konfigurasi Sistem
                     </button>
@@ -240,6 +234,7 @@
                                 📂 Pilih Fail Excel
                                 <input type="file" id="importLecExcel" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importLecturerExcel(this)">
                             </label>
+                            <a class="btn btn-light" href="templates/Template_Pensyarah.xlsx" download>Muat Turun Templat Pensyarah</a>
                             <span id="importLecStatus" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama | Singkatan | Jawatan | Emel | Program | Kata Laluan</span>
                         </div>
                         <form id="formLecturer" onsubmit="tambahPensyarah(event)">
@@ -350,6 +345,11 @@
                                     <input id="subHours" class="programmer-input" type="number" min="0.5" step="0.5"
                                         placeholder="cth: 4" required>
                                 </div>
+                                <div class="form-group">
+                                    <label for="subCredit">Kredit (Pilihan)</label>
+                                    <input id="subCredit" class="programmer-input" type="number" min="0" step="0.5"
+                                        placeholder="cth: 3">
+                                </div>
                             </div>
                             <div class="actions" style="margin-top: 1.5rem;">
                                 <button class="btn btn-primary" type="submit">Daftar Subjek</button>
@@ -447,6 +447,7 @@
                                 style="display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700;">
                                 Sahkan & Terbit Jadual
                             </button>
+                            <div id="programmer-cancellation" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
                         </div>
                     </div>
 
@@ -552,6 +553,19 @@
             </div>
 
             <!-- SECTION 5: SYSTEM CONFIGURATION (TPA & SESSIONS) -->
+                <section id="sec-notices" class="tab-section" style="display:none;">
+                    <div class="card">
+                        <h2>Hebahan Awam</h2>
+                        <p>Hebahan dipaparkan pada halaman utama, termasuk sebelum log masuk.</p>
+                        <form id="public-notice-form" style="display:grid; gap:12px; margin:16px 0;">
+                            <label>Tajuk<input name="title" class="programmer-input" required maxlength="150"></label>
+                            <label>Kandungan<textarea name="desc" class="programmer-input" rows="4" required maxlength="2000"></textarea></label>
+                            <div><button type="submit" class="btn btn-primary">Terbitkan Hebahan</button>
+                                <button type="button" class="btn btn-light" id="cancel-notice-edit" hidden>Batal</button></div>
+                        </form>
+                        <div id="public-notice-list"></div>
+                    </div>
+                </section>
             <div id="sec-config" class="tab-section" style="display: none;">
 
                         <!-- System Password Management Card -->
@@ -675,6 +689,7 @@
                                 📂 Pilih Fail Excel
                                 <input type="file" id="importStudentExcelProg" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importStudentExcelProg(this)">
                             </label>
+                            <a class="btn btn-light" href="templates/Template_Pelajar.xlsx" download>Muat Turun Templat Pelajar</a>
                             <span id="importStudProgStatus" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama | No. IC | Jantina | Alamat | No. Matrik</span>
                         </div>
                         <form id="formAddStudentProg" onsubmit="tambahPelajarProg(event)">
@@ -891,11 +906,24 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none no-print"></div>
 
+    <dialog id="coordinator-dialog" style="border:1px solid #94a3b8; border-radius:12px; padding:24px; max-width:95vw; color:#0f172a; background:white;">
+        <form method="dialog">
+            <h2 style="font-weight:700;">Peranan Admin</h2>
+            <p id="coordinator-lecturer"></p>
+            <fieldset id="coordinator-options" style="margin:16px 0;"></fieldset>
+            <button value="cancel" class="btn btn-light">Batal</button>
+            <button value="save" class="btn btn-primary">Simpan Peranan</button>
+        </form>
+    </dialog>
+
     <!-- Firebase Compat SDK and services -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="firebase-service.js"></script>
+    <script src="announcements.js"></script>
+  <script src="timetable-workflow.js?v=15"></script>
+  <script src="timetable-print.js"></script>
     <script>
         appendStatusBadge('#firebase-status-badge-container');
     </script>
@@ -1068,6 +1096,8 @@
         }
 
         // Load databases
+        let programmerBaseline;
+
         function loadDB() {
             if (isFirebaseActive()) {
                 firebaseWatchTimetable(data => {
@@ -1079,6 +1109,7 @@
                         DB.activeSession = DB.activeSession || "SESI 1 2026/2027";
                         DB.tpaLecturer = DB.tpaLecturer || "DT";
                         DB.approvalState = DB.approvalState || "Draft";
+                        programmerBaseline = structuredClone(DB);
                         renderSubjects();
                         renderDropdowns();
                         renderAdminPanel();
@@ -1113,6 +1144,7 @@
                 DB.activeSession = DB.activeSession || "SESI 1 2026/2027";
                 DB.tpaLecturer = DB.tpaLecturer || "DT";
                 DB.approvalState = DB.approvalState || "Draft";
+                programmerBaseline = structuredClone(DB);
                 LECTURERS = JSON.parse(localStorage.getItem(LECTURERS_KEY));
                 if (!LECTURERS) {
                     LECTURERS = [...INITIAL_LECTURERS];
@@ -1149,12 +1181,77 @@
             }
         }
 
-        function saveDB() {
-            if (isFirebaseActive()) {
-                firebaseSaveTimetable(DB);
-            } else {
-                localStorage.setItem(KEY, JSON.stringify(DB));
-            }
+        function saveDB(previousCode, nextCode) {
+            const draft = structuredClone(DB);
+            const baseline = programmerBaseline;
+            programmerBaseline = draft;
+            updateTimetable(current => {
+                const updated = applyProgrammerChanges(current, draft, baseline);
+                if (!updated || !previousCode) return updated;
+                for (const role of COORDINATOR_ROLES) {
+                    const assigned = updated.coordinators?.[role];
+                    if (!assigned?.[previousCode]) continue;
+                    delete assigned[previousCode];
+                    if (nextCode) assigned[nextCode] = true;
+                }
+                return updated;
+            }).then(next => {
+                DB = { ...next, slot: next.slot || [], subjek: next.subjek || [] };
+                programmerBaseline = structuredClone(DB);
+                renderSubjects();
+                renderDropdowns();
+                renderAdminPanel();
+                renderConfigSection();
+            }).catch(error => {
+                showToast(error.message, 'danger');
+                location.reload();
+            });
+        }
+
+        function urusPeranan(idx) {
+            const lecturer = LECTURERS[idx];
+            const dialog = document.getElementById('coordinator-dialog');
+            document.getElementById('coordinator-lecturer').textContent = lecturer.name;
+            const options = document.getElementById('coordinator-options');
+            options.replaceChildren();
+            COORDINATOR_ROLES.forEach(role => {
+                const label = document.createElement('label');
+                label.style.display = 'block';
+                const input = document.createElement('input');
+                input.type = 'checkbox';
+                input.value = role;
+                input.checked = coordinatorRoles(DB, lecturer.shortName).includes(role);
+                label.append(input, ' ' + roleLabel(role));
+                options.append(label);
+            });
+            const form = dialog.querySelector('form');
+            form.onsubmit = async event => {
+                if (event.submitter.value === 'cancel') return;
+                event.preventDefault();
+                event.submitter.disabled = true;
+                const selected = new Set(Array.from(options.querySelectorAll('input:checked'), input => input.value));
+                try {
+                    const next = await updateTimetable(data => {
+                        if (sessionStorage.getItem('logged_role') !== 'programmer') return;
+                        data.coordinators ||= {};
+                        for (const role of COORDINATOR_ROLES) {
+                            data.coordinators[role] ||= {};
+                            if (selected.has(role)) data.coordinators[role][lecturer.shortName] = true;
+                            else delete data.coordinators[role][lecturer.shortName];
+                        }
+                        return data;
+                    });
+                    DB.coordinators = next.coordinators;
+                    renderLecturers();
+                    dialog.close();
+                    showToast('Peranan penyelaras disimpan.');
+                } catch (error) {
+                    showToast(error.message, 'danger');
+                } finally {
+                    event.submitter.disabled = false;
+                }
+            };
+            dialog.showModal();
         }
 
         function saveLecturers() {
@@ -1187,6 +1284,70 @@
         }
 
         // Switch Sidebar Tab
+        document.addEventListener('DOMContentLoaded', () => {
+            const form = document.getElementById('public-notice-form');
+            const cancel = document.getElementById('cancel-notice-edit');
+            const submit = form.querySelector('[type=submit]');
+            const list = document.getElementById('public-notice-list');
+            let original;
+            const reset = () => {
+                original = undefined;
+                form.reset();
+                cancel.hidden = true;
+                submit.textContent = 'Terbitkan Hebahan';
+            };
+            const render = posts => {
+                list.replaceChildren();
+                for (const post of posts) {
+                    const row = document.createElement('article');
+                    const title = document.createElement('strong');
+                    const details = document.createElement('p');
+                    title.textContent = post.title;
+                    details.textContent = post.desc;
+                    row.append(title, details);
+                    row.style.marginBottom = '16px';
+                    if (ownsAnnouncement(post)) {
+                        const edit = document.createElement('button');
+                        edit.className = 'btn btn-light';
+                        edit.textContent = 'Edit';
+                        edit.onclick = () => {
+                            original = post;
+                            form.elements.title.value = post.title;
+                            form.elements.desc.value = post.desc;
+                            cancel.hidden = false;
+                            submit.textContent = 'Simpan Kemas Kini';
+                            form.elements.title.focus();
+                        };
+                        const remove = document.createElement('button');
+                        remove.className = 'btn btn-danger';
+                        remove.textContent = 'Padam';
+                        remove.onclick = () => tanyaPengesahan('Padam hebahan awam ini?', async () => {
+                            try {
+                                render(await saveAnnouncement({ original: post, publicNotice: true }));
+                                if (original?.id === post.id) reset();
+                            } catch (error) { showToast(error.message, 'danger'); }
+                        });
+                        row.append(edit, remove);
+                    }
+                    list.append(row);
+                }
+            };
+            cancel.onclick = reset;
+            form.onsubmit = async event => {
+                event.preventDefault();
+                const fields = { title: form.elements.title.value.trim(), desc: form.elements.desc.value.trim() };
+                if (!fields.title || !fields.desc) return;
+                submit.disabled = true;
+                try {
+                    render(await saveAnnouncement({ original, fields, publicNotice: true, publisherName: 'Programmer SIJAWAP' }));
+                    reset();
+                    showToast('Hebahan awam disimpan.');
+                } catch (error) { showToast(error.message, 'danger'); }
+                finally { submit.disabled = false; }
+            };
+            watchPublicNotices(render);
+        });
+
         function switchSection(secId) {
             document.querySelectorAll(".tab-section").forEach(sec => sec.style.display = "none");
             document.querySelectorAll(".sidebar-nav button").forEach(btn => btn.classList.remove("active"));
@@ -1248,7 +1409,8 @@
                         if (s.singkatan === oldLec.shortName) { s.singkatan = shortName; s.nama = name; }
                         if (s.singkatanPembantu === oldLec.shortName) { s.singkatanPembantu = shortName; s.namaPembantu = name; }
                     });
-                    saveDB();
+                    if (DB.tpaLecturer === oldLec.shortName) DB.tpaLecturer = shortName;
+                    saveDB(oldLec.shortName, shortName);
                 } else {
                     DB.subjek.forEach(s => {
                         if (s.singkatan === shortName) s.nama = name;
@@ -1286,6 +1448,7 @@
                     <td>
                         <div style="display: flex; gap: 6px; justify-content: center;">
                             <button onclick="editPensyarah(${idx})" class="btn btn-light" style="padding: 4px 10px; font-size: 0.75rem;">Edit</button>
+                            <button onclick="urusPeranan(${idx})" class="btn btn-light" style="padding:4px 10px; font-size:0.75rem;">Peranan Admin</button>
                             <button onclick="padamPensyarah(${idx})" class="btn btn-danger" style="padding: 4px 10px; font-size: 0.75rem;">Padam</button>
                         </div>
                     </td>
@@ -1365,7 +1528,8 @@
                 // Delete subjects and slots
                 DB.subjek = DB.subjek.filter(s => s.singkatan !== lec.shortName && s.singkatanPembantu !== lec.shortName);
                 DB.slot = DB.slot.filter(s => s.singkatan !== lec.shortName && s.singkatanPembantu !== lec.shortName);
-                saveDB();
+                if ((DB.tpaLecturer || "DT") === lec.shortName) DB.tpaLecturer = "-";
+                saveDB(lec.shortName);
 
                 LECTURERS.splice(idx, 1);
                 saveLecturers();
@@ -1398,6 +1562,7 @@
             const subjek = document.getElementById("subName").value.trim();
             const kod = document.getElementById("subCode").value.trim().toUpperCase();
             const jam = parseFloat(document.getElementById("subHours").value);
+            const kredit = document.getElementById("subCredit").value;
 
             const pUtama = LECTURERS.find(l => l.shortName === singkatan);
             const pPembantu = LECTURERS.find(l => l.shortName === singkatanPembantu);
@@ -1414,7 +1579,8 @@
                 singkatanPembantu,
                 subjek,
                 kod,
-                jam
+                jam,
+                ...(kredit !== "" ? { kredit: Number(kredit) } : {})
             });
             saveDB();
 
@@ -1444,7 +1610,8 @@
         function padamSubjek(idx) {
             const sub = DB.subjek[idx];
             tanyaPengesahan(`Adakah anda pasti mahu memadam subjek ${sub.kod} - ${sub.subjek}? Semua slot dalam jadual bagi subjek ini juga akan terpadam.`, () => {
-                DB.slot = DB.slot.filter(s => !(s.kod === sub.kod && s.singkatan === sub.singkatan));
+                DB.slot = DB.slot.filter(s => !(s.kod === sub.kod && s.singkatan === sub.singkatan &&
+                    (s.programOwner || null) === (sub.programOwner || null) && (!sub.kelas || s.kelas === sub.kelas)));
                 DB.subjek.splice(idx, 1);
                 saveDB();
                 showToast("Subjek mengajar berjaya dipadamkan.", "success");
@@ -1560,7 +1727,7 @@
                 return;
             }
 
-            const s = DB.subjek.find(x => `${x.kod}_${x.singkatan}` === selectValue);
+            const s = DB.subjek.find(subject => subjectOptionValue(subject) === selectValue);
             if (!s) {
                 warningArea.style.display = 'none';
                 return;
@@ -1631,13 +1798,23 @@
             }
         }
 
+        function subjectOptionValue(subject) {
+            return JSON.stringify([subject.kod, subject.singkatan, subject.kelas, subject.programOwner]);
+        }
+
         function renderAdminPanel() {
+            renderTimetableCancellationControls(document.getElementById("programmer-cancellation"), workingTimetable(DB), next => {
+                DB = { ...next, slot: next.slot || [], subjek: next.subjek || [] };
+                programmerBaseline = structuredClone(DB);
+                renderAdminPanel();
+            }, message => showToast(message, "danger"));
             // 1. Publish button state
             const btn = document.getElementById("btnConfirmPublish");
             if (btn) {
+                btn.disabled = Boolean(DB.pendingAmendment);
                 if (DB.isConfirmed) {
                     btn.className = "btn btn-accent";
-                    btn.textContent = "Status: Diterbitkan (Batal)";
+                    btn.textContent = "Batal Pengesahan Jadual";
                 } else {
                     btn.className = "btn btn-primary";
                     btn.textContent = "Sahkan & Terbit Jadual";
@@ -1650,7 +1827,7 @@
                 const prevVal = select.value;
                 const subjects = DB.subjek || [];
                 select.innerHTML = '<option value="" disabled selected>Pilih Subjek (Kod)</option>' +
-                    subjects.map(s => `<option value="${s.kod}_${s.singkatan}">${s.kod} — ${s.subjek} (${s.singkatan})</option>`).join('');
+                    subjects.map(s => `<option value="${escapeTimetableText(subjectOptionValue(s))}">${escapeTimetableText(s.kod + " — " + s.subjek + " (" + s.singkatan + ")" + (s.kelas ? " · " + s.kelas : "") + (s.programOwner ? " · " + s.programOwner : ""))}</option>`).join('');
                 if (prevVal) select.value = prevVal;
             }
 
@@ -1693,7 +1870,7 @@
                 return;
             }
 
-            const s = DB.subjek.find(x => `${x.kod}_${x.singkatan}` === selectValue);
+            const s = DB.subjek.find(subject => subjectOptionValue(subject) === selectValue);
             if (!s) return;
 
             const newSlot = {
@@ -1709,6 +1886,7 @@
                 nama: s.nama,
                 namaPembantu: s.namaPembantu || '-'
             };
+            if (s.programOwner === "UPA") newSlot.programOwner = "UPA";
 
             DB.slot.push(newSlot);
             saveDB();
@@ -1729,11 +1907,24 @@
             });
         }
 
-        function togglePublishStatus() {
-            DB.isConfirmed = !DB.isConfirmed;
-            saveDB();
-            showToast(DB.isConfirmed ? "Jadual waktu berjaya disahkan dan diterbitkan!" : "Sahkan terbitan jadual dibatalkan.", "success");
-            renderAdminPanel();
+        async function togglePublishStatus() {
+            const cancel = DB.isConfirmed;
+            const revision = crypto.randomUUID();
+            try {
+                const next = await updateTimetable(data => {
+                    if (sessionStorage.getItem('logged_role') !== 'programmer' || data.pendingAmendment ||
+                        Boolean(data.isConfirmed) !== Boolean(cancel)) return;
+                    if (cancel) return returnTimetablesToPrograms(data, revision);
+                    if (data.publicationWithdrawn) return returnTimetablesToPrograms(data, 'legacy-withdrawal');
+                    return refreshPublication(data).isConfirmed ? data : undefined;
+                });
+                DB = { ...next, slot: next.slot || [], subjek: next.subjek || [] };
+                programmerBaseline = structuredClone(DB);
+                renderAdminPanel();
+                showToast(DB.isConfirmed ? 'Jadual waktu diterbitkan.' : 'Pengesahan dibatalkan. Semua jadual dikembalikan kepada penyelaras program.');
+            } catch (error) {
+                showToast('Jadual hanya boleh diterbitkan selepas pengesahan TPA bagi semua program yang mempunyai slot.', 'danger');
+            }
         }
 
         // Render Program Options Dropdown
@@ -2184,9 +2375,10 @@
             `;
 
             const w = window.open('', '_blank');
+            if (!w) return alert('Benarkan tetingkap timbul untuk mencetak.');
             w.document.write(html);
             w.document.close();
-            w.print();
+            printTimetableWindow(w, { landscape: false });
         }
 
         // Print individual student slip
@@ -2224,9 +2416,10 @@
                 </body></html>
             `;
             const w = window.open('', '_blank');
+            if (!w) return alert('Benarkan tetingkap timbul untuk mencetak.');
             w.document.write(html);
             w.document.close();
-            w.print();
+            printTimetableWindow(w, { landscape: false });
         }
 
         // ==========================================================================

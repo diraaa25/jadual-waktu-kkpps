@@ -173,12 +173,9 @@ body::before {
 .brand-logo {
     width: 42px;
     height: 42px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
+    flex: 0 0 42px;
+    object-fit: contain;
     border-radius: var(--border-radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
     box-shadow: 0 4px 10px rgba(0,0,0,0.15);
 }
 
@@ -711,20 +708,11 @@ body::before {
 }
 
 .login-logo {
-    width: 60px;
-    height: 60px;
-    background: linear-gradient(135deg, var(--primary), var(--accent));
-    border-radius: 50%;
+    display: block;
+    width: min(100%, 320px);
+    height: auto;
     margin: 0 auto 1rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: #fff;
-}
-
-.login-logo svg {
-    width: 30px;
-    height: 30px;
+    border-radius: 8px;
 }
 
 .login-header h3 {

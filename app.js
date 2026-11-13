@@ -138,6 +138,7 @@ function initDatabase() {
         firebaseWatchLecturers(data => {
             lecturersList = data || [];
             window.lecturersList = lecturersList;
+            renderAnnouncements();
             renderStats();
         });
         firebaseWatchTimetable(data => {
@@ -275,48 +276,19 @@ function setupEventListeners() {
     document.getElementById("search-student").addEventListener("input", renderStudents);
     document.getElementById("filter-student-gender").addEventListener("change", renderStudents);
 
-    // Login role sub-tab click handler
-    const subtabs = document.querySelectorAll(".login-subtab");
-    subtabs.forEach(tab => {
-        tab.addEventListener("click", () => {
-            // Remove active classes
-            subtabs.forEach(t => t.classList.remove("active"));
-            // Set current active
-            tab.classList.add("active");
-
-            const role = tab.getAttribute("data-role");
-            document.getElementById("login-role").value = role;
-
-            // Update labels, headings & placeholders dynamically
-            const labelEmail = document.getElementById("label-login-email");
-            const inputEmail = document.getElementById("login-email");
-            const title = document.getElementById("login-portal-title");
-            const desc = document.getElementById("login-portal-desc");
-            const feedback = document.getElementById("login-feedback");
-
-            // Clear feedback and input values
-            feedback.style.display = "none";
-            inputEmail.value = "";
-            document.getElementById("login-password").value = "";
-
-            if (role === "pensyarah") {
-                title.textContent = "Portal Pensyarah";
-                desc.textContent = "Sila log masuk untuk semakan tugasan & jadual waktu mengajar";
-                labelEmail.textContent = "Alamat E-mel";
-                inputEmail.placeholder = "pensyarah@kolejkomuniti.edu.my";
-            } else if (role === "admin") {
-                title.textContent = "Portal Admin";
-                desc.textContent = "Akses pentadbiran untuk mengurus bilik, subjek & jadual waktu";
-                labelEmail.textContent = "Alamat E-mel";
-                inputEmail.placeholder = "admin@papar.edu.my";
-            } else if (role === "programmer") {
-                title.textContent = "Portal Programmer";
-                desc.textContent = "Akses pembangunan sistem untuk menguji & mengemas kini pangkalan data";
-                labelEmail.textContent = "Alamat E-mel";
-                inputEmail.placeholder = "programmer@papar.edu.my";
-            }
-        });
-    });
+    const programmerPortal = new URLSearchParams(location.search).get('portal') === 'programmer';
+    if (programmerPortal) {
+        switchTab('login');
+        document.getElementById('login-role').value = 'programmer';
+        document.getElementById('login-portal-title').textContent = 'Portal Programmer';
+        document.getElementById('login-portal-desc').textContent = 'Log masuk untuk mengurus sistem.';
+        document.getElementById('login-email').placeholder = 'programmer@papar.edu.my';
+        const link = document.getElementById('login-portal-link');
+        link.href = 'index.html?portal=pensyarah';
+        link.textContent = 'Kembali ke log masuk Pensyarah';
+    } else if (new URLSearchParams(location.search).get('portal') === 'pensyarah') {
+        switchTab('login');
+    }
 
     // SHA-256 Hashing Utility
     async function hashPassword(password) {
@@ -331,45 +303,25 @@ function setupEventListeners() {
     document.getElementById("login-form").addEventListener("submit", async (e) => {
         e.preventDefault();
 
-        let role = document.getElementById("login-role").value;
+        const role = document.getElementById("login-role").value;
         const emailVal = document.getElementById("login-email").value.trim().toLowerCase();
         const password = document.getElementById("login-password").value;
         const feedback = document.getElementById("login-feedback");
 
         const hashedInput = await hashPassword(password);
 
-        // Auto-detect role to prevent user tab selection mistakes
-        if (emailVal === "admin@papar.edu.my") {
-            role = "admin";
-        } else if (emailVal === "programmer@papar.edu.my") {
-            role = "programmer";
-        }
-
-        if (role === "admin") {
-            const adminPass = (DB && DB.adminPassword) ? DB.adminPassword : "0192023a7bbd73250516f069df18b5006e76c8c2c158e3794b748e727e37d5c9";
-            const isMatch = (hashedInput === adminPass || password === adminPass ||
-                hashedInput === "0192023a7bbd73250516f069df18b5006e76c8c2c158e3794b748e727e37d5c9" || password === "admin123");
-
-            if (emailVal === "admin@papar.edu.my" && isMatch) {
-                feedback.style.color = "var(--success)";
-                feedback.style.display = "block";
-                feedback.textContent = "Log masuk Admin berjaya! Mengalihkan ke Halaman Pengurusan...";
-                showToast("Log masuk admin berjaya!", "success");
-
-                // Store session
-                sessionStorage.setItem("logged_role", "admin");
-
-                setTimeout(() => {
-                    feedback.style.display = "none";
-                    window.location.href = "Jadual_baru.html";
-                }, 1500);
-            } else {
-                showError("Alamat e-mel atau kata laluan salah.");
+        if (role === "programmer") {
+            let configuredPassword;
+            try {
+                configuredPassword = isFirebaseActive()
+                    ? (await db.ref('timetable/programmerPassword').once('value')).val()
+                    : DB?.programmerPassword;
+            } catch {
+                showError("Pangkalan data Programmer tidak dapat dicapai.");
+                return;
             }
-        } else if (role === "programmer") {
-            const progPass = (DB && DB.programmerPassword) ? DB.programmerPassword : "3e18a0ff1ef80a0684f09d22be3f5df7a195b169542a201c107be6782a205d15";
-            const isMatch = (hashedInput === progPass || password === progPass ||
-                hashedInput === "3e18a0ff1ef80a0684f09d22be3f5df7a195b169542a201c107be6782a205d15" || password === "programmer123");
+            const progPass = configuredPassword || "3e18a0ff1ef80a0684f09d22be3f5df7a195b169542a201c107be6782a205d15";
+            const isMatch = hashedInput === progPass || password === progPass || (!configuredPassword && password === "programmer123");
 
             if (emailVal === "programmer@papar.edu.my" && isMatch) {
                 feedback.style.color = "var(--success)";
@@ -378,6 +330,7 @@ function setupEventListeners() {
                 showToast("Log masuk programmer berjaya!", "success");
 
                 // Store session
+                sessionStorage.removeItem("logged_lecturer");
                 sessionStorage.setItem("logged_role", "programmer");
 
                 setTimeout(() => {
@@ -391,7 +344,7 @@ function setupEventListeners() {
             const doLogin = (list) => {
                 const matchedLec = list.find(l => {
                     const storedPass = l.password || "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421";
-                    const emailMatch = (l.email.toLowerCase() === emailVal.toLowerCase() || emailVal === "pensyarah@kolejkomuniti.edu.my");
+                    const emailMatch = (l.email || "").toLowerCase() === emailVal;
                     const passwordMatch = (hashedInput === storedPass || password === storedPass ||
                         (password === "pensyarah123" && storedPass === "f5d548325ef014a00b65287e0766ff31f288414b62db496515a415ff69572421"));
                     return emailMatch && passwordMatch;
@@ -403,7 +356,7 @@ function setupEventListeners() {
                     feedback.textContent = `Log masuk Pensyarah (${matchedLec.shortName}) berjaya! Mengalihkan ke Portal Pensyarah...`;
                     showToast("Log masuk berjaya!", "success");
 
-                    localStorage.setItem("logged_lecturer", matchedLec.shortName);
+                    sessionStorage.setItem("logged_lecturer", matchedLec.shortName);
                     sessionStorage.setItem("logged_role", "pensyarah");
 
                     setTimeout(() => {
@@ -418,7 +371,7 @@ function setupEventListeners() {
             if (isFirebaseActive()) {
                 firebaseGetLecturersOnce(lecturers => {
                     doLogin(lecturers || []);
-                });
+                }).catch(() => showError("Pangkalan data pensyarah tidak dapat dicapai."));
             } else {
                 let lecturers = JSON.parse(localStorage.getItem('kkpapar_lecturers')) || INITIAL_LECTURERS;
                 doLogin(lecturers);
@@ -561,6 +514,27 @@ function renderStats() {
     }
 }
 
+document.addEventListener('DOMContentLoaded', () => {
+    watchPublicNotices(notices => {
+        const board = document.getElementById('public-notices');
+        board.replaceChildren();
+        for (const notice of notices) {
+            const item = document.createElement('article');
+            const title = document.createElement('strong');
+            const details = document.createElement('p');
+            title.textContent = notice.title;
+            details.textContent = notice.desc;
+            details.style.whiteSpace = 'pre-wrap';
+            item.append(title, details);
+            board.append(item);
+        }
+        board.hidden = !board.childElementCount;
+    });
+    window.addEventListener('storage', event => {
+        if (event.key === 'kkpapar_announcements') renderAnnouncements();
+    });
+});
+
 function renderAnnouncements() {
     if (!isFirebaseActive()) {
         const storedAnnouncements = localStorage.getItem("kkpapar_announcements");
@@ -607,18 +581,18 @@ function renderAnnouncements() {
 
         item.className = itemClass;
 
-        const pubText = ann.publisher ? `<span class="announcement-pub" style="font-size:0.75rem; color:var(--text-secondary); margin-left:10px;">👤 Oleh: ${ann.publisher}</span>` : '';
-        const expText = ann.expiryDate ? `<span style="font-size:0.75rem; color:var(--danger); margin-left:10px; font-weight:600;">(Luput: ${ann.expiryDate})</span>` : '';
+        const pubText = ann.publisher || ann.publisherName ? `<span class="announcement-pub" style="font-size:0.75rem; color:var(--text-secondary); margin-left:10px;">👤 Oleh: ${escapeAnnouncement(announcementPublisher(ann, lecturersList.length ? lecturersList : (JSON.parse(localStorage.getItem('kkpapar_lecturers') || 'null') || INITIAL_LECTURERS)))}</span>` : '';
+        const expText = ann.expiryDate ? `<span style="font-size:0.75rem; color:var(--danger); margin-left:10px; font-weight:600;">(Luput: ${escapeAnnouncement(ann.expiryDate)})</span>` : '';
 
         item.innerHTML = `
             <div class="announcement-meta">
-                <strong>${ann.category}</strong>
-                <span>📅 ${ann.date}</span>
+                <strong>${escapeAnnouncement(ann.category)}</strong>
+                <span>📅 ${escapeAnnouncement(ann.date)}</span>
                 ${pubText}
                 ${expText}
             </div>
-            <div class="announcement-title">${ann.title}${badgeHtml}</div>
-            <div class="announcement-desc">${ann.desc}</div>
+            <div class="announcement-title">${escapeAnnouncement(ann.title)}${badgeHtml}</div>
+            <div class="announcement-desc">${escapeAnnouncement(ann.desc)}</div>
         `;
         board.appendChild(item);
     });
@@ -1175,7 +1149,7 @@ window.addEventListener('beforeinstallprompt', (e) => {
                 animation: slideUp 0.4s ease;
                 white-space: nowrap;
             ">
-                <img src="icons/icon-192.png" style="width:28px;height:28px;border-radius:6px;">
+                <img src="icons/sijawap-192.png" style="width:28px;height:28px;border-radius:6px;">
                 <span>Muat turun aplikasi ke telefon anda</span>
                 <button id="pwa-install-btn" style="
                     background: #fff; color: #0b3d5c;

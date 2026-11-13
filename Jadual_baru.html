@@ -4,7 +4,7 @@
 <head>
   <script>
     // Security session guard to prevent direct URL access without login
-    if (sessionStorage.getItem("logged_role") !== "admin" && sessionStorage.getItem("logged_role") !== "programmer") {
+    if (!["pensyarah", "programmer"].includes(sessionStorage.getItem("logged_role"))) {
         alert("Akses ditolak. Sila log masuk terlebih dahulu.");
         window.location.href = "index.html";
     }
@@ -12,21 +12,24 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <!-- PWA -->
-    <link rel="manifest" href="manifest.json">
+    <link rel="manifest" href="manifest.json?v=17">
     <meta name="theme-color" content="#0b3d5c">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="Jadual KKPPS">
-    <link rel="apple-touch-icon" href="icons/icon-192.png">
-    <link rel="icon" type="image/png" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/sijawap-192.png">
+    <link rel="icon" type="image/png" href="icons/sijawap-192.png">
   <title>Sistem Jadual Waktu - Kolej Komuniti Papar</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
     rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <style>
+  <link rel="stylesheet" href="timetable-ui.css">
+    <style>
+#schedule-editor[data-readonly] .schedule-edit { display: none; }
+
     :root {
       --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
       --background: #f8fafc;
@@ -526,10 +529,15 @@
     </div>
   </header>
 
-  <div class="wrap">
+  <div class="wrap timetable-layout">
+    <nav class="coordinator-menu no-print" id="coordinator-menu" aria-label="Portal"></nav>
+    <div>
+    <section class="card" id="report-panel" hidden></section>
+    <section class="card no-print" id="workflow-panel" aria-live="polite">Memuatkan jadual…</section>
+    <div id="schedule-editor" hidden>
 
     <!-- 1. DAFTAR PENSYARAH & SUBJEK -->
-    <div class="card no-print">
+    <div class="card no-print schedule-edit">
       <h2>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
@@ -574,6 +582,10 @@
             <input id="jam" type="number" min="0.5" step="0.5" placeholder="cth: 4" required>
           </div>
           <div>
+            <label for="kredit">Kredit (Pilihan)</label>
+            <input id="kredit" type="number" min="0" step="0.5" placeholder="cth: 3">
+          </div>
+          <div>
             <label>Kelas</label>
             <select id="metaKelas" required>
               <!-- Dynamic load -->
@@ -597,6 +609,7 @@
             📥 Muat Naik Excel
             <input type="file" id="excelSubjekInput" accept=".xlsx, .xls" style="display: none;" onchange="muatNaikExcelSubjek(event)">
           </label>
+          <a class="btn btn-light" href="templates/Template_Subjek.xlsx" download>Muat Turun Templat Subjek</a>
           <span style="font-size: 0.7rem; color: var(--text-secondary);" class="no-print">Sila pilih fail excel (.xlsx) untuk import subjek secara pukal</span>
         </div>
       </form>
@@ -621,7 +634,7 @@
     </div>
 
     <!-- 2. TAMBAH SLOT JADUAL -->
-    <div class="card no-print">
+    <div class="card no-print schedule-edit">
       <h2>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
@@ -717,6 +730,7 @@
           </svg>
           3. Jadual Waktu Mingguan
         </h2>
+        <p data-timetable-effective-date></p>
         <div style="display: flex; align-items: center; gap: 8px;">
           <label style="font-weight: 700; margin-bottom: 0; white-space: nowrap; font-size: 0.85rem;">Tapis Mengikut
             Kelas:</label>
@@ -744,10 +758,10 @@
       <div id="tugasMengajarWrap"></div>
 
       <!-- Ruangan Padam Slot secara individu bagi memudahkan pengurusan data -->
-      <h3 class="no-print"
+      <h3 class="no-print schedule-edit"
         style="font-size:0.95rem; font-weight:700; color:var(--danger); margin-top:30px; margin-bottom:12px;">Senarai
         Slot Aktif (Untuk Padam Slot)</h3>
-      <div class="table-responsive no-print">
+      <div class="table-responsive no-print schedule-edit">
         <table style="width:100%;">
           <thead>
             <tr>
@@ -764,7 +778,7 @@
       </div>
 
       <div class="actions no-print">
-        <button class="btn btn-light" onclick="window.print()">
+        <button class="btn btn-light" onclick="cetakJadualSemasa()">
           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none"
             stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <polyline points="6 9 6 2 18 2 18 9"></polyline>
@@ -773,8 +787,7 @@
           </svg>
           Cetak Jadual
         </button>
-        <button class="btn btn-primary" id="btnConfirmPublish" onclick="handlePublishClick()"></button>
-        <button class="btn btn-danger-outline" onclick="resetSemua()">Reset Semua Data</button>
+        <button class="btn btn-danger-outline schedule-edit" onclick="resetSemua()">Reset Semua Data</button>
       </div>
     </div>
 
@@ -846,96 +859,18 @@
               <!-- Dynamic options -->
             </select>
           </div>
-          <div style="margin-top: 5px;">
+          <div style="display:flex; gap:8px; margin-top:5px;">
             <button type="button" class="btn btn-primary" onclick="cetakIndividuLokasi()"
-              style="width: 100%; font-size: 0.8rem; padding: 8px 12px; justify-content: center; min-height: unset;">Cetak
-              Jadual Lokasi</button>
+              style="flex:1; font-size:0.8rem; padding:8px 12px; justify-content:center;">Cetak Individu</button>
+            <button type="button" class="btn btn-accent" onclick="cetakSemuaLokasiSerentak()"
+              style="flex:1; font-size:0.8rem; padding:8px 12px; justify-content:center;">Cetak Semua (Serentak)</button>
           </div>
         </div>
-      </div>
-    </div>
-
-    <!-- 5. URUS HEBAHAN & PERINGATAN DASHBOARD -->
-    <div class="card no-print">
-      <h2>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          style="color:var(--accent)">
-          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
-          <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
-        </svg>
-        5. Urus Hebahan & Peringatan Dashboard
-      </h2>
-      <form id="formAnnouncement">
-        <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px;">
-          <div>
-            <label>Kategori</label>
-            <select id="annCategory" required>
-              <option value="Pentadbiran Kolej">Pentadbiran Kolej</option>
-              <option value="Penyelaras STM">Penyelaras STM</option>
-              <option value="Penyelaras SLK">Penyelaras SLK</option>
-              <option value="Unit Akademik">Unit Akademik</option>
-              <option value="Lain-lain">Lain-lain</option>
-            </select>
-          </div>
-          <div>
-            <label>Tarikh / Masa</label>
-            <input id="annDate" placeholder="cth: Hari Ini / 30 Jun 2026" required value="Hari Ini"
-              onfocus="this.select()">
-          </div>
-          <div>
-            <label>Keutamaan</label>
-            <select id="annPriority" required>
-              <option value="Biasa">Biasa</option>
-              <option value="Penting">Penting</option>
-              <option value="Segera">Segera</option>
-            </select>
-          </div>
-          <div>
-            <label>Tarikh Luput (Opsional)</label>
-            <input type="date" id="annExpiryDate">
-          </div>
-          <div>
-            <label>Penerbit (Publisher)</label>
-            <input id="annPublisher" placeholder="cth: Pentadbir" value="Pentadbir">
-          </div>
-        </div>
-        <div style="margin-top: 12px;">
-          <label>Tajuk Hebahan</label>
-          <input id="annTitle" placeholder="cth: Taklimat Penggunaan Sistem" required>
-        </div>
-        <div style="margin-top: 12px;">
-          <label>Kandungan Hebahan</label>
-          <textarea id="annDesc" placeholder="Sila masukkan maklumat hebahan di sini..." required
-            style="height: 80px;"></textarea>
-        </div>
-        <div class="actions">
-          <button class="btn btn-accent" type="submit">Post Hebahan Baru</button>
-          <button class="btn btn-light" type="button" onclick="resetAnnouncements()">Reset Hebahan Asal</button>
-        </div>
-      </form>
-
-      <h3 style="font-size:0.95rem; font-weight:700; color:var(--text-primary); margin-top:24px; margin-bottom:12px;">
-        Senarai Hebahan Aktif</h3>
-      <div class="table-responsive">
-        <table style="width:100%;">
-          <thead>
-            <tr>
-              <th style="width: 20%;">Kategori & Tarikh</th>
-              <th style="width: 25%;">Tajuk</th>
-              <th style="width: 45%;">Kandungan</th>
-              <th style="width: 10%; text-align: center;">Tindakan</th>
-            </tr>
-          </thead>
-          <tbody id="annTableBody">
-            <!-- Dynamic load -->
-          </tbody>
-        </table>
       </div>
     </div>
 
     <!-- 6. KONFIGURASI SESI & TPA -->
-    <div class="card no-print">
+    <div class="card no-print programmer-only">
       <h2>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
@@ -960,10 +895,7 @@
             <!-- Dynamic -->
           </select>
         </div>
-        <div>
-          <label>Tarikh Kuatkuasa Jadual</label>
-          <input type="date" id="inputEffectiveDate" onchange="updateEffectiveDate(this.value)" style="padding: 8px 12px; border: 1px solid #ccc; border-radius: 6px; width: 100%; box-sizing: border-box; height: 38px; font-family: inherit; font-size: 0.8rem;">
-        </div>
+        <p data-timetable-effective-date></p>
         <div>
           <label>Tambah Sesi Baru</label>
           <div style="display:flex; gap: 8px;">
@@ -983,34 +915,7 @@
     </div>
 
     <!-- 6.5 PENGURUSAN KATA LALUAN ADMIN -->
-    <div class="card no-print">
-      <h2>
-        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
-          stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
-          style="color:var(--accent)">
-          <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
-          <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
-        </svg>
-        Pengurusan Kata Laluan Admin
-      </h2>
-      <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 12px;">
-        Kemaskini kata laluan untuk akaun Admin bagi mengelakkan akses tidak sah.
-      </p>
-      <div class="grid" style="grid-template-columns: 1fr auto; gap: 15px; align-items: flex-end; max-width: 500px;">
-        <div>
-          <label for="adminPasswordInput">Kata Laluan Admin Baru</label>
-          <input type="text" id="adminPasswordInput" placeholder="Masukkan kata laluan admin baru..."
-            style="width: 100%; box-sizing: border-box;">
-        </div>
-        <div>
-          <button type="button" class="btn btn-primary" onclick="simpanKataLaluanAdmin()"
-            style="margin: 0; min-height: 40px;">Simpan Kata Laluan</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- 7. URUS REKOD PELAJAR -->
-    <div class="card no-print">
+    <div class="card no-print programmer-only">
       <h2>
         <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
@@ -1059,6 +964,7 @@
       <div style="margin-top: 15px; margin-bottom: 24px; padding: 15px; background: var(--primary-soft); border: 1px dashed var(--primary); border-radius: var(--border-radius-md); display: flex; flex-direction: column; gap: 8px;">
         <label style="font-weight: 700; font-size: 0.85rem; color: var(--primary-soft-text);">📥 Import Pelajar secara Automatik dari Excel (.xlsx / .xls)</label>
         <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-top: 4px;">
+          <a class="btn btn-light" href="templates/Template_Pelajar.xlsx" download>Muat Turun Templat Pelajar</a>
           <input type="file" id="excelStudentFile" accept=".xlsx, .xls" style="font-size: 0.8rem; padding: 4px; border: 1px solid var(--surface-border); border-radius: var(--border-radius-sm); background: var(--surface);">
           <button class="btn btn-accent" type="button" onclick="uploadExcelPelajar()" style="padding: 6px 14px; font-size: 0.8rem;">Muat Naik & Import Excel</button>
         </div>
@@ -1142,6 +1048,9 @@
         </div>
       </div>
     </div>
+    </div>
+  </div>
+
   </div>
 
   <!-- Confirms handled inline by tanyaPengesahan -->
@@ -1164,6 +1073,9 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="firebase-service.js"></script>
+  <script src="timetable-workflow.js?v=15"></script>
+  <script src="timetable-print.js?v=14"></script>
+    <script>installTimetableReportStyles();</script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
     appendStatusBadge('#firebase-status-badge-container');
@@ -1194,35 +1106,9 @@
 
     let LECTURERS_DATA = [];
 
-    const LOCATIONS_DATA = [
-      { name: "DEWAN KULIAH", code: "DK", type: "Umum" },
-      { name: "MAKMAL BAHASA", code: "MB", type: "Umum" },
-      { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1", code: "TECC 1", type: "Umum" },
-      { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2", code: "TECC 2", type: "Umum" },
-      { name: "MAKMAL PENGATURCARAAN 1", code: "MP1", type: "STM" },
-      { name: "MAKMAL PENGATURCARAAN 2", code: "MP2", type: "STM" },
-      { name: "MAKMAL MULTIMEDIA", code: "MM", type: "STM" },
-      { name: "MAKMAL BAIKPULIH DAN PEMASANGAN", code: "MBP", type: "STM" },
-      { name: "MAKMAL RANGKAIAN", code: "MR", type: "STM" },
-      { name: "MAKMAL PENDAWAIAN RANGKAIAN", code: "MPR", type: "STM" },
-      { name: "MAKMAL AI", code: "MAI", type: "STM" },
-      { name: "MAKMAL IOT", code: "MIOT", type: "STM" },
-      { name: "MAKMAL LOGISTIK 1", code: "ML1", type: "SLK" },
-      { name: "MAKMAL LOGISTIK 2", code: "ML2", type: "SLK" },
-      { name: "MAKMAL SIMULASI LOGISTIK", code: "MS", type: "SLK" }
-    ];
+    const LOCATIONS_DATA = [...timetableLocations().values()];
 
-    // Load any custom locations from localStorage
-    const customLocs = JSON.parse(localStorage.getItem('kkpapar_locations')) || [];
-    customLocs.forEach(loc => {
-      if (!LOCATIONS_DATA.some(l => l.name === loc)) {
-        const code = loc.split(' ').map(w => w[0]).join('');
-        const type = loc.includes('LOGISTIK') ? 'SLK' : (loc.includes('STM') || loc.includes('MAKMAL') ? 'STM' : 'Umum');
-        LOCATIONS_DATA.push({ name: loc, code: code, type: type });
-      }
-    });
-
-    let CLASSES_DATA = JSON.parse(localStorage.getItem('kkpapar_classes')) || [
+    const DEFAULT_CLASSES = [
       "STM 1A", "STM 1B", "STM 1C",
       "STM 2A", "STM 2B", "STM 2C",
       "STM 3A", "STM 3B", "STM 3C",
@@ -1231,37 +1117,258 @@
       "SLK 3A", "SLK 3B"
     ];
 
-    // --- DEFAULT ANNOUNCEMENTS DATA ---
-    const DEFAULT_ANNOUNCEMENTS = [
-      { category: "Pentadbiran Kolej", date: "Hari Ini", title: "Penyediaan Jadual Waktu Sesi 2026/2027", desc: "Semua pensyarah STM, SLK & UPA dikehendaki menyemak slot masing-masing di bahagian \"Urus Jadual Waktu\" bagi mengelakkan pertindihan." },
-      { category: "Penyelaras STM", date: "Semalam", title: "Kemas kini Pakej Kursus Sijil Teknologi Maklumat", desc: "Penambahan subjek Pengaturcaraan Web (STM401) telah dimasukkan ke dalam daftar kursus aktif bagi penggal ini." },
-      { category: "Unit Akademik", date: "3 Hari Lepas", title: "Pertemuan Mingguan Pensyarah", desc: "Perbincangan penyelarasan jadual waktu diadakan setiap hari Jumaat jam 9:00 pagi di Bilik TECC." }
-    ];
+    let CLASSES_DATA = JSON.parse(localStorage.getItem('kkpapar_classes')) || [...DEFAULT_CLASSES];
 
-    // --- APP STATE & STORAGE ---
     const KEY = 'jadualSistemV3';
-    const ANN_KEY = 'kkpapar_announcements';
 
     let DB = { subjek: [], slot: [], isConfirmed: false };
-    let ANNOUNCEMENTS = [];
     let STUDENTS = [];
+    const programmerAccess = sessionStorage.getItem('logged_role') === 'programmer';
+    const params = new URLSearchParams(location.search);
+    const selectedRole = params.get('peranan');
+    const reviewProgram = params.get('semak');
+    const reviewFromTpa = params.get('dari') === 'tpa';
+    const classAllowed = kelas => {
+      const program = programForClass(kelas);
+      return program === programScope || (programScope === 'UPA' && ['STM', 'SLK'].includes(program));
+    };
+    const programScope = TIMETABLE_PROGRAMS.includes(selectedRole) ? selectedRole : null;
+    let scopedBaseline;
+    let workingSlots = [];
+    let programmerBaseline;
     let editSubjekIndex = null;
-    let editSlotIndex = null;
 
-    function simpan() {
-      if (isFirebaseActive()) {
-        firebaseSaveTimetable(DB);
+    function showAmendmentForm(panel, data) {
+      const next = (data.amendmentNumber || 0) + 1;
+      if (!data.isConfirmed || next > 10) return;
+      const details = document.createElement('details');
+      details.innerHTML = '<summary class="review-button view">Pindaan</summary>' +
+        '<form class="review-actions"><label>Nombor Pindaan<input type="number" required min="' + next +
+        '" max="10" step="1" value="' + next + '"></label><button type="submit" class="btn btn-primary">Tetapkan</button></form>';
+      details.querySelector('form').onsubmit = async event => {
+        event.preventDefault();
+        const button = event.submitter;
+        button.disabled = true;
+        try {
+          applyTimetable(await beginTimetableAmendment(details.querySelector('input').valueAsNumber, data));
+        } catch (error) {
+          alert(error.message);
+          button.disabled = false;
+        }
+      };
+      panel.append(details);
+    }
+
+    function showWorkflow(data) {
+      const panel = document.getElementById('workflow-panel');
+      const editor = document.getElementById('schedule-editor');
+      renderCoordinatorMenu(document.getElementById('coordinator-menu'), data, selectedRole);
+      const authorized = coordinatorRoles(data).includes(selectedRole);
+      const canEdit = authorized && programScope && ['Draft', 'Returned'].includes(workflowFor(data, programScope).status);
+      editor.hidden = !(programmerAccess || (authorized && programScope));
+      editor.toggleAttribute("data-readonly", !programmerAccess && !canEdit);
+      document.querySelectorAll('.programmer-only').forEach(card => { card.hidden = !programmerAccess; });
+      if (programmerAccess) {
+        panel.hidden = true;
+        return;
+      }
+      if (!authorized) {
+        panel.textContent = 'Anda tidak mempunyai akses kepada halaman ini.';
+        return;
+      }
+      const previousInput = panel.dataset.workingVersion === timetableVersion(data)
+        ? panel.querySelector('#induk-effective-date') : null;
+      panel.dataset.workingVersion = timetableVersion(data);
+      const enteredDate = previousInput?.value !== previousInput?.defaultValue ? previousInput.value : undefined;
+      panel.innerHTML = '<h2>' + roleLabel(selectedRole) + '</h2><p>' + escapeTimetableText(timetableSession(data)) + '</p>';
+      if (selectedRole === 'INDUK' && !data.workingVersion) showAmendmentForm(panel, data);
+      if (data.workingVersion) {
+        const notice = document.createElement('p');
+        notice.textContent = amendmentLabel(data) + ' sedang diproses. Jadual semasa kekal diterbitkan.';
+        panel.append(notice);
+      }
+      let dateInput;
+      if (selectedRole === 'INDUK' && !effectiveDateLocked(data)) {
+        const label = document.createElement('label');
+        label.textContent = 'Tarikh Kuatkuasa';
+        label.style.maxWidth = '240px';
+        dateInput = document.createElement('input');
+        dateInput.type = 'date';
+        dateInput.id = 'induk-effective-date';
+        dateInput.required = true;
+        dateInput.defaultValue = data.effectiveDate || '';
+        dateInput.value = enteredDate ?? dateInput.defaultValue;
+        label.append(dateInput);
+        const controls = document.createElement('div');
+        controls.className = 'review-actions';
+        const setDate = document.createElement('button');
+        setDate.type = 'button';
+        setDate.className = 'btn btn-primary';
+        setDate.textContent = 'Tetapkan';
+        setDate.onclick = async () => {
+          if (!dateInput.reportValidity()) return;
+          setDate.disabled = true;
+          dateInput.disabled = true;
+          try {
+            const saved = await setTimetableEffectiveDate(dateInput.value, data);
+            dateInput.defaultValue = workingTimetable(saved).effectiveDate;
+            applyTimetable(saved);
+          } catch (error) {
+            alert(error.message);
+            setDate.disabled = false;
+            dateInput.disabled = false;
+          }
+        };
+        controls.append(label, setDate);
+        panel.append(controls);
+        const savedDate = document.createElement('p');
+        savedDate.textContent = validEffectiveDate(data.effectiveDate)
+          ? 'Tarikh ditetapkan: ' + formattedEffectiveDate(data)
+          : 'Tetapkan tarikh sebelum menghantar kepada TPA.';
+        panel.append(savedDate);
       } else {
-        localStorage.setItem(KEY, JSON.stringify(DB));
-        render();
+        const date = document.createElement("p");
+        date.dataset.timetableEffectiveDate = "";
+        panel.append(date);
+      }
+      if (selectedRole === 'INDUK') {
+        const controls = document.createElement('div');
+        controls.className = 'review-actions';
+        renderTimetableCancellationControls(controls, data, applyTimetable);
+        if (controls.childElementCount) panel.append(controls);
+      }
+      const programs = programScope ? [programScope] : TIMETABLE_PROGRAMS;
+      for (const program of programs) {
+        const review = workflowFor(data, program);
+        const section = document.createElement('section');
+        section.style.marginBottom = '1rem';
+        section.innerHTML = '<h3>' + program + ' · ' + workflowLabels[review.status] + '</h3>';
+        const addAction = (label, action, type = 'primary') => {
+          const button = document.createElement('button');
+          button.className = 'btn btn-' + type;
+          button.style.marginRight = '0.5rem';
+          button.textContent = label;
+          button.onclick = async () => {
+            if (action === 'endorse' && (!validEffectiveDate(data.effectiveDate) ||
+                (dateInput && dateInput.value !== data.effectiveDate))) {
+              alert('Klik Tetapkan untuk menyimpan Tarikh Kuatkuasa sebelum menghantar kepada TPA.');
+              return;
+            }
+            button.disabled = true;
+            try {
+              applyTimetable(await changeTimetableStatus(program, action, data, data.effectiveDate));
+            } catch (error) {
+              alert(error.message);
+              button.disabled = false;
+            }
+          };
+          actions.append(button);
+        };
+        const actions = document.createElement('div');
+        actions.className = 'review-actions';
+        section.append(actions);
+        if (programScope && canEdit && canSubmitProgram(data, program)) addAction('Hantar kepada Induk', 'submit');
+        if (selectedRole === 'INDUK' && canSubmitProgram(data, program)) {
+          const link = document.createElement('a');
+          link.className = 'review-button view';
+          link.href = 'Jadual_baru.html?semak=' + program;
+          link.textContent = 'Semak jadual ' + program;
+          actions.append(link);
+        }
+        if (selectedRole === 'INDUK' && review.status === 'Induk') {
+          addAction('Sahkan dan hantar kepada TPA', 'endorse');
+          addAction('Tolak dan pulangkan kepada program', 'returnInduk', 'danger-outline');
+        }
+        panel.append(section);
       }
     }
-    function simpanAnn() {
-      if (isFirebaseActive()) {
-        firebaseSaveAnnouncements(ANNOUNCEMENTS);
-      } else {
-        localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS));
-        renderAnnouncements();
+
+    function applyTimetable(data) {
+      const current = data || { subjek: [], slot: [] };
+      const full = programmerAccess ? current : workingTimetable(current);
+      bersihkanDatabase(full);
+      workingSlots = full.slot;
+      if (reviewProgram) {
+        renderProgramReview(full);
+        return;
+      }
+      showWorkflow(full);
+      renderTimetableEffectiveDate(full);
+      if (!programmerAccess && (!programScope || !coordinatorRoles(full).includes(programScope))) return;
+      if (!programmerAccess) {
+        const classes = new Set([...CLASSES_DATA, ...full.slot.map(row => row.kelas).filter(classAllowed),
+          ...full.subjek.map(row => row.kelas).filter(classAllowed)]);
+        if (classes.size !== CLASSES_DATA.length) { CLASSES_DATA = [...classes].sort(); initDropdowns(); }
+      }
+      const next = programmerAccess ? full : {
+        ...full, slot: programRows(full, 'slot', programScope), subjek: programRows(full, 'subjek', programScope)
+      };
+      const baseline = JSON.stringify([timetableVersion(next), next.slot, next.subjek]);
+      if (scopedBaseline !== baseline) {
+        editSubjekIndex = null;
+        editSlotIndex = null;
+      }
+      scopedBaseline = baseline;
+      DB = next;
+      render();
+      if (programmerAccess) programmerBaseline = structuredClone(DB);
+    }
+    let editSlotIndex = null;
+
+    async function simpan(generated = false) {
+      if (programmerAccess) {
+        try {
+          const changes = structuredClone(DB);
+          const next = await updateTimetable(current => applyProgrammerChanges(current, changes, programmerBaseline));
+          applyTimetable(next);
+          return true;
+        } catch (error) { alert(error.message); return false; }
+      }
+      const draft = structuredClone(DB);
+      const baseline = scopedBaseline;
+      try {
+        const next = await updateWorkingTimetable(draft, current => {
+          const normalized = structuredClone(current);
+          bersihkanDatabase(normalized);
+          if (!programScope || !coordinatorRoles(current).includes(programScope) ||
+              timetableSession(current) !== timetableSession(draft) ||
+              !['Draft', 'Returned'].includes(workflowFor(current, programScope).status)) return;
+          const previous = ['slot', 'subjek'].map(field => programRows(normalized, field, programScope));
+          if (JSON.stringify([timetableVersion(current), ...previous]) !== baseline) return;
+          for (const field of ['slot', 'subjek']) {
+            if (draft[field].some(row => !classAllowed(row.kelas))) return;
+          }
+          const outside = normalized.slot.filter(row => {
+            const owner = programForRow(normalized, row);
+            return owner !== programScope && (generated || programHasReservation(current, owner));
+          });
+          const previousSlots = new Set(previous[0].map(row => JSON.stringify(row)));
+          if (draft.slot.some(slot => (generated || !previousSlots.has(JSON.stringify(slot))) &&
+              outside.some(other => strictTimetableClash(slot, other)))) {
+            throw new Error('Slot bertindih dengan jadual program lain.');
+          }
+          for (const field of ['slot', 'subjek']) {
+            current[field] = (current[field] || []).filter((row, index) =>
+              programForRow(normalized, normalized[field][index]) !== programScope)
+              .concat(draft[field].map(row => {
+                if (programScope === 'UPA' && programForClass(row.kelas) !== 'UPA') return { ...row, programOwner: 'UPA' };
+                return row;
+              }));
+          }
+          if (current.publicationWithdrawn) return returnTimetablesToPrograms(current, 'legacy-withdrawal');
+          return refreshPublication(current);
+        });
+        applyTimetable(next);
+        return true;
+      } catch (error) {
+        alert(error.message);
+        if (isFirebaseActive()) {
+          const snapshot = await db.ref('timetable').once('value').catch(() => null);
+          if (snapshot) applyTimetable(snapshot.val());
+        } else {
+          applyTimetable(JSON.parse(localStorage.getItem(KEY)));
+        }
+        return false;
       }
     }
 
@@ -1277,7 +1384,6 @@
 
       startLiveClock();
       initDatabaseConnection();
-      setupAnnForm();
       setupRealTimeClashDetection();
     });
 
@@ -1321,20 +1427,12 @@
               dept: l.program || l.dept || 'STM'
             }));
             initDropdowns();
+            if (reviewProgram && reviewSnapshot) renderProgramReview(reviewSnapshot);
+            else render();
           }
         });
-        firebaseWatchTimetable(data => {
-          DB = data || { subjek: [], slot: [], isConfirmed: false };
-          const changed = bersihkanDatabase(DB);
-          if (changed) {
-            firebaseSaveTimetable(DB);
-          }
-          render();
-        });
-        firebaseWatchAnnouncements(data => {
-          ANNOUNCEMENTS = data || [];
-          renderAnnouncements();
-        });
+        firebaseWatchTimetable(applyTimetable);
+        if (!programmerAccess) return;
         firebaseWatchStudents(data => {
           if (data) {
             STUDENTS = data;
@@ -1349,25 +1447,22 @@
           dept: l.program || l.dept || 'STM'
         }));
 
-        DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
-        const changed = bersihkanDatabase(DB);
-        if (changed) {
-          localStorage.setItem(KEY, JSON.stringify(DB));
-        }
+        applyTimetable(JSON.parse(localStorage.getItem(KEY)));
+        window.addEventListener("storage", event => {
+          if (event.key === KEY) applyTimetable(JSON.parse(event.newValue));
+        });
 
-        ANNOUNCEMENTS = JSON.parse(localStorage.getItem(ANN_KEY));
-        if (!ANNOUNCEMENTS) {
-          ANNOUNCEMENTS = [...DEFAULT_ANNOUNCEMENTS];
-          localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS));
-        }
 
         STUDENTS = JSON.parse(localStorage.getItem('kkpapar_students')) || [];
 
         initDropdowns();
-        render();
-        renderAnnouncements();
+        if (!reviewProgram) render();
         renderStudentsAdmin();
       }
+    }
+
+    if (!programmerAccess && programScope) {
+      CLASSES_DATA = CLASSES_DATA.filter(classAllowed);
     }
 
     function initDropdowns() {
@@ -1456,6 +1551,7 @@
           subjek: val('subjek'),
           kod,
           jam: parseFloat(val('jam')),
+          ...(val('kredit') !== '' ? { kredit: Number(val('kredit')) } : {}),
           kelas,
           prefStart: parseInt(val('prefStart')) || 8
         });
@@ -1479,6 +1575,7 @@
           subjek: val('subjek'),
           kod,
           jam: parseFloat(val('jam')),
+          ...(val('kredit') !== '' ? { kredit: Number(val('kredit')) } : {}),
           kelas,
           prefStart: parseInt(val('prefStart')) || 8
         };
@@ -1511,6 +1608,7 @@
       document.getElementById('subjek').value = '';
       document.getElementById('kod').value = '';
       document.getElementById('jam').value = '';
+      document.getElementById('kredit').value = '';
       document.getElementById('metaKelas').selectedIndex = 0;
       document.getElementById('prefStart').value = '8';
 
@@ -1550,17 +1648,19 @@
             const kod = (findVal(row, ['kodsubjek', 'kod', 'subjectcode']) || '').toString().trim().toUpperCase();
             const subjekName = (findVal(row, ['namasubjek', 'subjek', 'subject', 'kursus', 'namakursus']) || '').toString().trim();
             const kelas = (findVal(row, ['kelas', 'kumpulan', 'class', 'group']) || '').toString().trim().toUpperCase();
-            const jamStr = findVal(row, ['jam', 'jammengajar', 'hours', 'credithours', 'kredit']);
+            const jamStr = findVal(row, ['jam', 'jammengajar', 'hours', 'credithours']);
             const pUtamaInput = (findVal(row, ['pensyarahutama', 'pensyarah', 'lecturer', 'utama']) || '').toString().trim();
             const pPembantuInput = (findVal(row, ['pensyarahpembantu', 'pembantu', 'assistant', 'ass']) || '-').toString().trim();
             const prefStartVal = parseInt(findVal(row, ['hadmula', 'hadwaktu', 'prefstart', 'hadmulamengajar'])) || 8;
 
-            if (!kod || !subjekName || !kelas || !pUtamaInput) {
+            if (!kod || !subjekName || !kelas || !pUtamaInput ||
+                (!programmerAccess && !classAllowed(kelas))) {
               skippedCount++;
               return;
             }
 
             const jam = parseFloat(jamStr) || 2.0;
+            const kredit = findVal(row, ['kredit', 'credit']);
 
             const singkatan = cariSingkatanPensyarah(pUtamaInput);
             const namaUtama = cariNamaPenuhPensyarah(pUtamaInput);
@@ -1577,7 +1677,8 @@
             // Also make sure the class is in CLASSES_DATA
             if (!CLASSES_DATA.includes(kelas)) {
               CLASSES_DATA.push(kelas);
-              localStorage.setItem('kkpapar_classes', JSON.stringify(CLASSES_DATA));
+              const allClasses = JSON.parse(localStorage.getItem('kkpapar_classes')) || DEFAULT_CLASSES;
+              localStorage.setItem('kkpapar_classes', JSON.stringify([...new Set([...allClasses, kelas])]));
             }
 
             DB.subjek.push({
@@ -1588,6 +1689,8 @@
               subjek: subjekName,
               kod: kod,
               jam: jam,
+              ...(kredit != null && kredit !== '' && Number.isFinite(Number(kredit)) && Number(kredit) >= 0
+                ? { kredit: Number(kredit) } : {}),
               kelas: kelas,
               prefStart: prefStartVal
             });
@@ -1636,6 +1739,7 @@
       document.getElementById('subjek').value = '';
       document.getElementById('kod').value = '';
       document.getElementById('jam').value = '';
+      document.getElementById('kredit').value = '';
       document.getElementById('metaKelas').selectedIndex = 0;
       document.getElementById('prefStart').value = '8';
 
@@ -1656,6 +1760,7 @@
       document.getElementById('subjek').value = s.subjek;
       document.getElementById('kod').value = s.kod;
       document.getElementById('jam').value = s.jam;
+      document.getElementById('kredit').value = s.kredit ?? s.credit ?? '';
       document.getElementById('metaKelas').value = s.kelas || '';
       document.getElementById('prefStart').value = s.prefStart || '8';
 
@@ -1872,165 +1977,26 @@
     };
 
     window.resetSemua = function () {
-      window.tanyaPengesahan('Padam SEMUA data subjek dan slot?', () => {
-        DB = { subjek: [], slot: [] };
+      const scope = programmerAccess ? 'semua program' : programScope;
+      window.tanyaPengesahan('Padam semua subjek dan slot ' + scope + '?', () => {
+        DB.subjek = [];
+        DB.slot = [];
         simpan();
       });
     };
 
-    // --- ANNOUNCEMENT MANAGEMENT ---
-    function setupAnnForm() {
-      document.getElementById('formAnnouncement').addEventListener('submit', e => {
-        e.preventDefault();
-        const category = document.getElementById('annCategory').value;
-        const date = document.getElementById('annDate').value.trim();
-        const title = document.getElementById('annTitle').value.trim();
-        const desc = document.getElementById('annDesc').value.trim();
-        const priority = document.getElementById('annPriority').value;
-        const expiryDate = document.getElementById('annExpiryDate').value;
-        const publisher = document.getElementById('annPublisher').value.trim() || 'Pentadbir';
-
-        ANNOUNCEMENTS.unshift({ category, date, title, desc, priority, expiryDate, publisher });
-
-        // Reset inputs
-        document.getElementById('annTitle').value = '';
-        document.getElementById('annDesc').value = '';
-        document.getElementById('annDate').value = 'Hari Ini';
-        document.getElementById('annPriority').value = 'Biasa';
-        document.getElementById('annExpiryDate').value = '';
-        document.getElementById('annPublisher').value = 'Pentadbir';
-
-        simpanAnn();
-      });
+    function buatJadualGridHTML(slots) {
+      return renderTimetableGrid(slots, slot => DB.slot.some(other =>
+        slot !== other && bertindih(slot, other) && checkClash(slot, other)));
     }
 
-    function renderAnnouncements() {
-      const tbody = document.getElementById('annTableBody');
-      tbody.innerHTML = ANNOUNCEMENTS.map((ann, idx) => {
-        let priorityBadge = '';
-        if (ann.priority === 'Segera') {
-          priorityBadge = `<span class="badge" style="background:#fef2f2; color:#ef4444; border:1px solid #fee2e2; font-weight:700; font-size:0.65rem; padding: 2px 6px; margin-left: 6px;">⚠️ Segera</span>`;
-        } else if (ann.priority === 'Penting') {
-          priorityBadge = `<span class="badge" style="background:#fffbeb; color:#d97706; border:1px solid #fef3c7; font-weight:700; font-size:0.65rem; padding: 2px 6px; margin-left: 6px;">★ Penting</span>`;
-        }
-
-        const expText = ann.expiryDate ? `<br><small style="color:var(--danger); font-weight:600;">Luput: ${ann.expiryDate}</small>` : '';
-
-        return `
-      <tr>
-        <td>
-          <b>${ann.category}</b><br>
-          <small>${ann.date}</small><br>
-          <small style="color:var(--text-secondary);">Oleh: ${ann.publisher || 'Pentadbir'}</small>
-          ${expText}
-        </td>
-        <td><strong>${ann.title}</strong>${priorityBadge}</td>
-        <td>${ann.desc}</td>
-        <td style="text-align: center;">
-          <button class="btn btn-danger" onclick="padamAnn(${idx})" style="padding:4px 8px;font-size:0.75rem;">Hapus</button>
-        </td>
-      </tr>
-    `;
-      }).join('') || '<tr><td colspan="4" style="text-align:center; color:var(--text-muted);">Tiada hebahan atau peringatan buat masa ini.</td></tr>';
-    }
-
-    window.padamAnn = function (idx) {
-      if (confirm("Adakah anda pasti mahu memadam hebahan ini?")) {
-        ANNOUNCEMENTS.splice(idx, 1);
-        simpanAnn();
-      }
-    };
-
-    window.resetAnnouncements = function () {
-      if (confirm("Adakah anda pasti mahu set semula semua hebahan ke senarai asal?")) {
-        ANNOUNCEMENTS = [...DEFAULT_ANNOUNCEMENTS];
-        simpanAnn();
-      }
-    };
-
-    // Helper function to build weekly grid HTML
-    function buatJadualGridHTML(filteredSlots) {
-      const hari = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
-      const masa = []; for (let h = 8; h <= 18; h++) masa.push(String(h).padStart(2, '0') + ':00');
-
-      let html = '<table class="schedule-table"><thead><tr><th>Masa</th>' + hari.map(h => `<th>${h}</th>`).join('') + '</tr></thead><tbody>';
-      const rowspanTracker = { 'Isnin': 0, 'Selasa': 0, 'Rabu': 0, 'Khamis': 0, 'Jumaat': 0 };
-
-      for (let i = 0; i < masa.length - 1; i++) {
-        const blokMula = toMin(masa[i]);
-        html += `<tr><th style="font-weight:600; text-align:center; background:var(--surface-hover);">${format12Hour(masa[i])} – ${format12Hour(masa[i + 1])}</th>`;
-
-        // Check for 12:00 PM rest row merge across all days if there are no slots
-        if (blokMula === 720 && filteredSlots.filter(s => toMin(s.mula) < 780 && toMin(s.tamat) > 720).length === 0) {
-          html += `<td colspan="4" class="rehat-cell"><div style="display:flex; align-items:center; justify-content:center; gap:6px; height:100%;">🍽️ <b>REHAT (12:00 PM - 01:00 PM)</b></div></td>`;
-          html += `<td rowspan="2" class="rehat-cell"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:100%;">🍽️ <b>REHAT / SOLAT</b><span style="font-size:0.6rem; opacity:0.85; margin-top:2px;">12:00 PM - 02:00 PM</span></div></td>`;
-          rowspanTracker['Jumaat'] = 1;
-        } else {
-          hari.forEach(h => {
-            if (rowspanTracker[h] > 0) {
-              rowspanTracker[h]--;
-              return;
-            }
-
-            const startingSlots = filteredSlots.filter(s => s.hari === h && toMin(s.mula) === blokMula);
-
-            if (startingSlots.length > 0) {
-              const durations = startingSlots.map(s => {
-                const diffMin = toMin(s.tamat) - toMin(s.mula);
-                return Math.max(1, Math.round(diffMin / 60));
-              });
-              const maxRowspan = Math.max(...durations);
-              rowspanTracker[h] = maxRowspan - 1;
-
-              const sel = `<div class="schedule-wrapper">` + startingSlots.map(s => {
-                const clash = DB.slot.some(o => s !== o && bertindih(s, o) && checkClash(s, o));
-                return `<div class="slot ${clash ? 'clash' : ''} slot-flex">
-                  <b>${s.kod} — ${s.subjek}</b> ${clash ? '⚠️' : ''}<br>
-                  <small style="margin-top:2px;">
-                    ${s.singkatan}${s.singkatanPembantu !== '-' ? '/' + s.singkatanPembantu : ''} • <b>${s.kelas}</b><br>
-                    📍 ${s.lokasi}<br>
-                    ⏱️ ${format12Hour(s.mula)} – ${format12Hour(s.tamat)}
-                  </small>
-                </div>`;
-              }).join('') + `</div>`;
-
-              html += `<td rowspan="${maxRowspan}" style="height:1px; padding:4px; vertical-align:stretch;">${sel}</td>`;
-            } else {
-              // Check if it is rest time (12:00 PM) - individual fallback
-              if (blokMula === 720) {
-                if (h === 'Jumaat') {
-                  rowspanTracker[h] = 1;
-                  html += `<td rowspan="2" class="rehat-cell"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:100%;">🍽️ <b>REHAT / SOLAT</b><span style="font-size:0.6rem; opacity:0.85; margin-top:2px;">12:00 PM - 02:00 PM</span></div></td>`;
-                } else {
-                  html += `<td class="rehat-cell"><div style="display:flex; flex-direction:column; align-items:center; justify-content:center; gap:2px; height:100%;">🍽️ <b>REHAT</b><span style="font-size:0.6rem; opacity:0.85; margin-top:2px;">12:00 PM - 01:00 PM</span></div></td>`;
-                }
-              } else {
-                html += `<td></td>`;
-              }
-            }
-          });
-        }
-        html += '</tr>';
-      }
-      html += '</tbody></table>';
-      return html;
+    function cetakJadualSemasa() {
+      const kelas = document.getElementById('pilihJadualKelas').value;
+      if (DB.slot.some(slot => slot.kelas === kelas)) cetakJadualKelas(kelas);
+      else cetakSemuaKelasSerentak();
     }
 
     // --- PRINT HELPERS ---
-    function formatKuatkuasaDate() {
-      const months = ["JANUARI", "FEBRUARI", "MAC", "APRIL", "MEI", "JUN", "JULAI", "OGOS", "SEPTEMBER", "OKTOBER", "NOVEMBER", "DISEMBER"];
-      if (DB && DB.effectiveDate) {
-        const parts = DB.effectiveDate.split('-');
-        if (parts.length === 3) {
-          const y = parts[0];
-          const m = parseInt(parts[1], 10) - 1;
-          const d = parseInt(parts[2], 10);
-          return `${d} ${months[m]} ${y}`;
-        }
-      }
-      const d = new Date();
-      return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
-    }
 
     function dapatkanTugasMengajarLecturer(singkatan) {
       const tugasList = [];
@@ -2142,440 +2108,112 @@
       return tugasList;
     }
 
-    function binaTugasMengajarTableHTML(tugasList) {
-      const totalHours = tugasList.reduce((sum, item) => sum + item.jam, 0);
-      let rowsHtml = tugasList.map(item => `
-        <tr>
-          <td style="border: 1px solid #000; padding: 4px 6px; font-weight: bold; text-align: center; font-size: 0.7rem;">${item.kod}</td>
-          <td style="border: 1px solid #000; padding: 4px 6px; font-size: 0.7rem;">${item.nama.toUpperCase()}</td>
-          <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-size: 0.7rem;">${item.kelas}</td>
-          <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: bold; font-size: 0.7rem;">${item.jam}</td>
-        </tr>
-      `).join('');
-
-      if (tugasList.length === 0) {
-        rowsHtml = `<tr><td colspan="4" style="border: 1px solid #000; padding: 8px; text-align: center; color: #555; font-size: 0.7rem;">Tiada tugas mengajar didaftarkan.</td></tr>`;
+    const reportKinds = {
+      kelas: {
+        label: 'Kelas', title: 'Jadual Waktu Kelas',
+        values: () => DB.slot.map(row => row.kelas),
+        matches: (row, value) => row.kelas === value,
+        department: value => programForClass(value),
+        tasks: dapatkanTugasMengajarKelas
+      },
+      lokasi: {
+        label: 'Lokasi', title: 'Jadual Penggunaan Lokasi',
+        values: () => DB.slot.map(row => row.lokasi),
+        matches: (row, value) => row.lokasi === value,
+        department: value => LOCATIONS_DATA.find(item => item.name === value)?.type,
+        tasks: dapatkanTugasMengajarLokasi
+      },
+      pensyarah: {
+        label: 'Pensyarah', title: 'Jadual Waktu Pengajaran Pensyarah',
+        values: () => [...DB.slot, ...DB.subjek].flatMap(row => [row.singkatan, row.singkatanPembantu]),
+        matches: (row, value) => row.singkatan === value || row.singkatanPembantu === value,
+        department: value => LECTURERS_DATA.find(item => item.shortName === value)?.dept,
+        display: value => {
+          const name = LECTURERS_DATA.find(item => item.shortName === value)?.name ||
+            DB.subjek.find(item => item.singkatan === value)?.nama;
+          return name ? name + ' (' + value + ')' : value;
+        },
+        tasks: dapatkanTugasMengajarLecturer
       }
+    };
 
-      return `
-        <div style="margin-top: 15px; font-family: 'Inter', sans-serif;">
-          <h3 style="font-size: 0.75rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 2px; margin-top: 0; margin-bottom: 6px; text-transform: uppercase;">TUGAS MENGAJAR</h3>
-          <table style="width: 100%; border-collapse: collapse; border: 1px solid #000;">
-            <thead>
-              <tr style="background-color: #f1f5f9; font-size: 0.68rem;">
-                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KOD KURSUS</th>
-                <th style="border: 1px solid #000; padding: 4px; text-align: left; font-weight: bold; width: 55%;">NAMA KURSUS</th>
-                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">KELAS</th>
-                <th style="border: 1px solid #000; padding: 4px; text-align: center; font-weight: bold; width: 15%;">JAM MENGAJAR</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${rowsHtml}
-              <tr style="font-weight: bold; background-color: #f8fafc; font-size: 0.7rem;">
-                <td colspan="3" style="border: 1px solid #000; padding: 4px 6px; text-align: right; font-weight: 800;">JUMLAH KESELURUHAN</td>
-                <td style="border: 1px solid #000; padding: 4px 6px; text-align: center; font-weight: 800;">${totalHours}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      `;
+    function reportValues(kind) {
+      return [...new Set(reportKinds[kind].values().filter(value => value && value !== '-'))].sort();
     }
 
-    function binaSignaturesHTML() {
-      return ``;
-    }
-
-    function binaFormalHeaderHTML(title, leftMeta, dept, session) {
-      return `
-        <div class="print-header-container" style="display: flex; align-items: center; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 12px; font-family: 'Inter', sans-serif;">
-          <div style="width: 20%; text-align: left;">
-            <img src="Logo_KPT.png" alt="Logo KPT" style="height: 60px; object-fit: contain;">
-          </div>
-          <div style="width: 60%; text-align: center;">
-            <h3 style="margin: 0; font-size: 0.9rem; font-weight: 800; letter-spacing: 0.3px;">KOLEJ KOMUNITI PAPAR</h3>
-            <h4 style="margin: 1px 0 0 0; font-size: 0.8rem; font-weight: 700; color: #1e293b;">KEMENTERIAN PENDIDIKAN TINGGI</h4>
-            <h5 style="margin: 4px 0 0 0; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; color: #475569; letter-spacing: 0.3px;">${title}</h5>
-          </div>
-          <div style="width: 20%; text-align: right;">
-            <img src="Logo_KKPPS.jpeg" alt="Logo KKPPS" style="height: 60px; object-fit: contain;">
-          </div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; font-weight: 700; margin-bottom: 3px; font-family: 'Inter', sans-serif;">
-          <div>${leftMeta}</div>
-          <div style="text-align: right;">
-            <div>TARIKH KUATKUASA : ${formatKuatkuasaDate()}</div>
-            <div style="margin-top: 1px;">PROGRAM / UNIT : ${dept.toUpperCase()}</div>
-          </div>
-        </div>
-        <div style="text-align: center; font-size: 0.75rem; font-weight: 800; margin-bottom: 10px; font-family: 'Inter', sans-serif;">
-          SESI : ${session.toUpperCase()}
-        </div>
-      `;
-    }
-
-    // Print Individual Lecturer timetable
-    function cetakJadualPensyarah(singkatan) {
-      const pensyarah = LECTURERS_DATA.find(l => l.shortName === singkatan);
-      const nama = pensyarah ? pensyarah.name : singkatan;
-      const dept = pensyarah ? pensyarah.dept : 'STM';
-      const filteredSlots = DB.slot.filter(s => s.singkatan === singkatan || s.singkatanPembantu === singkatan);
-      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
-
-      const printWindow = window.open('', '_blank');
-
-      const css = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
-        
-        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
-        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
-        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
-        
-        .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
-        .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
-        
-        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
-      `;
-
-      const gridHtml = buatJadualGridHTML(filteredSlots);
-      const headerHtml = binaFormalHeaderHTML("Jadual Waktu Pengajaran Pensyarah", `PENSYARAH : ${nama.toUpperCase()} (${singkatan})`, dept, sess);
-      const tugasList = dapatkanTugasMengajarLecturer(singkatan);
-      const tugasHtml = binaTugasMengajarTableHTML(tugasList);
-      const sigHtml = binaSignaturesHTML();
-      const footerHtml = `
-        <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
-          <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-          <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-        </div>
-      `;
-
-      const printAutoTriggerScript = '<script>' + `
-        window.onload = function() {
-          window.print();
-          setTimeout(function() { window.close(); }, 500);
-        }
-      ` + '<' + '/script>';
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Cetak Jadual - ${nama}</title>
-            <style>${css}</style>
-          </head>
-          <body>
-            ${headerHtml}
-            ${gridHtml}
-            ${tugasHtml}
-            ${sigHtml}
-            ${footerHtml}
-            ${printAutoTriggerScript}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
-
-    // Print all Lecturers timetables simultaneously
-    function cetakSemuaPensyarahSerentak() {
-      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
-
-      let senaraiPensyarah = {};
-      DB.subjek.forEach(s => {
-        if (s.nama && s.nama !== '-') senaraiPensyarah[s.singkatan] = s.nama;
-        if (s.namaPembantu && s.namaPembantu !== '-') senaraiPensyarah[s.singkatanPembantu] = s.namaPembantu;
+    function timetableReport(kind, value) {
+      const report = reportKinds[kind];
+      const slots = DB.slot.filter(row => report.matches(row, value));
+      const dept = report.department(value) || 'Umum';
+      const signatory = programScope || reviewProgram || timetableSignatoryProgram(dept, slots);
+      const confirmed = reviewProgram || programScope
+        ? workflowFor(DB, reviewProgram || programScope).status === 'Approved' : DB.isConfirmed;
+      return buildTimetableReport({
+        kind, title: report.title, label: report.label.toUpperCase(), value: report.display?.(value) || value,
+        dept, data: DB, slots, tasks: report.tasks(value), lecturers: LECTURERS_DATA, signatory, confirmed
       });
+    }
 
-      const keys = Object.keys(senaraiPensyarah);
-      if (keys.length === 0) {
-        alert("Tiada data pensyarah berdaftar untuk dicetak.");
+    function printReports(kind, values) {
+      if (!values.length) return alert('Tiada jadual untuk dicetak.');
+      const markup = values.map(value => '<article class="page-section">' + timetableReport(kind, value) + '</article>').join('');
+      openTimetablePrint(reportKinds[kind].title, markup, "", { closeAfter: true });
+    }
+
+    function cetakJadualKelas(value) { printReports('kelas', [value]); }
+    function locationAllowedForPrint(value) {
+      return !programScope || LOCATIONS_DATA.some(location =>
+        scheduleKey(location.name) === scheduleKey(value) && location.type === programScope);
+    }
+
+    function cetakJadualLokasi(value) {
+      if (locationAllowedForPrint(value)) printReports('lokasi', [value]);
+    }
+    function cetakJadualPensyarah(value) { printReports('pensyarah', [value]); }
+    function cetakSemuaLokasiSerentak() { printReports('lokasi', reportValues('lokasi').filter(locationAllowedForPrint)); }
+    function cetakSemuaKelasSerentak() { printReports('kelas', reportValues('kelas')); }
+    function cetakSemuaPensyarahSerentak() { printReports('pensyarah', reportValues('pensyarah')); }
+
+    let reviewSnapshot;
+    function renderProgramReview(full) {
+      reviewSnapshot = full;
+      const panel = document.getElementById('report-panel');
+      const back = reviewFromTpa ? 'Pensyarah.html' : 'Jadual_baru.html?peranan=INDUK';
+      document.getElementById('workflow-panel').hidden = true;
+      panel.hidden = false;
+      const status = workflowFor(full, reviewProgram).status;
+      const authorized = reviewFromTpa
+        ? lecturerCode() === (full.tpaLecturer || 'DT') && ['TPA', 'Approved'].includes(status)
+        : coordinatorRoles(full).includes('INDUK');
+      renderCoordinatorMenu(document.getElementById('coordinator-menu'), full, reviewFromTpa ? null : 'INDUK');
+      const previousKind = panel.querySelector('#report-kind')?.value || 'kelas';
+      const previousValue = panel.querySelector('#report-value')?.value;
+      panel.innerHTML = '<a class="review-button view" href="' + back + '">Kembali</a>';
+      if (!TIMETABLE_PROGRAMS.includes(reviewProgram) || !authorized) {
+        panel.insertAdjacentHTML('beforeend', '<p>Anda tidak mempunyai akses kepada jadual ini.</p>');
         return;
       }
-
-      const printWindow = window.open('', '_blank');
-
-      const css = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
-        .page-section { page-break-after: always; margin-bottom: 40px; }
-        .page-section:last-child { page-break-after: avoid; margin-bottom: 0; }
-        
-        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
-        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
-        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
-        
-        .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
-        .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
-        
-        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
-      `;
-
-      let bodyHtml = '';
-      keys.forEach(singk => {
-        const nama = senaraiPensyarah[singk];
-        const pObj = LECTURERS_DATA.find(l => l.shortName === singk) || {};
-        const dept = pObj.dept || 'STM';
-        const filteredSlots = DB.slot.filter(s => s.singkatan === singk || s.singkatanPembantu === singk);
-        const gridHtml = buatJadualGridHTML(filteredSlots);
-        const headerHtml = binaFormalHeaderHTML("Jadual Waktu Pengajaran Pensyarah", `PENSYARAH : ${nama.toUpperCase()} (${singk})`, dept, sess);
-        const tugasList = dapatkanTugasMengajarLecturer(singk);
-        const tugasHtml = binaTugasMengajarTableHTML(tugasList);
-        const sigHtml = binaSignaturesHTML();
-        const footerHtml = `
-          <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
-            <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-            <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-          </div>
-        `;
-
-        bodyHtml += `
-          <div class="page-section">
-            ${headerHtml}
-            ${gridHtml}
-            ${tugasHtml}
-            ${sigHtml}
-            ${footerHtml}
-          </div>
-        `;
-      });
-
-      const printAutoTriggerScript = '<script>' + `
-        window.onload = function() {
-          window.print();
-          setTimeout(function() { window.close(); }, 500);
-        }
-      ` + '<' + '/script>';
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Cetak Semua Jadual Pensyarah</title>
-            <style>${css}</style>
-          </head>
-          <body>
-            ${bodyHtml}
-            ${printAutoTriggerScript}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
-
-    // Print Location timetable
-    function cetakJadualLokasi(namaLokasi) {
-      const filteredSlots = DB.slot.filter(s => s.lokasi === namaLokasi);
-      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
-      const locObj = LOCATIONS_DATA.find(l => l.name === namaLokasi) || {};
-      const dept = locObj.type || 'Umum';
-      const printWindow = window.open('', '_blank');
-
-      const css = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
-        
-        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
-        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
-        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
-        
-        .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
-        .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
-        
-        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
-      `;
-
-      const gridHtml = buatJadualGridHTML(filteredSlots);
-      const headerHtml = binaFormalHeaderHTML("Jadual Penggunaan Lokasi", `LOKASI : ${namaLokasi.toUpperCase()}`, dept, sess);
-      const tugasList = dapatkanTugasMengajarLokasi(namaLokasi);
-      const tugasHtml = binaTugasMengajarTableHTML(tugasList);
-      const sigHtml = binaSignaturesHTML();
-      const footerHtml = `
-        <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
-          <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-          <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-        </div>
-      `;
-
-      const printAutoTriggerScript = '<script>' + `
-        window.onload = function() {
-          window.print();
-          setTimeout(function() { window.close(); }, 500);
-        }
-      ` + '<' + '/script>';
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Cetak Jadual Lokasi - ${namaLokasi}</title>
-            <style>${css}</style>
-          </head>
-          <body>
-            ${headerHtml}
-            ${gridHtml}
-            ${tugasHtml}
-            ${sigHtml}
-            ${footerHtml}
-            ${printAutoTriggerScript}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
-
-    // Print Individual Class timetable
-    function cetakJadualKelas(namaKelas) {
-      const filteredSlots = DB.slot.filter(s => s.kelas === namaKelas);
-      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
-      const dept = namaKelas.includes('SLK') ? 'SLK' : 'STM';
-      const printWindow = window.open('', '_blank');
-
-      const css = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
-        
-        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
-        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
-        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
-        
-        .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
-        .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
-        
-        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
-      `;
-
-      const gridHtml = buatJadualGridHTML(filteredSlots);
-      const headerHtml = binaFormalHeaderHTML("Jadual Waktu Kelas", `KELAS : ${namaKelas.toUpperCase()}`, dept, sess);
-      const tugasList = dapatkanTugasMengajarKelas(namaKelas);
-      const tugasHtml = binaTugasMengajarTableHTML(tugasList);
-      const sigHtml = binaSignaturesHTML();
-      const footerHtml = `
-        <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
-          <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-          <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-        </div>
-      `;
-
-      const printAutoTriggerScript = '<script>' + `
-        window.onload = function() {
-          window.print();
-          setTimeout(function() { window.close(); }, 500);
-        }
-      ` + '<' + '/script>';
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Cetak Jadual Kelas - ${namaKelas}</title>
-            <style>${css}</style>
-          </head>
-          <body>
-            ${headerHtml}
-            ${gridHtml}
-            ${tugasHtml}
-            ${sigHtml}
-            ${footerHtml}
-            ${printAutoTriggerScript}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    }
-
-    // Print all Classes timetables simultaneously
-    function cetakSemuaKelasSerentak() {
-      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
-      const classesToPrint = CLASSES_DATA || [];
-      if (classesToPrint.length === 0) {
-        alert("Tiada data kelas berdaftar untuk dicetak.");
-        return;
-      }
-
-      const printWindow = window.open('', '_blank');
-
-      const css = `
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-        body { font-family: 'Inter', sans-serif; padding: 20px; color: #000; background: #fff; line-height: 1.2; }
-        .page-section { page-break-after: always; margin-bottom: 40px; }
-        .page-section:last-child { page-break-after: avoid; margin-bottom: 0; }
-        
-        table.schedule-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 0.75rem; table-layout: fixed; }
-        table.schedule-table th, table.schedule-table td { border: 1px solid #000 !important; padding: 6px; text-align: left; vertical-align: stretch; height: 1px; }
-        table.schedule-table th { background: #f1f5f9; font-weight: 700; text-align: center; font-size: 0.75rem; }
-        
-        .schedule-wrapper { height: 100%; display: flex; flex-direction: column; gap: 4px; justify-content: stretch; }
-        .slot { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; text-align: left; padding: 6px; border-radius: 4px; border-left: 3px solid #0f172a; background: #f8fafc; font-size: 0.7rem; }
-        .slot.clash { background: #fef2f2; border-left-color: #ef4444; color: #ef4444; }
-        .slot b { font-size: 0.7rem; display: block; margin-bottom: 2px; }
-        .slot small { font-size: 0.62rem; display: block; line-height: 1.3; }
-        
-        .rehat-cell { background-color: #fef08a !important; color: #854d0e !important; text-align: center !important; font-weight: 700; font-size: 0.65rem; border: 1px dashed #ca8a04 !important; }
-      `;
-
-      let bodyHtml = '';
-      classesToPrint.forEach(namaKelas => {
-        const filteredSlots = DB.slot.filter(s => s.kelas === namaKelas);
-        if (filteredSlots.length > 0) {
-          const dept = namaKelas.includes('SLK') ? 'SLK' : 'STM';
-          const gridHtml = buatJadualGridHTML(filteredSlots);
-          const headerHtml = binaFormalHeaderHTML("Jadual Waktu Kelas", `KELAS : ${namaKelas.toUpperCase()}`, dept, sess);
-          const tugasList = dapatkanTugasMengajarKelas(namaKelas);
-          const tugasHtml = binaTugasMengajarTableHTML(tugasList);
-          const sigHtml = binaSignaturesHTML();
-          const footerHtml = `
-            <div class="print-footer" style="text-align: center; font-size: 0.68rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 25px; font-weight: 700; text-transform: uppercase;">
-              <div style="margin-bottom: 2px;">JADUAL DISAHKAN BAGI SESI ${sess.toUpperCase()}</div>
-              <div style="color: #475569; font-size: 0.62rem; font-weight: 500;">JADUAL INI ADALAH CETAKAN KOMPUTER. TANDATANGAN TIDAK DIPERLUKAN</div>
-            </div>
-          `;
-
-          bodyHtml += `
-            <div class="page-section">
-              ${headerHtml}
-              ${gridHtml}
-              ${tugasHtml}
-              ${sigHtml}
-              ${footerHtml}
-            </div>
-          `;
-        }
-      });
-
-      if (!bodyHtml) {
-        alert("Tiada slot jadual waktu bagi mana-mana kelas untuk dicetak.");
-        printWindow.close();
-        return;
-      }
-
-      const printAutoTriggerScript = '<script>' + `
-        window.onload = function() {
-          window.print();
-          setTimeout(function() { window.close(); }, 500);
-        }
-      ` + '<' + '/script>';
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Cetak Semua Jadual Kelas</title>
-            <style>${css}</style>
-          </head>
-          <body>
-            ${bodyHtml}
-            ${printAutoTriggerScript}
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
+      DB = { ...full, slot: programRows(full, 'slot', reviewProgram), subjek: programRows(full, 'subjek', reviewProgram) };
+      panel.insertAdjacentHTML('beforeend', '<h2>Semak jadual ' + PROGRAM_NAMES[reviewProgram] + '</h2>' +
+        '<div class="report-filters"><label>Jenis jadual<select id="report-kind">' +
+        Object.entries(reportKinds).map(([key, report]) => '<option value="' + key + '">' + report.label + '</option>').join('') +
+        '</select></label><label>Pilihan<select id="report-value"></select></label></div>' +
+        '<div class="report-preview"><article id="review-report"></article></div>');
+      const kind = panel.querySelector('#report-kind');
+      const value = panel.querySelector('#report-value');
+      const preview = panel.querySelector('#review-report');
+      const renderReport = () => {
+        preview.innerHTML = value.value ? timetableReport(kind.value, value.value) : '<p>Tiada jadual dalam pilihan ini.</p>';
+      };
+      const refreshChoices = selected => {
+        value.replaceChildren(...reportValues(kind.value).map(item =>
+          new Option(reportKinds[kind.value].display?.(item) || item, item, false, selected === item)));
+        renderReport();
+      };
+      kind.value = previousKind;
+      kind.onchange = () => refreshChoices();
+      value.onchange = renderReport;
+      refreshChoices(previousValue);
     }
 
     function cetakIndividuKelas() {
@@ -2794,44 +2432,6 @@
     </tr>
   `).join('') || '<tr><td colspan="6" style="text-align:center; color:var(--text-muted);">Tiada data slot aktif.</td></tr>';
 
-      // Update confirmation button state
-      const btn = document.getElementById('btnConfirmPublish');
-      if (btn) {
-        const state = DB.approvalState || "Draft";
-        if (state === "Approved") {
-          btn.className = "btn btn-accent";
-          btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-                <polyline points="22 4 12 14.01 9 11.01"></polyline>
-            </svg>
-            Diluluskan TPA & Diterbit (Tarik Balik)
-        `;
-        } else if (state === "Pending") {
-          btn.className = "btn btn-accent";
-          btn.style.background = "#eab308"; // Amber
-          btn.style.borderColor = "#ca8a04";
-          btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="12" cy="12" r="10"></circle>
-                <polyline points="12 6 12 12 16 14"></polyline>
-            </svg>
-            Menunggu Kelulusan TPA (Tarik Balik)
-        `;
-        } else {
-          btn.className = "btn btn-primary";
-          btn.style.background = ""; // Reset
-          btn.style.borderColor = "";
-          btn.innerHTML = `
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"></line>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
-            Hantar Kelulusan TPA
-        `;
-        }
-      }
-
       // Render configuration elements
       DB.sessionsList = DB.sessionsList || ["SESI 1 2026/2027", "SESI 2 2026/2027"];
       DB.activeSession = DB.activeSession || "SESI 1 2026/2027";
@@ -2846,11 +2446,6 @@
         ).join('');
       }
 
-      // Tarikh Kuatkuasa Input
-      const inputEffDate = document.getElementById('inputEffectiveDate');
-      if (inputEffDate) {
-        inputEffDate.value = DB.effectiveDate || '';
-      }
 
       // TPA Select Dropdown
       const selectTpa = document.getElementById('selectTpaLec');
@@ -2872,10 +2467,6 @@
       }
 
       // Password fields
-      const adminPassInput = document.getElementById("adminPasswordInput");
-      if (adminPassInput) {
-        adminPassInput.value = DB.adminPassword || "admin123";
-      }
 
       const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
       document.querySelectorAll(".print-footer-session").forEach(el => {
@@ -2888,73 +2479,28 @@
       // Populate custom print dropdowns dynamically
       const printSelectLec = document.getElementById('printSelectLec');
       if (printSelectLec) {
-        let senaraiPensyarah = {};
-        DB.subjek.forEach(s => {
-          if (s.nama && s.nama !== '-') senaraiPensyarah[s.singkatan] = s.nama;
-          if (s.namaPembantu && s.namaPembantu !== '-') senaraiPensyarah[s.singkatanPembantu] = s.namaPembantu;
-        });
-        printSelectLec.innerHTML = Object.keys(senaraiPensyarah).map(singk =>
-          `<option value="${singk}">${senaraiPensyarah[singk]} (${singk})</option>`
-        ).join('') || '<option value="" disabled>Tiada Pensyarah Berdaftar</option>';
+        printSelectLec.replaceChildren(...reportValues('pensyarah').map(code =>
+          new Option(reportKinds.pensyarah.display(code), code)));
+        if (!printSelectLec.options.length) {
+          printSelectLec.innerHTML = '<option value="" disabled>Tiada Pensyarah Berdaftar</option>';
+        }
       }
 
       const printSelectLoc = document.getElementById('printSelectLoc');
       if (printSelectLoc) {
-        printSelectLoc.innerHTML = LOCATIONS_DATA.map(l =>
-          `<option value="${l.name}">${l.name} (${l.code})</option>`
-        ).join('');
-      }
-    }
-
-    function simpanKataLaluanAdmin() {
-      const adminPass = document.getElementById("adminPasswordInput").value.trim();
-
-      if (adminPass.length < 4) {
-        alert("Kata laluan mestilah sekurang-kurangnya 4 aksara!");
-        return;
-      }
-
-      DB.adminPassword = adminPass;
-      simpan();
-      alert("Kata laluan Admin berjaya dikemaskini!");
-      render();
-    }
-
-    // --- PUBLISH & CONFIRMATION ACTIONS ---
-    function handlePublishClick() {
-      const state = DB.approvalState || "Draft";
-      if (state === "Approved") {
-        window.tanyaPengesahan("Adakah anda pasti mahu menarik balik kelulusan jadual ini dan menukarkannya kembali ke status Deraf?", () => {
-          DB.approvalState = "Draft";
-          DB.isConfirmed = false;
-          simpan();
-          alert("Penerbitan ditarik balik. Status kembali ke Deraf.");
-        });
-      } else if (state === "Pending") {
-        window.tanyaPengesahan("Adakah anda pasti mahu menarik balik penghantaran kelulusan TPA? Status akan kembali ke Deraf.", () => {
-          DB.approvalState = "Draft";
-          DB.isConfirmed = false;
-          simpan();
-          alert("Permohonan kelulusan ditarik balik. Status kembali ke Deraf.");
-        });
-      } else {
-        window.tanyaPengesahan("Hantar jadual waktu ini untuk semakan dan kelulusan Timbalan Pengarah Akademik (TPA)?", () => {
-          DB.approvalState = "Pending";
-          DB.isConfirmed = false;
-          simpan();
-          alert("Jadual berjaya dihantar ke TPA untuk kelulusan!");
-        });
+        const selected = printSelectLoc.value;
+        printSelectLoc.replaceChildren(...LOCATIONS_DATA.filter(location => locationAllowedForPrint(location.name))
+          .map(location => new Option(location.name + ' (' + location.code + ')', location.name, false, selected === location.name)));
+        if (!printSelectLoc.options.length) {
+          const empty = new Option('Tiada lokasi untuk program ini', '', true, true);
+          empty.disabled = true;
+          printSelectLoc.append(empty);
+        }
       }
     }
 
     function updateActiveSession(val) {
       DB.activeSession = val;
-      simpan();
-      render();
-    }
-
-    function updateEffectiveDate(val) {
-      DB.effectiveDate = val;
       simpan();
       render();
     }
@@ -3005,8 +2551,8 @@
 
       DB.subjek.forEach((s, idx) => {
         // Find if there is already an existing slot for this subject to guess class and location
-        const existingSlot = DB.slot.find(x => x.kod === s.kod);
-        const defaultClass = existingSlot ? existingSlot.kelas : (s.kod.toUpperCase().startsWith('SLK') ? 'SLK 1A' : 'STM 1A');
+        const existingSlot = DB.slot.find(x => x.kod === s.kod && x.kelas === s.kelas && x.singkatan === s.singkatan);
+        const defaultClass = s.kelas || CLASSES_DATA[0];
         const defaultLoc = existingSlot ? existingSlot.lokasi : (s.kod.toUpperCase().startsWith('SLK') ? 'MAKMAL LOGISTIK 1' : 'MAKMAL PENGATURCARAAN 1');
 
         // Create dropdown selections
@@ -3048,145 +2594,30 @@
       document.getElementById('generatorModal').style.display = 'none';
     }
 
-    function jalankanGenerator() {
-      // 1. Gather all targets mapped by user
-      const targets = DB.subjek.map((s, idx) => {
-        const kelasVal = document.getElementById(`genClass_${idx}`).value;
-        const lokasiVal = document.getElementById(`genLoc_${idx}`).value;
-        return { subject: s, kelas: kelasVal, lokasi: lokasiVal };
-      });
-
-      // 2. Helper to keep required hours together as a single block (not split across days)
-      function getDurations(hours) {
-        return [hours];
+    async function jalankanGenerator() {
+      const button = document.querySelector('#generatorModal button[onclick="jalankanGenerator()"]');
+      if (button.disabled) return;
+      const targets = DB.subjek.map((subject, index) => ({
+        subject,
+        kelas: document.getElementById('genClass_' + index)?.value,
+        lokasi: document.getElementById('genLoc_' + index)?.value
+      }));
+      const reserved = programmerAccess ? [] : workingSlots.filter(slot => programForRow(DB, slot) !== programScope);
+      const slots = generateTimetableSlots(targets, reserved);
+      if (!slots) {
+        alert('Tiada jadual bebas pertindihan ditemui. Semak jam mengajar, kelas atau lokasi. Jadual sedia ada dikekalkan.');
+        return;
       }
-
-      // 3. Compile list of required slot items to assign
-      const requirements = [];
-      targets.forEach(t => {
-        const blocks = getDurations(t.subject.jam);
-        blocks.forEach(dur => {
-          requirements.push({
-            subject: t.subject,
-            kelas: t.kelas,
-            lokasi: t.lokasi,
-            duration: dur
-          });
-        });
-      });
-
-      // Sort requirements by duration DESC (schedule larger blocks first)
-      requirements.sort((a, b) => b.duration - a.duration);
-
-      // 4. Scheduling resources setup
-      const days = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
-      const startHours = [8, 9, 10, 11, 14, 15, 16, 17]; // hours excluding lunch 12:00 - 14:00
-
-      // Lunch overlap check
-      function overlapsLunch(start, duration) {
-        const end = start + duration;
-        return !(end <= 12 || start >= 14);
-      }
-
-      // Conflict overlap check
-      function hasConflict(day, startHour, duration, item, currentSlots) {
-        const startMin = startHour * 60;
-        const endMin = (startHour + duration) * 60;
-
-        return currentSlots.some(other => {
-          if (other.hari !== day) return false;
-
-          // Time overlap check
-          const otherStartMin = toMin(other.mula);
-          const otherEndMin = toMin(other.tamat);
-          const timeOverlap = startMin < otherEndMin && otherStartMin < endMin;
-          if (!timeOverlap) return false;
-
-          // Class conflict
-          if (other.kelas === item.kelas) return true;
-
-          // Location conflict
-          if (other.lokasi === item.lokasi) return true;
-
-          // Lecturer conflict (including assistants)
-          const currentLecturers = [item.subject.singkatan];
-          if (item.subject.singkatanPembantu && item.subject.singkatanPembantu !== '-') {
-            currentLecturers.push(item.subject.singkatanPembantu);
-          }
-
-          const otherLecturers = [other.singkatan];
-          if (other.singkatanPembantu && other.singkatanPembantu !== '-') {
-            otherLecturers.push(other.singkatanPembantu);
-          }
-
-          if (currentLecturers.some(l => otherLecturers.includes(l))) return true;
-
-          return false;
-        });
-      }
-
-      // 5. Backtracking recursive search
-      const finalSlots = [];
-
-      function solve(reqIdx) {
-        if (reqIdx === requirements.length) return true;
-
-        const req = requirements[reqIdx];
-
-        // Try days and start hours
-        // Introduce simple random shuffling of search order to improve distribution
-        const shuffledDays = [...days].sort(() => Math.random() - 0.5);
-        const shuffledStarts = [...startHours].sort(() => Math.random() - 0.5);
-
-        for (let day of shuffledDays) {
-          for (let startHour of shuffledStarts) {
-            if (startHour + req.duration > 18) continue;
-            if (overlapsLunch(startHour, req.duration)) continue;
-
-            // Lecturer preferred start hour constraint check
-            const prefStart = req.subject.prefStart || 8;
-            if (startHour < prefStart) continue;
-
-            if (!hasConflict(day, startHour, req.duration, req, finalSlots)) {
-              // Temporarily assign slot
-              const mulaStr = String(startHour).padStart(2, '0') + ':00';
-              const tamatStr = String(startHour + req.duration).padStart(2, '0') + ':00';
-
-              const newSlot = {
-                kod: req.subject.kod,
-                kelas: req.kelas,
-                lokasi: req.lokasi,
-                hari: day,
-                mula: mulaStr,
-                tamat: tamatStr,
-                singkatan: req.subject.singkatan,
-                singkatanPembantu: req.subject.singkatanPembantu,
-                subjek: req.subject.subjek,
-                nama: req.subject.nama,
-                namaPembantu: req.subject.namaPembantu
-              };
-
-              finalSlots.push(newSlot);
-
-              if (solve(reqIdx + 1)) return true;
-
-              // Backtrack
-              finalSlots.pop();
-            }
-          }
+      button.disabled = true;
+      try {
+        DB.subjek = targets.map(({ subject, kelas }) => ({ ...subject, kelas }));
+        DB.slot = slots;
+        if (await simpan(true)) {
+          tutupGeneratorModal();
+          alert('Jadual waktu berjaya dijana tanpa pertindihan.');
         }
-
-        return false;
-      }
-
-      // Run solver
-      if (solve(0)) {
-        DB.slot = finalSlots;
-        simpan();
-        tutupGeneratorModal();
-        alert('Jadual waktu berjaya dijana secara automatik dengan sifar pertindihan!');
-      } else {
-        alert('❌ Penjadualan Gagal: Sistem tidak dapat menjana jadual tanpa pertembungan. Sila kurangkan beban jam atau tambah lokasi/kelas.');
+      } finally {
+        button.disabled = false;
       }
     }
 
@@ -3528,6 +2959,7 @@
     window.cetakPelajarAdmin = function(idx) {
       const s = STUDENTS[idx];
       const printWindow = window.open('', '_blank');
+      if (!printWindow) return alert('Benarkan tetingkap timbul untuk mencetak.');
       const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
 
       const css = `
@@ -3583,91 +3015,28 @@
                 Sistem Jadual Waktu Akademik • ${sess}
               </div>
             </div>
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(function() { window.close(); }, 500);
-              };
-            <\/script>
           </body>
         </html>
       `);
       printWindow.document.close();
+      printTimetableWindow(printWindow, { landscape: false, closeAfter: true });
     };
 
-    window.cetakSenaraiPelajar = function() {
-      const printWindow = window.open('', '_blank');
-      const sess = (DB && DB.activeSession) ? DB.activeSession : 'SESI 1 2026/2027';
-
-      const css = `
-        body { font-family: 'Inter', sans-serif; padding: 25px; color: #000; background: #fff; }
-        h2 { font-size: 1.3rem; font-weight: 800; border-bottom: 2px solid #000; padding-bottom: 8px; margin-bottom: 5px; text-transform: uppercase; }
-        .session-info { font-size: 0.9rem; margin-bottom: 20px; color: #334155; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 0.8rem; }
-        th, td { border: 1px solid #000; padding: 8px; text-align: left; }
-        th { background: #f1f5f9; font-weight: 700; text-align: center; }
-        .print-footer { text-align: center; font-size: 0.7rem; border-top: 1px solid #000; padding-top: 8px; margin-top: 30px; font-weight: 600; text-transform: uppercase; }
-      `;
-
-      let tableRowsHtml = STUDENTS.map((s, idx) => `
-        <tr>
-          <td style="text-align: center;">${idx + 1}</td>
-          <td style="font-weight: 600;">${s.name}</td>
-          <td style="font-weight: 700; color: #0d9488;">${s.matrix || '-'}</td>
-          <td>${s.ic}</td>
-          <td style="text-align: center;">${s.gender}</td>
-          <td>${s.address}</td>
-        </tr>
-      `).join('');
-
-      printWindow.document.write(`
-        <html>
-          <head>
-            <title>Senarai Pelajar Berdaftar - Kolej Komuniti Papar</title>
-            <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-            <style>${css}</style>
-          </head>
-          <body>
-            <h2>Senarai Rekod Pelajar Berdaftar</h2>
-            <div class="session-info">Kolej Komuniti Papar • ${sess}</div>
-            <table>
-              <thead>
-                <tr>
-                  <th style="width: 5%;">Bil</th>
-                  <th style="width: 25%;">Nama Penuh</th>
-                  <th style="width: 15%;">No. Matriks</th>
-                  <th style="width: 15%;">No. IC</th>
-                  <th style="width: 10%;">Jantina</th>
-                  <th style="width: 30%;">Alamat Tetap</th>
-                </tr>
-              </thead>
-              <tbody>
-                ${tableRowsHtml || '<tr><td colspan="6" style="text-align: center; color: #475569;">Tiada rekod pelajar berdaftar.</td></tr>'}
-              </tbody>
-            </table>
-            <div class="print-footer">
-              Cetakan Dokumen Rasmi Portal Admin • Kolej Komuniti Papar
-            </div>
-            <script>
-              window.onload = function() {
-                window.print();
-                setTimeout(function() { window.close(); }, 500);
-              };
-            <\/script>
-          </body>
-        </html>
-      `);
-      printWindow.document.close();
-    };
+    function cetakSenaraiPelajar() {
+      const rows = STUDENTS.map((student, index) => '<tr><td>' + (index + 1) + '</td>' +
+        [student.name, student.matrix, student.ic, student.gender, student.address]
+          .map(value => '<td>' + escapeTimetableText(value || '-') + '</td>').join('') + '</tr>').join('');
+      openTimetablePrint('Senarai Pelajar', '<h2>Senarai Rekod Pelajar</h2><p>Kolej Komuniti Papar · ' +
+        escapeTimetableText(timetableSession(DB)) + '</p><table><thead><tr><th>Bil</th><th>Nama Penuh</th>' +
+        '<th>No. Matriks</th><th>No. IC</th><th>Jantina</th><th>Alamat</th></tr></thead><tbody>' +
+        rows + '</tbody></table>', existingGridPrintCss, { landscape: false });
+    }
 
     function saveStudentsAdmin() {
-      if (isFirebaseActive()) {
-        firebaseSaveStudents(STUDENTS);
-      } else {
-        localStorage.setItem('kkpapar_students', JSON.stringify(STUDENTS));
-      }
+      if (!programmerAccess) return;
+      if (isFirebaseActive()) firebaseSaveStudents(STUDENTS);
+      else localStorage.setItem('kkpapar_students', JSON.stringify(STUDENTS));
     }
   </script>
 </body>
-
 </html>

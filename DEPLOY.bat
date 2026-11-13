@@ -8,7 +8,7 @@ echo ============================================
 echo.
 
 SET "PATH=%PATH%;C:\Program Files\nodejs;%APPDATA%\npm"
-cd /d "C:\Users\User\Desktop\SISTEM JADUAL WAKTU KKPPS"
+cd /d "%~dp0"
 
 :: Tanya penerangan perubahan
 echo Apakah perubahan yang anda buat? (tekan Enter untuk skip)

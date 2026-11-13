@@ -2,6 +2,9 @@
   "rules": {
     ".read": "auth != null",
     ".write": "auth != null",
+    "public_notices": {
+      ".read": true
+    },
     "public_schedules": {
       ".read": true,
       ".write": "auth != null"
