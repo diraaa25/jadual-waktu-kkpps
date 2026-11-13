@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panduan Penggunaan dan Deployment SiJAWAP - KKPPS</title>
+    <style>
+        @page {
+            size: A4;
+            margin: 18mm 16mm 18mm 16mm;
+            @bottom-right {
+                content: counter(page);
+            }
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+            color: #1e293b;
+            background-color: #ffffff;
+            line-height: 1.55;
+            font-size: 10.5pt;
+            margin: 0;
+            padding: 0;
+        }
+
+        /* Cover Page */
+        .cover-page {
+            page-break-after: always;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 40px 20px 20px 20px;
+            text-align: center;
+        }
+
+        .cover-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 25px;
+            margin-bottom: 30px;
+        }
+
+        .cover-header img {
+            max-height: 75px;
+            object-fit: contain;
+        }
+
+        .cover-badge {
+            display: inline-block;
+            background: #e0f2fe;
+            color: #0369a1;
+            font-weight: 700;
+            font-size: 9pt;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            padding: 6px 16px;
+            border-radius: 999px;
+            margin-bottom: 20px;
+            border: 1px solid #bae6fd;
+        }
+
+        .cover-title {
+            font-size: 26pt;
+            font-weight: 800;
+            color: #0f172a;
+            margin: 0 0 12px 0;
+            line-height: 1.2;
+        }
+
+        .cover-subtitle {
+            font-size: 13pt;
+            font-weight: 500;
+            color: #475569;
+            margin: 0 auto 30px auto;
+            max-width: 600px;
+            line-height: 1.4;
+        }
+
+        .cover-box {
+            background: linear-gradient(135deg, #0f2c59 0%, #1e3a8a 100%);
+            color: #ffffff;
+            padding: 25px 30px;
+            border-radius: 12px;
+            text-align: left;
+            margin: 20px auto;
+            max-width: 580px;
+            box-shadow: 0 4px 15px rgba(15, 23, 42, 0.15);
+        }
+
+        .cover-box h3 {
+            margin: 0 0 10px 0;
+            font-size: 12pt;
+            letter-spacing: 0.5px;
+            color: #93c5fd;
+            text-transform: uppercase;
+        }
+
+        .cover-box p {
+            margin: 4px 0;
+            font-size: 10pt;
+            color: #f1f5f9;
+        }
+
+        .cover-footer {
+            margin-top: 40px;
+            border-top: 2px solid #e2e8f0;
+            padding-top: 20px;
+            font-size: 9pt;
+            color: #64748b;
+        }
+
+        /* Headings & Structure */
+        h1 {
+            color: #0f2c59;
+            font-size: 18pt;
+            font-weight: 800;
+            margin-top: 0;
+            margin-bottom: 15px;
+            padding-bottom: 8px;
+            border-bottom: 2.5px solid #0284c7;
+            page-break-after: avoid;
+        }
+
+        h2 {
+            color: #1e3a8a;
+            font-size: 13.5pt;
+            font-weight: 700;
+            margin-top: 22px;
+            margin-bottom: 10px;
+            padding-bottom: 4px;
+            border-bottom: 1px solid #cbd5e1;
+            page-break-after: avoid;
+        }
+
+        h3 {
+            color: #0f172a;
+            font-size: 11pt;
+            font-weight: 700;
+            margin-top: 16px;
+            margin-bottom: 6px;
+            page-break-after: avoid;
+        }
+
+        p {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        ul, ol {
+            margin-top: 0;
+            margin-bottom: 12px;
+            padding-left: 22px;
+        }
+
+        li {
+            margin-bottom: 5px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 12px 0 18px 0;
+            font-size: 9.5pt;
+            page-break-inside: avoid;
+        }
+
+        th {
+            background-color: #0f2c59;
+            color: #ffffff;
+            font-weight: 600;
+            text-align: left;
+            padding: 8px 12px;
+            border: 1px solid #0f2c59;
+        }
+
+        td {
+            padding: 8px 12px;
+            border: 1px solid #cbd5e1;
+            vertical-align: top;
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8fafc;
+        }
+
+        /* Code & Terminal Blocks */
+        pre {
+            background: #0f172a;
+            color: #f8fafc;
+            padding: 12px 14px;
+            border-radius: 6px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 8.8pt;
+            overflow-x: auto;
+            margin: 10px 0 14px 0;
+            page-break-inside: avoid;
+            border-left: 4px solid #0284c7;
+            line-height: 1.45;
+        }
+
+        code {
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 8.8pt;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            padding: 2px 5px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        pre code {
+            background-color: transparent;
+            color: inherit;
+            padding: 0;
+            border: none;
+        }
+
+        /* Callout Boxes */
+        .callout {
+            border-radius: 6px;
+            padding: 12px 15px;
+            margin: 14px 0;
+            page-break-inside: avoid;
+            font-size: 9.5pt;
+        }
+
+        .callout-info {
+            background-color: #f0f9ff;
+            border-left: 4px solid #0284c7;
+            color: #0369a1;
+        }
+
+        .callout-success {
+            background-color: #f0fdf4;
+            border-left: 4px solid #16a34a;
+            color: #15803d;
+        }
+
+        .callout-warning {
+            background-color: #fffbeb;
+            border-left: 4px solid #f59e0b;
+            color: #b45309;
+        }
+
+        .callout-title {
+            font-weight: 700;
+            margin-bottom: 4px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Workflow diagram / flow steps */
+        .flow-container {
+            display: flex;
+            gap: 8px;
+            margin: 14px 0;
+            page-break-inside: avoid;
+        }
+
+        .flow-step {
+            flex: 1;
+            background: #f8fafc;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
+            padding: 10px 8px;
+            text-align: center;
+            font-size: 8.5pt;
+        }
+
+        .flow-step-number {
+            display: inline-block;
+            width: 22px;
+            height: 22px;
+            line-height: 22px;
+            background: #0284c7;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 50%;
+            margin-bottom: 5px;
+        }
+
+        .flow-step-title {
+            font-weight: 700;
+            color: #0f172a;
+            margin-bottom: 3px;
+        }
+
+        .page-break {
+            page-break-before: always;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 7.5pt;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-blue { background: #dbeafe; color: #1e40af; }
+        .badge-green { background: #dcfce7; color: #166534; }
+        .badge-orange { background: #ffedd5; color: #9a3412; }
+    </style>
+</head>
+<body>
+
+    <!-- ================= COVER PAGE ================= -->
+    <div class="cover-page">
+        <div class="cover-header">
+            <img src="Logo_KKPPS.jpeg" alt="Logo KKPPS" onerror="this.style.display='none'">
+            <img src="Logo_KPT.png" alt="Logo KPT" onerror="this.style.display='none'">
+        </div>
+
+        <div>
+            <div class="cover-badge">Manual Operasi & Dokumentasi Teknikal</div>
+            <h1 class="cover-title">PANDUAN LENGKAP PENGGUNAAN & DEPLOYMENT MANUAL</h1>
+            <p class="cover-subtitle">Sistem Pengurusan Jadual Waktu Bersepadu Kolej Komuniti Papar, Sabah (SiJAWAP)</p>
+
+            <div class="cover-box">
+                <h3>Maklumat Dokumen</h3>
+                <p><strong>Nama Sistem:</strong> SiJAWAP (Sistem Jadual Waktu KKPPS)</p>
+                <p><strong>Versi Sistem:</strong> 2.0 (PWA & Realtime Cloud)</p>
+                <p><strong>Sasaran Pembaca:</strong> Pentadbir / Penyelaras Jadual / Pensyarah / Pelajar</p>
+                <p><strong>Pautan Web Rasmi (Netlify):</strong> https://sijawap.netlify.app/</p>
+                <p><strong>Pautan Firebase Hosting:</strong> https://sistem-jadual-waktu-kkpps.web.app/</p>
+                <p><strong>Repositori GitHub:</strong> https://github.com/diraaa25/jadual-waktu-kkpps</p>
+            </div>
+        </div>
+
+        <div class="cover-footer">
+            <p>Disediakan untuk <strong>Kolej Komuniti Papar, Sabah (KKPPS)</strong> &copy; 2026. Hak Cipta Terpelihara.</p>
+        </div>
+    </div>
+
+    <!-- ================= BAHAGIAN 1 ================= -->
+    <div>
+        <h1>1. Pengenalan Sistem SiJAWAP</h1>
+        <p>
+            <strong>SiJAWAP (Sistem Jadual Waktu KKPPS)</strong> ialah aplikasi web berasaskan <em>Progressive Web App (PWA)</em> yang direka khas untuk memudahkan penjadualan, semakan kelas, carian pensyarah, pemakluman hebahan, dan cetakan rasmi jadual waktu bagi Kolej Komuniti Papar.
+        </p>
+
+        <h2>1.1 Portal dan Komponen Utama</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Portal / Halaman</th>
+                    <th style="width: 25%;">Fail Sumber</th>
+                    <th style="width: 50%;">Fungsi Utama</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>Portal Utama</strong></td>
+                    <td><code>index.html</code></td>
+                    <td>Laman pendaratan (*landing page*), gerbang navigasi pantas ke portal Pelajar, Pensyarah, atau Pentadbir, serta paparan hebahan umum terkini.</td>
+                </tr>
+                <tr>
+                    <td><strong>Portal Pelajar</strong></td>
+                    <td><code>Pelajar.html</code></td>
+                    <td>Membolehkan pelajar menyemak jadual mengikut program dan kelas, melihat waktu rehat, bilik kuliah, serta memuat turun jadual.</td>
+                </tr>
+                <tr>
+                    <td><strong>Portal Pensyarah</strong></td>
+                    <td><code>Pensyarah.html</code></td>
+                    <td>Carian jadual peribadi pensyarah, semakan kekosongan bilik/makmal, dan pengurusan hebahan program.</td>
+                </tr>
+                <tr>
+                    <td><strong>Portal Programmer / Admin</strong></td>
+                    <td><code>Programmer.html</code></td>
+                    <td>Pusat kawalan pentadbir: mengurus slot, mengimport data Excel, kawalan sesi, kelulusan jadual, dan pengesanan pertindihan.</td>
+                </tr>
+                <tr>
+                    <td><strong>Paparan Jadual Terperinci</strong></td>
+                    <td><code>Jadual_baru.html</code></td>
+                    <td>Grid interaktif jadual waktu penuh mengikut hari (Isnin hingga Jumaat) dengan fungsi cetakan berformat rasmi.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <h2>1.2 Program Pengajian yang Disokong</h2>
+        <ul>
+            <li><strong>STM</strong>: Sijil Teknologi Maklumat</li>
+            <li><strong>SLK</strong>: Sijil Perkhidmatan Logistik</li>
+            <li><strong>UPA</strong>: Unit Pengajian Am</li>
+        </ul>
+
+        <h2>1.3 Aliran Kerja Pengesahan Jadual (Approval Workflow)</h2>
+        <div class="flow-container">
+            <div class="flow-step">
+                <div class="flow-step-number">1</div>
+                <div class="flow-step-title">Draf Program</div>
+                <div>Penyelaras STM/SLK/UPA menyusun slot & subjek.</div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-number">2</div>
+                <div class="flow-step-title">Penyelaras Induk</div>
+                <div>Semakan silang bilik, pensyarah & pertindihan.</div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-number">3</div>
+                <div class="flow-step-title">Kelulusan TPA</div>
+                <div>Pengesahan oleh Timbalan Pengarah Akademik.</div>
+            </div>
+            <div class="flow-step">
+                <div class="flow-step-number">4</div>
+                <div class="flow-step-title">Terbit (Live)</div>
+                <div>Jadual berstatus rasmi & dipaparkan kepada umum.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ================= BAHAGIAN 2 ================= -->
+    <div class="page-break">
+        <h1>2. Panduan Penggunaan Mengikut Peranan</h1>
+
+        <h2>2.1 Panduan untuk Pelajar (Portal Pelajar)</h2>
+        <ol>
+            <li>Buka alamat laman web: <code>https://sijawap.netlify.app/pelajar</code> atau klik butang <strong>Portal Pelajar</strong> di laman utama.</li>
+            <li>Pilih <strong>Program Pengajian</strong> anda (contohnya: <em>Sijil Teknologi Maklumat - STM</em>).</li>
+            <li>Pilih <strong>Kelas / Semester</strong> anda (contohnya: <em>STM 1</em> atau <em>SLK 2</em>).</li>
+            <li>Sistem akan memaparkan jadual waktu mingguan secara automatik merangkumi masa mula, masa tamat, kod kursus, nama pensyarah, dan lokasi bilik kuliah / makmal.</li>
+            <li><strong>Muat Turun / Cetak:</strong> Klik butang <em>"Cetak Jadual"</em> atau <em>"Simpan PDF"</em> untuk menyimpan salinan ke telefon pintar atau komputer anda.</li>
+        </ol>
+
+        <h2>2.2 Panduan untuk Pensyarah (Portal Pensyarah)</h2>
+        <ol>
+            <li>Layari <code>https://sijawap.netlify.app/pensyarah</code>.</li>
+            <li>Pilih nama atau singkatan pensyarah anda dari menu senarai susur (*dropdown*).</li>
+            <li><strong>Ciri Jadual Peribadi:</strong> Sistem akan menapis dan hanya memaparkan kelas yang diajar oleh anda sepanjang minggu berserta jumlah jam kredit.</li>
+            <li><strong>Semakan Kekosongan Bilik:</strong> Buka tab <em>"Semak Bilik"</em> untuk melihat bilik kuliah, bengkel, atau makmal komputer yang tidak berpenghuni pada slot waktu tertentu bagi tujuan kelas gantian.</li>
+            <li><strong>Hebahan Program:</strong> Pensyarah boleh memasukkan nota atau pengumuman penting berkaitan kelas untuk dilihat oleh pelajar.</li>
+        </ol>
+
+        <h2>2.3 Panduan untuk Pentadbir / Programmer (Portal Admin)</h2>
+        <p>Portal Programmer (<code>Programmer.html</code>) merupakan pusat pengurusan konfigurasi sistem jadual.</p>
+
+        <h3>A. Pengurusan Sesi Semester</h3>
+        <ul>
+            <li>Tetapkan sesi aktif semasa (contohnya: <code>SESI 1 2026/2027</code>).</li>
+            <li>Tetapkan tarikh kuat kuasa jadual untuk dipaparkan pada nota kaki (*footer*) cetakan rasmi.</li>
+        </ul>
+
+        <h3>B. Pengurusan Templat Excel (Muat Naik Berkelompok / Bulk Upload)</h3>
+        <p>Sistem menyediakan fail templat Excel standard dalam folder <code>templates/</code>:</p>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 30%;">Fail Templat</th>
+                    <th style="width: 30%;">Lokasi Fail</th>
+                    <th style="width: 40%;">Kandungan Data</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><code>Template_Pelajar.xlsx</code></td>
+                    <td><code>templates/Template_Pelajar.xlsx</code></td>
+                    <td>Nama pelajar, No. Matrik, Program, Semester, Sesi.</td>
+                </tr>
+                <tr>
+                    <td><code>Template_Pensyarah.xlsx</code></td>
+                    <td><code>templates/Template_Pensyarah.xlsx</code></td>
+                    <td>Nama penuh pensyarah, Nama Singkatan (cth: CND), Jabatan, Emel.</td>
+                </tr>
+                <tr>
+                    <td><code>Template_Subjek.xlsx</code></td>
+                    <td><code>templates/Template_Subjek.xlsx</code></td>
+                    <td>Kod kursus, Nama kursus, Jam kredit, Jam kuliah/amali.</td>
+                </tr>
+            </tbody>
+        </table>
+
+        <div class="callout callout-warning">
+            <div class="callout-title">PENTING: Peraturan Mengisi Templat Excel</div>
+            Jangan ubah susunan atau nama lajur (*header*) dalam fail templat Excel tersebut. Pastikan singkatan nama pensyarah dan kod kursus adalah konsisten dengan data yang didaftarkan dalam sistem.
+        </div>
+
+        <h3>C. Pengesanan Pertindihan Jadual (Clash Detection)</h3>
+        <p>
+            Sistem dilengkapi dengan enjin semakan pintar yang mengesan secara automatik:
+        </p>
+        <ul>
+            <li><strong>Pertindihan Pensyarah:</strong> Pensyarah yang sama dijadualkan mengajar 2 kelas berbeza pada masa yang sama.</li>
+            <li><strong>Pertindihan Bilik / Lokasi:</strong> Lokasi makmal/bilik yang sama digunakan serentak oleh 2 kumpulan kelas.</li>
+            <li><strong>Pertindihan Kelas Pelajar:</strong> Kelas pelajar yang sama mempunyai 2 subjek bertindih.</li>
+        </ul>
+    </div>
+
+    <!-- ================= BAHAGIAN 3 ================= -->
+    <div class="page-break">
+        <h1>3. Struktur Fail & Arkitektur Projek</h1>
+
+        <h2>3.1 Struktur Direktori Projek</h2>
+        <pre>
+jadual-waktu-kkpps-main/
+│
+├── .gitignore                      # Menapis fail persendirian/sampah daripada Git
+├── DEPLOY.bat                      # Skrip pantas: Git push + Netlify + Firebase
+├── firebase-deploy.bat             # Skrip khas: Log masuk & deploy ke Firebase Hosting
+├── firebase.json                   # Konfigurasi routing & caching Firebase Hosting
+├── .firebaserc                     # ID Projek Firebase (sistem-jadual-waktu-kkpps)
+├── firebase-rules.json             # Peraturan keselamatan Firebase Realtime Database
+├── netlify.toml                    # Konfigurasi rewrite & headers Netlify
+│
+├── index.html                      # Laman utama / Landing page
+├── Pelajar.html                    # Portal carian & cetakan pelajar
+├── Pensyarah.html                  # Portal jadual pensyarah & hebahan
+├── Programmer.html                 # Portal pentadbir / programmer
+├── Jadual_baru.html                # Paparan grid interaktif jadual waktu
+│
+├── app.js                          # Logik utama aplikasi & pemprosesan data
+├── firebase-config.js              # Kunci konfigurasi Firebase Client
+├── firebase-service.js             # Operasi sync pangkalan data Firebase
+├── announcements.js                # Modul pengurusan hebahan & kebenaran penerbit
+├── timetable-workflow.js           # Aliran kelulusan & semakan pertindihan jadual
+├── timetable-print.js              # Format cetakan rasmi PDF jadual
+├── html2pdf.bundle.min.js          # Pustaka penjanaan PDF klien
+├── service-worker.js               # Sokongan mod luar talian (PWA Cache)
+├── manifest.json                   # Konfigurasi aplikasi telefon (PWA)
+├── style.css                       # Reka bentuk tema & susun atur antaramuka
+├── timetable-ui.css                # Penggayaan visual jadual waktu
+│
+├── icons/                          # Ikon SiJAWAP & PWA (192px, 512px, header)
+└── templates/                      # Fail templat rasmi Excel (.xlsx)
+        </pre>
+
+        <h2>3.2 Ekosistem & Pengehosan</h2>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 25%;">Perkhidmatan</th>
+                    <th style="width: 35%;">Alamat / Pautan</th>
+                    <th style="width: 40%;">Tujuan</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><strong>GitHub</strong></td>
+                    <td><code>diraaa25/jadual-waktu-kkpps</code></td>
+                    <td>Penyimpanan kod sumber rasmi (*Source Code Repository*).</td>
+                </tr>
+                <tr>
+                    <td><strong>Netlify (Utama)</strong></td>
+                    <td><code>https://sijawap.netlify.app/</code></td>
+                    <td>Hosting laman web rasmi dengan sambungan automatik ke GitHub.</td>
+                </tr>
+                <tr>
+                    <td><strong>Firebase Hosting</strong></td>
+                    <td><code>https://sistem-jadual-waktu-kkpps.web.app</code></td>
+                    <td>Hosting sandaran (*secondary*) dan perkhidmatan Realtime Database.</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- ================= BAHAGIAN 4 ================= -->
+    <div class="page-break">
+        <h1>4. Panduan Deployment & Penerbitan</h1>
+        <p>
+            Terdapat dua cara untuk memuat naik perubahan yang anda lakukan ke laman web langsung (*live*):
+            <strong>Kaedah 1 (Automatik)</strong> dan <strong>Kaedah 2 (Manual)</strong>.
+        </p>
+
+        <h2>4.1 Kaedah Automatik (Paling Pantas)</h2>
+        <p>Anda telah dibekalkan dengan skrip pelancar yang telah dikonfigurasikan:</p>
+        <ol>
+            <li>
+                <strong>Untuk Kemaskini GitHub & Netlify:</strong>
+                <p>Klik dua kali fail <code>DEPLOY.bat</code>. Masukkan nota ringkas perubahan anda (contoh: <em>kemaskini subjek sesi 1</em>) dan tekan <code>Enter</code>. Skrip akan memuat naik fail ke GitHub secara automatik dan Netlify akan mengemaskini laman web dalam masa 1 minit.</p>
+            </li>
+            <li>
+                <strong>Untuk Kemaskini Firebase Hosting:</strong>
+                <p>Klik dua kali fail <code>firebase-deploy.bat</code>. Log masuk melalui pelayar jika diminta, dan skrip akan terus memuat naik fail terkini ke Firebase Hosting.</p>
+            </li>
+        </ol>
+
+        <h2>4.2 Panduan Deployment Manual (Langkah demi Langkah untuk Beginner)</h2>
+        <p>Jika anda ingin menjalankan setiap arahan secara manual melalui Terminal / Command Prompt, ikuti 5 langkah terperinci berikut:</p>
+
+        <div class="callout callout-info">
+            <div class="callout-title">Cara Membuka Terminal</div>
+            Di dalam VS Code, tekan kombinasi kekunci <code>Ctrl</code> + <code>~</code> atau buka menu atas: <strong>Terminal</strong> &gt; <strong>New Terminal</strong>. Pastikan laluan berada pada folder projek: <code>C:\Users\User\Downloads\jadual-waktu-kkpps-main</code>.
+        </div>
+
+        <h3>Langkah 1: Semak Status Fail yang Diubah</h3>
+        <p>Sebelum menghantar fail, lihat senarai fail yang telah anda sunting atau tambah:</p>
+        <pre><code>git status</code></pre>
+        <p><em>Fail berwarna merah menunjukkan fail yang telah disunting atau fail baharu yang belum didaftarkan.</em></p>
+
+        <h3>Langkah 2: Daftarkan Semua Fail (Git Add)</h3>
+        <p>Jalankan arahan berikut untuk mendaftarkan semua fail terkini:</p>
+        <pre><code>git add -A</code></pre>
+        <p><em>Jika anda jalankan <code>git status</code> semula, nama fail kini bertukar menjadi hijau.</em></p>
+
+        <h3>Langkah 3: Cipta Mesej Catatan (Git Commit)</h3>
+        <p>Simpan perubahan tersebut bersama catatan ringkas tentang apa yang telah anda ubah:</p>
+        <pre><code>git commit -m "kemaskini jadual waktu dan modul terkini"</code></pre>
+
+        <h3>Langkah 4: Hantar Kod ke GitHub & Netlify (Git Push)</h3>
+        <p>Hantar fail yang telah di-commit ke repositori GitHub cawangan <code>main</code>:</p>
+        <pre><code>git push origin main</code></pre>
+
+        <div class="callout callout-success">
+            <div class="callout-title">Auto-Deploy Netlify Berfungsi!</div>
+            Sebaik sahaja arahan <code>git push origin main</code> berjaya, pelayan Netlify akan mengesan kod baharu secara automatik. Dalam masa 60 hingga 120 saat, laman <strong>https://sijawap.netlify.app/</strong> akan dikemaskini tanpa perlu sebarang tindakan manual tambahan!
+        </div>
+    </div>
+
+    <!-- ================= BAHAGIAN 4.2 CONTINUED ================= -->
+    <div class="page-break">
+        <h2>4.3 Manual Deployment ke Firebase Hosting</h2>
+        <p>
+            Netlify dikemaskini melalui GitHub, manakala Firebase Hosting menggunakan <strong>Firebase CLI</strong>. Ikuti langkah berikut untuk memuat naik ke Firebase Hosting:
+        </p>
+
+        <h3>Langkah 1: Semak Status Log Masuk Firebase</h3>
+        <pre><code>firebase login:list</code></pre>
+        <p>Jika tertera <em>"No authorized accounts"</em>, teruskan ke Langkah 2.</p>
+
+        <h3>Langkah 2: Log Masuk Akaun Google Firebase</h3>
+        <pre><code>firebase login</code></pre>
+        <ol>
+            <li>Sistem akan membuka pelayar web (Chrome / Edge).</li>
+            <li>Pilih akaun Google yang mempunyai akses kepada projek Firebase SiJAWAP.</li>
+            <li>Klik butang <strong>"Allow"</strong> / <strong>"Izinkan"</strong>.</li>
+            <li>Terminal akan memaparkan mesej hijau: <code>✔ Success! Logged in as emel@gmail.com</code>.</li>
+        </ol>
+
+        <h3>Langkah 3: Tetapkan Projek Firebase Aktif</h3>
+        <pre><code>firebase use sistem-jadual-waktu-kkpps</code></pre>
+
+        <h3>Langkah 4: Terbitkan Fail ke Hosting</h3>
+        <pre><code>firebase deploy --only hosting</code></pre>
+        <p>Hasil yang berjaya akan memaparkan:</p>
+        <pre>
+✔  Deploy complete!
+
+Project Console: https://console.firebase.google.com/project/sistem-jadual-waktu-kkpps/overview
+Hosting URL: https://sistem-jadual-waktu-kkpps.web.app
+        </pre>
+
+        <h3>Langkah 5 (Tambahan): Kemaskini Peraturan Keselamatan Pangkalan Data</h3>
+        <p>Sekiranya anda membuat perubahan pada fail <code>firebase-rules.json</code>, jalankan:</p>
+        <pre><code>firebase deploy --only database</code></pre>
+    </div>
+
+    <!-- ================= BAHAGIAN 5 ================= -->
+    <div class="page-break">
+        <h1>5. Penyelesaian Masalah (Troubleshooting & FAQ)</h1>
+
+        <h2>5.1 Ralat: "No authorized accounts" / "Failed to authenticate"</h2>
+        <table>
+            <tr>
+                <td style="width: 25%; font-weight: 700; background: #fef2f2; color: #991b1b;">Punca</td>
+                <td>Sesi token Firebase CLI telah tamat tempoh atau belum dilog masuk pada komputer semasa.</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; background: #f0fdf4; color: #166534;">Penyelesaian</td>
+                <td>
+                    Jalankan arahan <code>firebase login --reauth</code> dalam terminal, atau klik fail <code>firebase-deploy.bat</code> untuk log masuk semula melalui pelayar web.
+                </td>
+            </tr>
+        </table>
+
+        <h2>5.2 Perubahan Sudah Di-deploy tetapi Laman Web Masih Papar Versi Lama</h2>
+        <table>
+            <tr>
+                <td style="width: 25%; font-weight: 700; background: #fef2f2; color: #991b1b;">Punca</td>
+                <td>Pelayar web menyimpan cache lama atau <em>Service Worker</em> (PWA) sedang menyimpan versi luar talian (*offline*).</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; background: #f0fdf4; color: #166534;">Penyelesaian</td>
+                <td>
+                    <ol style="margin: 0; padding-left: 18px;">
+                        <li>Lakukan <strong>Hard Refresh</strong>: Tekan kekunci <code>Ctrl</code> + <code>F5</code> (atau <code>Ctrl</code> + <code>Shift</code> + <code>R</code>) pada papan kekunci pelayar.</li>
+                        <li>Di telefon pintar: Buka tetapan pelayar &gt; <em>Clear Browsing Data / Kosongkan Cache</em>, kemudian muat semula halaman.</li>
+                    </ol>
+                </td>
+            </tr>
+        </table>
+
+        <h2>5.3 Ralat Git: "Updates were rejected because the remote contains work..."</h2>
+        <table>
+            <tr>
+                <td style="width: 25%; font-weight: 700; background: #fef2f2; color: #991b1b;">Punca</td>
+                <td>Terdapat perubahan baharu di GitHub yang belum dimuat turun ke komputer anda sebelum anda cuba tolak (*push*).</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; background: #f0fdf4; color: #166534;">Penyelesaian</td>
+                <td>
+                    Tarik perubahan terkini dari GitHub terlebih dahulu dengan arahan:
+                    <pre style="margin: 6px 0;"><code>git pull origin main --rebase</code></pre>
+                    Kemudian lakukan <code>git push origin main</code> sekali lagi.
+                </td>
+            </tr>
+        </table>
+
+        <h2>5.4 Ralat Ralat Format Semasa Muat Naik Fail Excel</h2>
+        <table>
+            <tr>
+                <td style="width: 25%; font-weight: 700; background: #fef2f2; color: #991b1b;">Punca</td>
+                <td>Lajur atau susunan tajuk fail Excel tidak mematuhi skema templat sistem SiJAWAP.</td>
+            </tr>
+            <tr>
+                <td style="font-weight: 700; background: #f0fdf4; color: #166534;">Penyelesaian</td>
+                <td>
+                    Gunakan templat bersih yang disediakan di dalam folder <code>templates/</code>:
+                    <ul>
+                        <li><code>templates/Template_Pelajar.xlsx</code></li>
+                        <li><code>templates/Template_Pensyarah.xlsx</code></li>
+                        <li><code>templates/Template_Subjek.xlsx</code></li>
+                    </ul>
+                    Salin data anda ke dalam templat tersebut tanpa mengubah tajuk lajur baris pertama.
+                </td>
+            </tr>
+        </table>
+
+        <div style="margin-top: 40px; padding: 15px; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; text-align: center;">
+            <p style="margin: 0; font-weight: 700; color: #0f2c59;">Sistem Pengurusan Jadual Waktu Bersepadu (SiJAWAP)</p>
+            <p style="margin: 4px 0 0 0; font-size: 8.5pt; color: #64748b;">Kolej Komuniti Papar, Kementerian Pendidikan Tinggi Malaysia &bull; Versi 2.0 (2026)</p>
+        </div>
+    </div>
+
+</body>
+</html>
