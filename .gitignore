@@ -1,5 +1,6 @@
 # System & Temp
 node_modules/
+.firebase/
 jadual-waktu-kkpps-main/
 Senarai_Pelajar.xlsx
 Thumbs.db

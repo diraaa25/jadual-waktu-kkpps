@@ -126,7 +126,7 @@ function toggleTheme() {
 function initDatabase() {
     if (isFirebaseActive()) {
         firebaseWatchAnnouncements(data => {
-            announcements = data || [];
+            announcements = (data && data.length > 0) ? data : [...DEFAULT_ANNOUNCEMENTS];
             renderAnnouncements();
             renderStats();
         });
@@ -536,10 +536,18 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderAnnouncements() {
-    if (!isFirebaseActive()) {
+    if (!isFirebaseActive() || !announcements || announcements.length === 0) {
         const storedAnnouncements = localStorage.getItem("kkpapar_announcements");
         if (storedAnnouncements) {
-            announcements = JSON.parse(storedAnnouncements);
+            try {
+                const parsed = JSON.parse(storedAnnouncements);
+                if (Array.isArray(parsed) && parsed.length > 0) {
+                    announcements = parsed;
+                }
+            } catch (e) {}
+        }
+        if (!announcements || announcements.length === 0) {
+            announcements = [...DEFAULT_ANNOUNCEMENTS];
         }
     }
 

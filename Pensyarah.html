@@ -873,7 +873,7 @@
                     renderAll();
                 });
                 firebaseWatchAnnouncements(data => {
-                    ANNOUNCEMENTS = data || [];
+                    ANNOUNCEMENTS = (data && data.length > 0) ? data : (JSON.parse(localStorage.getItem("kkpapar_announcements") || 'null') || SEED_ANNOUNCEMENTS);
                     renderAnnouncements();
                 });
                 firebaseWatchLecturers(data => {

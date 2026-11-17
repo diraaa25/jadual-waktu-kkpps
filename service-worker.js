@@ -1,17 +1,17 @@
 // Service Worker — Sistem Jadual Waktu KKPPS
 // Strategi: Network-first untuk semua, fallback ke cache (tiada delay data lama)
 
-const CACHE_NAME = 'kkpps-jadual-v21';
+const CACHE_NAME = 'kkpps-jadual-v22';
 
 // Aset statik sahaja yang di-cache (bukan data Firebase)
 const STATIC_ASSETS = [
   './',
   './index.html',
   './style.css?v=17',
-  './app.js?v=10',
+  './app.js?v=11',
   './announcements.js',
   './firebase-config.js',
-  './firebase-service.js?v=9',
+  './firebase-service.js?v=10',
   './timetable-workflow.js?v=17',
   './timetable-print.js?v=14',
   './timetable-ui.css',
