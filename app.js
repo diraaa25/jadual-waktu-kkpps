@@ -1,9 +1,11 @@
-// Default Database Initialization Data
+// Default Database Initialization Data (Selari dengan Aktiviti KKPPS)
 
 const DEFAULT_ANNOUNCEMENTS = [
-    { category: "Pentadbiran Kolej", date: "Hari Ini", title: "Penyediaan Jadual Waktu Sesi 2026/2027", desc: "Semua pensyarah STM, SLK & UPA dikehendaki menyemak slot masing-masing di bahagian \"Urus Jadual Waktu\" bagi mengelakkan pertindihan." },
-    { category: "Penyelaras STM", date: "Semalam", title: "Kemas kini Pakej Kursus Sijil Teknologi Maklumat", desc: "Penambahan subjek Pengaturcaraan Web (STM401) telah dimasukkan ke dalam daftar kursus aktif bagi penggal ini." },
-    { category: "Unit Akademik", date: "3 Hari Lepas", title: "Pertemuan Mingguan Pensyarah", desc: "Perbincangan penyelarasan jadual waktu diadakan setiap hari Jumaat jam 9:00 pagi di Bilik TECC." }
+    { category: "Pengambilan Pelajar", date: "23 Nov 2026", title: "PENDAFTARAN PELAJAR BAHARU SESI II 2026/2027", desc: "Pendaftaran Pelajar Baharu Sesi II 2026/2027 bertempat di Kolej Komuniti Papar jam 08:00 pagi - 12:00 tengah hari. Selamat Datang ke Kolej Komuniti Papar!", publisherName: "PEGAWAI PENGAMBILAN", priority: "Penting" },
+    { category: "Kecemerlangan Institusi", date: "16 - 20 Nov 2026", title: "Program Hala Tuju 2027 KKPPS", desc: "Sesi penyelarasan dan penetapan KPI Kecemerlangan Institusi KKPPS 2027 bertempat di Bilik Mesyuarat jam 08:00 pagi - 05:00 petang.", publisherName: "PENYELARAS KECEMERLANGAN INSTITUSI", priority: "Penting" },
+    { category: "Unit Latihan Industri", date: "Sesi II 2026/2027", title: "Taklimat 1 Latihan Industri Sesi 2:26/27", desc: "Taklimat persediaan Latihan Industri bagi pelajar semester akhir bertempat di Dewan Rafflesia jam 08:00 pagi - 11:30 pagi.", publisherName: "DAILY BINTI TAYOK", priority: "Biasa" },
+    { category: "Latihan & Pembangunan", date: "Sesi II 2026/2027", title: "Kursus Kekompetenan Web", desc: "Kursus kemahiran pembangunan web bertempat di Makmal Komputer 1 jam 08:00 pagi - 05:00 petang.", publisherName: "DAILY BINTI TAYOK", priority: "Biasa" },
+    { category: "Kelab Kebajikan Kakitangan", date: "Sesi 2026/2027", title: "Hari Keluarga KKPPS 2026", desc: "Aktiviti Hari Keluarga KKPPS bertempat di Bilik Sukan KKPPS jam 09:00 pagi - 05:00 petang.", publisherName: "Kelab Kebajikan Kakitangan", priority: "Biasa" }
 ];
 
 const INITIAL_LECTURERS = [
@@ -150,6 +152,7 @@ function initDatabase() {
         firebaseWatchSpakActivities(data => {
             spakActivities = data || [];
             if (typeof renderSpakCalendar === 'function') renderSpakCalendar();
+            renderAnnouncements();
         });
     } else {
         // Load announcements
@@ -536,19 +539,29 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 function renderAnnouncements() {
+    const isDummy = (title) => {
+        if (!title) return false;
+        return title.includes("Penyediaan Jadual Waktu Sesi 2026/2027") ||
+               title.includes("Kemas kini Pakej Kursus Sijil Teknologi Maklumat") ||
+               title.includes("Pertemuan Mingguan Pensyarah");
+    };
+
     if (!isFirebaseActive() || !announcements || announcements.length === 0) {
         const storedAnnouncements = localStorage.getItem("kkpapar_announcements");
         if (storedAnnouncements) {
             try {
                 const parsed = JSON.parse(storedAnnouncements);
                 if (Array.isArray(parsed) && parsed.length > 0) {
-                    announcements = parsed;
+                    announcements = parsed.filter(a => !isDummy(a.title));
                 }
             } catch (e) {}
         }
         if (!announcements || announcements.length === 0) {
             announcements = [...DEFAULT_ANNOUNCEMENTS];
         }
+    } else {
+        // Tapis keluar sebarang hebahan contoh lama jika masih ada
+        announcements = announcements.filter(a => !isDummy(a.title));
     }
 
     const board = document.getElementById("announcements-display-list");
@@ -556,11 +569,34 @@ function renderAnnouncements() {
 
     board.innerHTML = "";
 
+    // Gabungkan dengan aktiviti KKPPS (SPAK) jika ada
+    let displayList = [...announcements];
+    if (Array.isArray(spakActivities) && spakActivities.length > 0) {
+        const existingTitles = new Set(displayList.map(a => (a.title || '').trim().toLowerCase()));
+        spakActivities.forEach(act => {
+            if (!act || !act.title) return;
+            const normTitle = act.title.trim().toLowerCase();
+            if (!existingTitles.has(normTitle)) {
+                existingTitles.add(normTitle);
+                displayList.push({
+                    category: act.category === 'Penting' ? 'Aktiviti Penting KKPPS' : 'Aktiviti KKPPS',
+                    date: act.date && !act.date.startsWith('60') ? act.date : 'Sesi 2026/2027',
+                    title: act.title,
+                    desc: (act.description ? act.description + ' ' : '') + 
+                          (act.location ? `(Lokasi: ${act.location}` : '') + 
+                          (act.startTime ? `, Masa: ${act.startTime} - ${act.endTime || ''})` : act.location ? ')' : ''),
+                    publisherName: act.coordinator || 'Pengurusan KKPPS',
+                    priority: act.category === 'Penting' ? 'Penting' : 'Biasa'
+                });
+            }
+        });
+    }
+
     // Filter out expired announcements
     const now = new Date();
     const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
-    const activeAnnouncements = announcements.filter(ann => {
+    const activeAnnouncements = displayList.filter(ann => {
         if (ann.expiryDate) {
             return ann.expiryDate >= todayStr;
         }

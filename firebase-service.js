@@ -28,11 +28,13 @@ if (isFirebaseConfigured()) {
 
 const isFirebaseActive = () => firebaseActive;
 
-// Seed data definitions
+// Seed data definitions (Selari dengan Aktiviti KKPPS)
 const SEED_ANNOUNCEMENTS = [
-    { category: "Pentadbiran Kolej", date: "Hari Ini", title: "Penyediaan Jadual Waktu Sesi 2026/2027", desc: "Semua pensyarah STM, SLK & UPA dikehendaki menyemak slot masing-masing di bahagian \"Urus Jadual Waktu\" bagi mengelakkan pertindihan." },
-    { category: "Penyelaras STM", date: "Semalam", title: "Kemas kini Pakej Kursus Sijil Teknologi Maklumat", desc: "Penambahan subjek Pengaturcaraan Web (STM401) telah dimasukkan ke dalam daftar kursus aktif bagi penggal ini." },
-    { category: "Unit Akademik", date: "3 Hari Lepas", title: "Pertemuan Mingguan Pensyarah", desc: "Perbincangan penyelarasan jadual waktu diadakan setiap hari Jumaat jam 9:00 pagi di Bilik TECC." }
+    { category: "Pengambilan Pelajar", date: "23 Nov 2026", title: "PENDAFTARAN PELAJAR BAHARU SESI II 2026/2027", desc: "Pendaftaran Pelajar Baharu Sesi II 2026/2027 bertempat di Kolej Komuniti Papar jam 08:00 pagi - 12:00 tengah hari. Selamat Datang ke Kolej Komuniti Papar!", publisherName: "PEGAWAI PENGAMBILAN", priority: "Penting" },
+    { category: "Kecemerlangan Institusi", date: "16 - 20 Nov 2026", title: "Program Hala Tuju 2027 KKPPS", desc: "Sesi penyelarasan dan penetapan KPI Kecemerlangan Institusi KKPPS 2027 bertempat di Bilik Mesyuarat jam 08:00 pagi - 05:00 petang.", publisherName: "PENYELARAS KECEMERLANGAN INSTITUSI", priority: "Penting" },
+    { category: "Unit Latihan Industri", date: "Sesi II 2026/2027", title: "Taklimat 1 Latihan Industri Sesi 2:26/27", desc: "Taklimat persediaan Latihan Industri bagi pelajar semester akhir bertempat di Dewan Rafflesia jam 08:00 pagi - 11:30 pagi.", publisherName: "DAILY BINTI TAYOK", priority: "Biasa" },
+    { category: "Latihan & Pembangunan", date: "Sesi II 2026/2027", title: "Kursus Kekompetenan Web", desc: "Kursus kemahiran pembangunan web bertempat di Makmal Komputer 1 jam 08:00 pagi - 05:00 petang.", publisherName: "DAILY BINTI TAYOK", priority: "Biasa" },
+    { category: "Kelab Kebajikan Kakitangan", date: "Sesi 2026/2027", title: "Hari Keluarga KKPPS 2026", desc: "Aktiviti Hari Keluarga KKPPS bertempat di Bilik Sukan KKPPS jam 09:00 pagi - 05:00 petang.", publisherName: "Kelab Kebajikan Kakitangan", priority: "Biasa" }
 ];
 
 const SEED_LECTURERS = [
