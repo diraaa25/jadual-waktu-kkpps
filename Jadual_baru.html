@@ -1073,7 +1073,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="firebase-service.js"></script>
-  <script src="timetable-workflow.js?v=15"></script>
+  <script src="timetable-workflow.js?v=17"></script>
   <script src="timetable-print.js?v=14"></script>
     <script>installTimetableReportStyles();</script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
@@ -1135,6 +1135,7 @@
     const programScope = TIMETABLE_PROGRAMS.includes(selectedRole) ? selectedRole : null;
     let scopedBaseline;
     let workingSlots = [];
+    let workingSubjects = [];
     let programmerBaseline;
     let editSubjekIndex = null;
 
@@ -1288,6 +1289,7 @@
       const full = programmerAccess ? current : workingTimetable(current);
       bersihkanDatabase(full);
       workingSlots = full.slot;
+      workingSubjects = full.subjek;
       if (reviewProgram) {
         renderProgramReview(full);
         return;
@@ -1485,12 +1487,6 @@
       const mKelas = document.getElementById('metaKelas');
       if (mKelas) {
         mKelas.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' +
-          CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
-      }
-
-      const pSelectClass = document.getElementById('printSelectClass');
-      if (pSelectClass) {
-        pSelectClass.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' +
           CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
       }
 
@@ -1909,7 +1905,7 @@
         return false;
       }
 
-      const cKelas = (s.kelas === o.kelas) && !isParallelElective;
+      const cKelas = scheduleKey(s.kelas) === scheduleKey(o.kelas) && !isParallelElective;
       const cLokasi = !isCombinedClass && (s.lokasi === o.lokasi);
       return cPensyarah || cKelas || cLokasi;
     }
@@ -1986,14 +1982,14 @@
     };
 
     function buatJadualGridHTML(slots) {
-      return renderTimetableGrid(slots, slot => DB.slot.some(other =>
+      return renderTimetableGrid(slots, slot => workingSlots.some(other =>
         slot !== other && bertindih(slot, other) && checkClash(slot, other)));
     }
 
     function cetakJadualSemasa() {
       const kelas = document.getElementById('pilihJadualKelas').value;
-      if (DB.slot.some(slot => slot.kelas === kelas)) cetakJadualKelas(kelas);
-      else cetakSemuaKelasSerentak();
+      if (kelas === 'SEMUA') cetakSemuaKelasSerentak();
+      else cetakJadualKelas(kelas);
     }
 
     // --- PRINT HELPERS ---
@@ -2043,45 +2039,25 @@
       return tugasList;
     }
 
-    function dapatkanTugasMengajarKelas(namaKelas) {
-      const tugasList = [];
-      const keys = new Set();
-      
-      DB.subjek.forEach(s => {
-        if (s.kelas && s.kelas.trim().toUpperCase() === namaKelas.toUpperCase()) {
-          const key = `${s.kod}_${s.kelas}`;
-          if (!keys.has(key)) {
-            keys.add(key);
-            const jamSlot = DB.slot.filter(sl => sl.kod === s.kod && sl.kelas === s.kelas)
-                            .reduce((t, sl) => t + (toMin(sl.tamat) - toMin(sl.mula)) / 60, 0);
-            tugasList.push({
-              kod: s.kod,
-              nama: s.subjek,
-              kelas: s.kelas,
-              jam: jamSlot || s.jam
-            });
-          }
-        }
-      });
+    function classTimetableSlots() {
+      const scope = reviewProgram || programScope;
+      if (programmerAccess) return DB.slot;
+      if (!scope) return [];
+      const assignedClasses = new Set([...DB.slot, ...DB.subjek].map(row => scheduleKey(row.kelas)));
+      return workingSlots.filter(row =>
+        programForClass(row.kelas) === scope || assignedClasses.has(scheduleKey(row.kelas)));
+    }
 
-      DB.slot.forEach(sl => {
-        if (sl.kelas && sl.kelas.trim().toUpperCase() === namaKelas.toUpperCase()) {
-          const key = `${sl.kod}_${sl.kelas}`;
-          if (!keys.has(key)) {
-            keys.add(key);
-            const jamSlot = DB.slot.filter(x => x.kod === sl.kod && x.kelas === sl.kelas)
-                            .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
-            tugasList.push({
-              kod: sl.kod,
-              nama: sl.subjek,
-              kelas: sl.kelas,
-              jam: jamSlot
-            });
-          }
+    function dapatkanTugasMengajarKelas(namaKelas, slots) {
+      const tasks = new Map();
+      for (const slot of slots) {
+        const key = scheduleKey(slot.kod);
+        if (!tasks.has(key)) {
+          tasks.set(key, { kod: slot.kod, nama: slot.subjek, kelas: namaKelas, jam: 0 });
         }
-      });
-
-      return tugasList;
+        tasks.get(key).jam += (toMin(slot.tamat) - toMin(slot.mula)) / 60;
+      }
+      return [...tasks.values()];
     }
 
     function dapatkanTugasMengajarLokasi(namaLokasi) {
@@ -2111,8 +2087,8 @@
     const reportKinds = {
       kelas: {
         label: 'Kelas', title: 'Jadual Waktu Kelas',
-        values: () => DB.slot.map(row => row.kelas),
-        matches: (row, value) => row.kelas === value,
+        values: () => classTimetableSlots().map(row => row.kelas),
+        matches: (row, value) => scheduleKey(row.kelas) === scheduleKey(value),
         department: value => programForClass(value),
         tasks: dapatkanTugasMengajarKelas
       },
@@ -2138,19 +2114,27 @@
     };
 
     function reportValues(kind) {
+      if (kind === 'kelas') return timetableClassChoices(reportKinds.kelas.values());
       return [...new Set(reportKinds[kind].values().filter(value => value && value !== '-'))].sort();
     }
 
     function timetableReport(kind, value) {
       const report = reportKinds[kind];
-      const slots = DB.slot.filter(row => report.matches(row, value));
+      const isClass = kind === 'kelas';
+      const slots = (isClass ? classTimetableSlots() : DB.slot).filter(row => report.matches(row, value));
       const dept = report.department(value) || 'Umum';
-      const signatory = programScope || reviewProgram || timetableSignatoryProgram(dept, slots);
-      const confirmed = reviewProgram || programScope
+      const contributors = new Set(slots.map(slot => programForRow(DB, slot)));
+      const classPrograms = TIMETABLE_PROGRAMS.filter(program => contributors.has(program));
+      const signatory = isClass ? classPrograms : programScope || reviewProgram || timetableSignatoryProgram(dept, slots);
+      const confirmed = isClass
+        ? !DB.publicationWithdrawn && classPrograms.length > 0 && classPrograms.length === contributors.size &&
+          classPrograms.every(program => workflowFor(DB, program).status === 'Approved')
+        : reviewProgram || programScope
         ? workflowFor(DB, reviewProgram || programScope).status === 'Approved' : DB.isConfirmed;
       return buildTimetableReport({
         kind, title: report.title, label: report.label.toUpperCase(), value: report.display?.(value) || value,
-        dept, data: DB, slots, tasks: report.tasks(value), lecturers: LECTURERS_DATA, signatory, confirmed
+        dept, data: isClass && !programmerAccess ? { ...DB, subjek: workingSubjects } : DB,
+        slots, tasks: report.tasks(value, slots), lecturers: LECTURERS_DATA, signatory, confirmed
       });
     }
 
@@ -2160,7 +2144,12 @@
       openTimetablePrint(reportKinds[kind].title, markup, "", { closeAfter: true });
     }
 
-    function cetakJadualKelas(value) { printReports('kelas', [value]); }
+    function cetakJadualKelas(value) {
+      if (!value || !classTimetableSlots().some(row => reportKinds.kelas.matches(row, value))) {
+        return alert('Tiada slot dijadualkan untuk kelas ini.');
+      }
+      printReports('kelas', [value]);
+    }
     function locationAllowedForPrint(value) {
       return !programScope || LOCATIONS_DATA.some(location =>
         scheduleKey(location.name) === scheduleKey(value) && location.type === programScope);
@@ -2246,9 +2235,9 @@
 
     window.renderJadualWaktuKelas = function () {
       const selectVal = document.getElementById('pilihJadualKelas').value;
-      let slotsToRender = DB.slot;
+      let slotsToRender = classTimetableSlots();
       if (selectVal !== 'SEMUA') {
-        slotsToRender = DB.slot.filter(s => s.kelas === selectVal);
+        slotsToRender = slotsToRender.filter(row => reportKinds.kelas.matches(row, selectVal));
       }
       document.getElementById('jadualWrap').innerHTML = buatJadualGridHTML(slotsToRender);
     };
@@ -2310,10 +2299,7 @@
       const dJadualKelas = document.getElementById('pilihJadualKelas');
       if (dJadualKelas) {
         const currentSel = dJadualKelas.value;
-        let uniqueClasses = [...new Set(DB.slot.map(s => s.kelas))].sort();
-        if (uniqueClasses.length === 0 && typeof CLASSES_DATA !== 'undefined') {
-          uniqueClasses = [...CLASSES_DATA].sort();
-        }
+        const uniqueClasses = reportValues('kelas');
 
         let selectHtml = '<option value="SEMUA">Semua Kelas</option>';
         uniqueClasses.forEach(c => {
@@ -2477,6 +2463,18 @@
       if (typeof periksaPertindihanRealTime === 'function') periksaPertindihanRealTime();
 
       // Populate custom print dropdowns dynamically
+      const printSelectClass = document.getElementById('printSelectClass');
+      if (printSelectClass) {
+        const selected = scheduleKey(printSelectClass.value);
+        printSelectClass.replaceChildren(
+          ...reportValues('kelas').map(value => new Option(value, value, false, scheduleKey(value) === selected))
+        );
+        if (!printSelectClass.options.length) {
+          const empty = new Option('Tiada Kelas Dijadualkan', '');
+          empty.disabled = true;
+          printSelectClass.append(empty);
+        }
+      }
       const printSelectLec = document.getElementById('printSelectLec');
       if (printSelectLec) {
         printSelectLec.replaceChildren(...reportValues('pensyarah').map(code =>
@@ -2603,9 +2601,9 @@
         lokasi: document.getElementById('genLoc_' + index)?.value
       }));
       const reserved = programmerAccess ? [] : workingSlots.filter(slot => programForRow(DB, slot) !== programScope);
-      const slots = generateTimetableSlots(targets, reserved);
-      if (!slots) {
-        alert('Tiada jadual bebas pertindihan ditemui. Semak jam mengajar, kelas atau lokasi. Jadual sedia ada dikekalkan.');
+      const { slots, error } = generateTimetableSlots(targets, reserved);
+      if (error) {
+        alert(error);
         return;
       }
       button.disabled = true;
@@ -2669,7 +2667,7 @@
             (targetSlot.singkatan !== '-' && targetSlot.singkatan === o.singkatanPembantu) ||
             (targetSlot.singkatanPembantu !== '-' && targetSlot.singkatanPembantu === o.singkatan) ||
             (targetSlot.singkatanPembantu !== '-' && targetSlot.singkatanPembantu === o.singkatanPembantu);
-          const cKelas = (targetSlot.kelas === o.kelas);
+          const cKelas = scheduleKey(targetSlot.kelas) === scheduleKey(o.kelas);
           const cLokasi = (targetSlot.lokasi === o.lokasi);
 
           if (cPensyarah) {

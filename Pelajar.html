@@ -330,7 +330,7 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="firebase-service.js"></script>
-  <script src="timetable-workflow.js?v=15"></script>
+  <script src="timetable-workflow.js?v=17"></script>
   <script src="timetable-print.js?v=14"></script>
     <script>installTimetableReportStyles();</script>
     <script>
@@ -343,9 +343,7 @@
         const KEY = 'jadualSistemV3';
 
         // Helper function to normalize class name
-        function normalizeClassName(name) {
-            return name ? name.replace(/\s+/g, '').toUpperCase() : '';
-        }
+        const normalizeClassName = scheduleKey;
 
         // High quality default seed data to populate database if empty
         const defaultDB = {
@@ -497,7 +495,7 @@
                 "SLK 3A", "SLK 3B"
             ];
             const activeClasses = DB.slot.map(s => s.kelas).filter(Boolean);
-            const classes = [...new Set([...activeClasses, ...defaultClasses])].sort();
+            const classes = timetableClassChoices([...activeClasses, ...defaultClasses]);
 
             const select = document.getElementById("pilihKelas");
             // Clear existing options
@@ -514,8 +512,11 @@
         function loadStudentState() {
             const savedClass = localStorage.getItem("pelajar_kelas");
             if (savedClass) {
-                selectedClass = savedClass;
-                document.getElementById("pilihKelas").value = selectedClass;
+                const select = document.getElementById("pilihKelas");
+                const match = [...select.options].find(option =>
+                    normalizeClassName(option.value) === normalizeClassName(savedClass));
+                selectedClass = match?.value || '';
+                select.value = selectedClass;
 
                 const savedRepeat = localStorage.getItem(`pelajar_repeat_slots_${normalizeClassName(selectedClass)}`);
                 if (savedRepeat) {
@@ -636,7 +637,7 @@
                     )
                 );
                 
-                if (isParallelElective && slot.kelas === other.kelas) {
+                if (isParallelElective && normalizeClassName(slot.kelas) === normalizeClassName(other.kelas)) {
                     return false; // Not a clash
                 }
 
@@ -837,7 +838,8 @@
 
             // Combined schedule to check for overlap warning
             const combinedSchedule = [];
-            DB.slot.filter(s => s.kelas === selectedClass).forEach(s => combinedSchedule.push({ ...s, isRepeat: false }));
+            DB.slot.filter(s => normalizeClassName(s.kelas) === normalizeClassName(selectedClass))
+                .forEach(s => combinedSchedule.push({ ...s, isRepeat: false }));
             repeatSlots.forEach(s => combinedSchedule.push({ ...s, isRepeat: true }));
 
             if (checkClash(slotObj, combinedSchedule)) {

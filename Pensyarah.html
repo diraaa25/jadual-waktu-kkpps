@@ -670,7 +670,7 @@
     <script src="firebase-config.js"></script>
     <script src="firebase-service.js"></script>
     <script src="announcements.js"></script>
-  <script src="timetable-workflow.js?v=15"></script>
+  <script src="timetable-workflow.js?v=17"></script>
   <script src="timetable-print.js?v=14"></script>
     <script>installTimetableReportStyles();</script>
     <script>
@@ -1057,9 +1057,9 @@
                     const classSelect = document.getElementById("tpaReviewClassSelect");
                     if (classSelect) {
                         const currentVal = classSelect.value;
-                        const classes = [...new Set((workingTimetable(DB).slot || []).map(s => s.kelas))].sort();
-                        classSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>' + 
-                            classes.map(c => `<option value="${c}" ${c === currentVal ? 'selected' : ''}>${c}</option>`).join('');
+                        const classes = timetableClassChoices((workingTimetable(DB).slot || []).map(s => s.kelas));
+                        classSelect.replaceChildren(new Option('-- Pilih Kelas --', ''), ...classes.map(value =>
+                            new Option(value, value, false, scheduleKey(value) === scheduleKey(currentVal))));
                     }
 
                     // Render initial grid for active lecturer
@@ -1136,7 +1136,7 @@
                     gridWrap.innerHTML = '<div class="p-6 text-center text-slate-400 dark:text-slate-500">Sila pilih kelas untuk memulakan semakan jadual.</div>';
                     return;
                 }
-                filteredSlots = allSlots.filter(s => s.kelas === selectedClass);
+                filteredSlots = allSlots.filter(s => scheduleKey(s.kelas) === scheduleKey(selectedClass));
                 headerTitle = `Jadual Kelas: ${selectedClass}`;
             } else {
                 if (classSelect) classSelect.value = "";
@@ -1189,7 +1189,7 @@
                     const sameLec = l1.some(l => l2.includes(l));
 
                     const cPensyarah = !isCombinedClass && sameLec;
-                    const cKelas = (slot.kelas === other.kelas) && !isParallelElective;
+                    const cKelas = scheduleKey(slot.kelas) === scheduleKey(other.kelas) && !isParallelElective;
                     const cLokasi = !isCombinedClass && (slot.lokasi === other.lokasi);
 
                     // Allow shared lecturer for parallel electives in same room
