@@ -1,8 +1,8 @@
 const standardTimetableLocations = [
-    { name: "DEWAN KULIAH", code: "DK", type: "Umum" },
-    { name: "MAKMAL BAHASA", code: "MB", type: "Umum" },
-    { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1", code: "TECC 1", type: "Umum" },
-    { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2", code: "TECC 2", type: "Umum" },
+    { name: "DEWAN KULIAH", code: "DK", type: "UPA" },
+    { name: "MAKMAL BAHASA", code: "MB", type: "UPA" },
+    { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1", code: "TECC 1", type: "UPA" },
+    { name: "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2", code: "TECC 2", type: "UPA" },
     { name: "MAKMAL PENGATURCARAAN 1", code: "MP1", type: "STM" },
     { name: "MAKMAL PENGATURCARAAN 2", code: "MP2", type: "STM" },
     { name: "MAKMAL MULTIMEDIA", code: "MM", type: "STM" },
@@ -24,8 +24,15 @@ function timetableLocations() {
         if (locations.has(key)) continue;
         const upper = name.toUpperCase();
         const type = /\bUPA\b|PENGAJIAN AM/.test(upper) ? 'UPA' :
-            /\bSLK\b|LOGISTIK/.test(upper) ? 'SLK' : /\bSTM\b|MAKMAL/.test(upper) ? 'STM' : 'Umum';
+            /\bSLK\b|LOGISTIK/.test(upper) ? 'SLK' : /\bSTM\b|MAKMAL/.test(upper) ? 'STM' : 'UPA';
         locations.set(key, { name, code: locationInitials(name), type });
+    }
+    const saved = JSON.parse(localStorage.getItem('sijawap_location_mappings') || 'null') ||
+        JSON.parse(localStorage.getItem('jadualSistemV3') || '{}').locationMappings || {};
+    for (const item of Object.values(saved)) {
+        if (item?.name && ['STM', 'SLK', 'UPA'].includes(item.type)) {
+            locations.set(scheduleKey(item.name), item);
+        }
     }
     return locations;
 }
@@ -108,14 +115,89 @@ function installTimetableReportStyles() {
     const style = document.createElement('style');
     style.textContent = timetableReportCss + lecturerPrintCss;
     document.head.append(style);
+    document.addEventListener('DOMContentLoaded', () => {
+        const section = document.createElement('details');
+        section.className = 'no-print';
+        section.style.cssText = 'margin:16px;padding:12px;background:white;color:black';
+        section.innerHTML = '<summary>Susun legenda cetakan</summary>' +
+            '<p>Masukkan kod kursus mengikut susunan yang dikehendaki, dipisahkan dengan koma. SPAK dan PSH diletakkan paling bawah. Susunan disimpan dalam pelayar ini.</p>' +
+            '<input aria-label="Susunan kod kursus" placeholder="SFC11643, MPU12042, STM317423">' +
+            '<button type="button">Simpan susunan</button>';
+        const input = section.querySelector('input');
+        input.value = JSON.parse(localStorage.getItem('sijawap_legend_order') || '[]').join(', ');
+        section.querySelector('button').onclick = () => {
+            const order = [...new Set(input.value.split(',').map(scheduleKey).filter(Boolean))];
+            localStorage.setItem('sijawap_legend_order', JSON.stringify(order));
+            input.value = order.join(', ');
+            alert('Susunan disimpan. Buka semula pratonton atau cetak jadual untuk menggunakan susunan ini.');
+        };
+        document.body.append(section);
+    });
+}
+
+function timetableTeachingHours(slots) {
+    const sessions = new Map();
+    for (const slot of slots) {
+        const key = [slot.kod, slot.hari, slot.mula, slot.tamat, slot.lokasi].map(scheduleKey).join('|');
+        if (!sessions.has(key)) sessions.set(key, []);
+        sessions.get(key).push(slot);
+    }
+    let minutes = 0;
+    for (const records of sessions.values()) {
+        const remaining = new Set(records);
+        while (remaining.size) {
+            const first = remaining.values().next().value;
+            remaining.delete(first);
+            const connected = [first];
+            for (let index = 0; index < connected.length; index++) {
+                const row = connected[index];
+                const lecturers = [row.singkatan, row.singkatanPembantu].map(scheduleKey)
+                    .filter(code => code && code !== '-');
+                for (const other of remaining) {
+                    const sameClass = scheduleKey(row.kelas) && scheduleKey(row.kelas) === scheduleKey(other.kelas);
+                    const sameLecturer = [other.singkatan, other.singkatanPembantu]
+                        .some(code => lecturers.includes(scheduleKey(code)));
+                    if (sameClass || sameLecturer) {
+                        remaining.delete(other);
+                        connected.push(other);
+                    }
+                }
+            }
+            minutes += Math.max(0, timetableMinutes(first.tamat) - timetableMinutes(first.mula));
+        }
+    }
+    return minutes / 60;
+}
+
+function timetableLegendTasks(slots) {
+    const courses = new Map();
+    for (const slot of slots) {
+        const key = scheduleKey(slot.kod);
+        if (!courses.has(key)) courses.set(key, []);
+        courses.get(key).push(slot);
+    }
+    const order = JSON.parse(localStorage.getItem('sijawap_legend_order') || '[]');
+    const rank = code => {
+        const position = order.indexOf(scheduleKey(code));
+        return position < 0 ? order.length : position;
+    };
+    return [...courses.values()].map(records => ({
+        kod: records[0].kod, nama: records[0].subjek,
+        kelas: timetableClassChoices(records.map(row => row.kelas)).join(' / '),
+        jam: timetableTeachingHours(records), records
+    })).sort((a, b) => {
+        const activity = task => /SPAK|PSH/i.test(task.kod) ? 1 : 0;
+        return activity(a) - activity(b) || rank(a.kod) - rank(b.kod);
+    });
 }
 
 function timetableTaskTable(kind, tasks, slots, subjects, lecturers) {
+    tasks = timetableLegendTasks(slots);
     const text = escapeTimetableText;
     const classReport = kind === 'kelas';
     const showLecturer = classReport || kind === 'lokasi';
     const matches = (row, task) => scheduleKey(row.kod) === scheduleKey(task.kod) &&
-        (!row.kelas || scheduleKey(row.kelas) === scheduleKey(task.kelas));
+        (!row.kelas || task.records.some(slot => scheduleKey(row.kelas) === scheduleKey(slot.kelas)));
     const roster = new Map(lecturers.map(item => [scheduleKey(item.shortName || item.short), item.name]));
     const credits = [];
     const rows = tasks.map(task => {
@@ -145,7 +227,8 @@ function timetableTaskTable(kind, tasks, slots, subjects, lecturers) {
         '">JUMLAH KESELURUHAN</th>' + creditTotal + '<th>' + text(Number(total.toFixed(2))) + '</th></tr></tbody></table>';
 }
 
-function buildTimetableReport({ kind, title, label, value, dept, data, slots, tasks, lecturers, signatory, confirmed }) {
+function buildTimetableReport({ kind, title, label, value, dept, data, slots, tasks, lecturers, signatory, confirmed,
+    warningVisible = () => false, conflictSlots = slots }) {
     const text = escapeTimetableText;
     return '<div class="timetable-report"><header class="timetable-report-heading">' +
         '<img src="Logo_KPT.png" alt="Logo KPT"><div><h2>KOLEJ KOMUNITI PAPAR</h2>' +
@@ -237,7 +320,10 @@ function openTimetablePrint(title, markup, css = '', options) {
     return printTimetableWindow(target, options);
 }
 
-function renderTimetableGrid(slots, hasConflict = () => false) {
+function renderTimetableGrid(slots, hasConflict = () => false, warningVisible = () => false, detectResourceClashes = true,
+    warningDetails = () => '') {
+    const highlighted = new Set(slots.filter((slot, index) => warningVisible(slot) && (hasConflict(slot) ||
+        (detectResourceClashes && slots.some((other, otherIndex) => index !== otherIndex && strictTimetableClash(slot, other, false))))));
     const locations = timetableLocations();
     const parseTime = value => {
         const [hour, minute] = String(value).split(':').map(Number);
@@ -273,7 +359,8 @@ function renderTimetableGrid(slots, hasConflict = () => false) {
             }
             const lessons = slots.filter(slot => String(slot.hari).toLowerCase() === day.toLowerCase() &&
                 covers(slot, hour, hour + 1));
-            return '<td>' + lessons.map(slot => '<div class="timetable-lesson' + (hasConflict(slot) ? ' clash' : '') +
+            return '<td>' + lessons.map(slot => '<div class="timetable-lesson' + (highlighted.has(slot) ? ' clash' : '') +
+                '" title="' + escapeTimetableText(highlighted.has(slot) ? warningDetails(slot) : '') +
                 '"><b>' + escapeTimetableText(slot.kod) + '</b><br>' +
                 escapeTimetableText(slot.kelas) + '<br>' +
                 escapeTimetableText(locations.get(scheduleKey(slot.lokasi))?.code || locationInitials(slot.lokasi) || '—') + '<br>' +
@@ -293,7 +380,10 @@ const lecturerPrintCss = `
     .lecturer-print-grid .weekday-break span { writing-mode: vertical-rl; transform: rotate(180deg); }
     .lecturer-print-grid td div + div { border-top: 1px solid #aaa; margin-top: 2px; padding-top: 2px; }
     .lecturer-print-grid { color: #111827; background: #fff; overflow-wrap: anywhere; }
-    .timetable-lesson.clash { background: #fee2e2; color: #991b1b; }
+    .timetable-lesson.clash { background: #fee2e2; color: #991b1b; border: 1px solid #ef4444; }
+    @media print {
+        .timetable-lesson.clash { background: transparent; color: #000; border: 0; }
+    }
 `;
 
 const existingGridPrintCss = `

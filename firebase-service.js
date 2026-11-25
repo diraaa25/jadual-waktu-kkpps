@@ -221,7 +221,9 @@ const firebaseSaveStudents = (data) => {
 const firebaseWatchTimetable = (callback) => {
     if (isFirebaseActive()) {
         db.ref('timetable').on('value', snapshot => {
-            callback(snapshot.val());
+            const data = snapshot.val();
+            localStorage.setItem('sijawap_location_mappings', JSON.stringify(data?.locationMappings || {}));
+            callback(data);
         });
     }
 };

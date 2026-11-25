@@ -670,8 +670,8 @@
     <script src="firebase-config.js"></script>
     <script src="firebase-service.js"></script>
     <script src="announcements.js"></script>
-  <script src="timetable-workflow.js?v=17"></script>
-  <script src="timetable-print.js?v=14"></script>
+  <script src="timetable-workflow.js?v=27"></script>
+  <script src="timetable-print.js?v=20"></script>
     <script>installTimetableReportStyles();</script>
     <script>
         appendStatusBadge('#firebase-status-badge-container');
@@ -835,8 +835,7 @@
 
         function locationReport() {
             const slots = DB.slot.filter(slot => slot.lokasi?.trim().toUpperCase() === activeLocation.toUpperCase());
-            const dept = activeLocation.includes('LOGISTIK') ? 'SLK' :
-                (activeLocation.includes('STM') || activeLocation.includes('MAKMAL') ? 'STM' : 'Umum');
+            const dept = timetableLocations().get(scheduleKey(activeLocation))?.type || 'Umum';
             return buildTimetableReport({
                 kind: 'lokasi', title: 'Jadual Penggunaan Lokasi', label: 'LOKASI', value: activeLocation, dept,
                 data: DB, slots, tasks: dapatkanTugasMengajarLokasi(activeLocation),
@@ -1157,6 +1156,7 @@
 
             function checkConflict(slot) {
                 return allSlots.some(other => {
+                    if (sameTeachingSession(slot, other)) return false;
                     const sameSlot = other.kod === slot.kod &&
                         other.kelas === slot.kelas &&
                         other.hari === slot.hari &&
@@ -1267,6 +1267,7 @@
 
             function checkConflict(slot) {
                 return personalSlots.some(other => {
+                    if (sameTeachingSession(slot, other)) return false;
                     const sameSlot = other.kod === slot.kod &&
                         other.kelas === slot.kelas &&
                         other.hari === slot.hari &&
@@ -1293,6 +1294,7 @@
 
             function checkLocConflict(slot) {
                 return locSlots.some(other => {
+                    if (sameTeachingSession(slot, other)) return false;
                     const sameSlot = other.kod === slot.kod &&
                         other.kelas === slot.kelas &&
                         other.hari === slot.hari &&

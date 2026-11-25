@@ -330,8 +330,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
     <script src="firebase-service.js"></script>
-  <script src="timetable-workflow.js?v=17"></script>
-  <script src="timetable-print.js?v=14"></script>
+  <script src="timetable-workflow.js?v=27"></script>
+  <script src="timetable-print.js?v=20"></script>
     <script>installTimetableReportStyles();</script>
     <script>
         appendStatusBadge('#firebase-status-badge-container');
@@ -414,10 +414,12 @@
         }
 
         function cetakJadualPelajar() {
+            if (!canExportStudentSchedule()) return;
             openTimetablePrint('Jadual Waktu Kelas', studentClassReport());
         }
 
         function muatTurunPDFPelajar(button) {
+            if (!canExportStudentSchedule()) return;
             return downloadTimetablePdf(studentClassReport(), 'Jadual_Waktu_' + selectedClass.replace(/\s+/g, '_') + '.pdf',
                 button, message => showToast(message, 'danger'));
         }
@@ -612,39 +614,32 @@
 
         // Check if a specific slot clashes with any other slot in the student's combined schedule
         function checkClash(slot, combinedSchedule) {
-            return combinedSchedule.some(other => {
-                // Ensure we don't compare the slot against itself
-                const sameSlot = other.kod === slot.kod &&
-                    other.kelas === slot.kelas &&
-                    other.hari === slot.hari &&
-                    other.mula === slot.mula;
-                if (sameSlot) return false;
-                
-                // Check if they are combined classes for the same subject and lecturer in same location
-                const isSameSubject = (slot.kod === other.kod && slot.kod !== '-') || (slot.subjek === other.subjek);
-                const isCombinedClass = isSameSubject && (slot.singkatan === other.singkatan) && (slot.lokasi === other.lokasi);
-                if (isCombinedClass) return false;
-
-                // Check if they are parallel elective subjects (Islam vs Moral vs Kebangsaan)
-                const isParallelElective = (
-                    (slot.subjek && other.subjek) && (
-                        (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("MORAL")) ||
-                        (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("ISLAM")) ||
-                        (slot.subjek.toUpperCase().includes("ISLAM") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
-                        (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("ISLAM")) ||
-                        (slot.subjek.toUpperCase().includes("MORAL") && other.subjek.toUpperCase().includes("KEBANGSAAN")) ||
-                        (slot.subjek.toUpperCase().includes("KEBANGSAAN") && other.subjek.toUpperCase().includes("MORAL"))
-                    )
-                );
-                
-                if (isParallelElective && normalizeClassName(slot.kelas) === normalizeClassName(other.kelas)) {
-                    return false; // Not a clash
-                }
-
-                return isOverlapping(slot, other);
-            });
+            return combinedSchedule.some(other => slot !== other &&
+                (slot.isRepeat || other.isRepeat) && isOverlapping(slot, other));
         }
 
+        function studentSchedule() {
+            return DB.slot.filter(slot => normalizeClassName(slot.kelas) === normalizeClassName(selectedClass))
+                .map(slot => ({ ...slot, isRepeat: false }))
+                .concat(repeatSlots.map(slot => ({ ...slot, isRepeat: true })));
+        }
+
+        function studentRepeatClash() {
+            const slots = studentSchedule();
+            return slots.some(slot => checkClash(slot, slots));
+        }
+
+        function canExportStudentSchedule() {
+            if (!selectedClass || !DB.isConfirmed) {
+                showToast('Sila pilih kelas dengan jadual yang sudah disahkan.', 'danger');
+                return false;
+            }
+            if (studentRepeatClash()) {
+                showToast('Subjek repeat bertindih. Hapus atau tukar pilihan sesi sebelum mencetak atau memuat turun PDF.', 'danger');
+                return false;
+            }
+            return true;
+        }
         // Render Timetable Grid & Repeated List
         function renderAll() {
             renderTimetableEffectiveDate(DB);
@@ -662,7 +657,16 @@
             });
 
             document.getElementById('jadualGridWrap').innerHTML =
-                renderTimetableGrid(combinedSchedule, slot => checkClash(slot, combinedSchedule));
+                renderTimetableGrid(combinedSchedule, slot => checkClash(slot, combinedSchedule),
+                    slot => checkClash(slot, combinedSchedule), false);
+            const exportBlocked = !selectedClass || !DB.isConfirmed || studentRepeatClash();
+            for (const id of ['btnCetak', 'btnPDF']) {
+                const button = document.getElementById(id);
+                button.disabled = exportBlocked;
+                button.classList.toggle('cursor-not-allowed', exportBlocked);
+                button.classList.toggle('opacity-50', exportBlocked);
+                button.title = exportBlocked ? 'Selesaikan pertindihan subjek repeat dan pastikan jadual disahkan.' : '';
+            }
             document.getElementById('printHeaderPersonal').innerHTML = studentClassReport();
             document.getElementById('labelKelasTerpilih').textContent = selectedClass;
 
@@ -678,7 +682,7 @@
                 `;
             } else {
                 repeatSlots.forEach((s, idx) => {
-                    const isClashed = checkClash(s, combinedSchedule);
+                    const isClashed = checkClash(combinedSchedule[regularSlots.length + idx], combinedSchedule);
                     const clashClass = isClashed ? "border-red-300 dark:border-red-900 bg-red-50/30" : "border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-950/20";
 
                     const card = document.createElement("div");
@@ -842,7 +846,7 @@
                 .forEach(s => combinedSchedule.push({ ...s, isRepeat: false }));
             repeatSlots.forEach(s => combinedSchedule.push({ ...s, isRepeat: true }));
 
-            if (checkClash(slotObj, combinedSchedule)) {
+            if (studentRepeatClash()) {
                 showToast("Daftar berjaya! Amaran: Berlaku pertindihan jadual.", "danger");
             } else {
                 showToast("Subjek repeat berjaya didaftarkan ke jadual anda!", "success");

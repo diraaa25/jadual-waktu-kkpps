@@ -587,7 +587,7 @@
           </div>
           <div>
             <label>Kelas</label>
-            <select id="metaKelas" required>
+            <select id="metaKelas">
               <!-- Dynamic load -->
             </select>
           </div>
@@ -656,7 +656,7 @@
           </div>
           <div>
             <label>Kelas Pelajar</label>
-            <select id="kelas" required>
+            <select id="kelas">
               <!-- Dynamic load -->
             </select>
           </div>
@@ -1015,7 +1015,7 @@
       </h3>
       <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 16px; line-height: 1.4;">
         Sila masukkan <b>Kelas</b> dan <b>Lokasi</b> bagi setiap subjek berdaftar di bawah. Sistem akan menjadualkan
-        semua jam
+        baki jam
         mengajar secara automatik dan memastikan tiada pertindihan berlaku.
       </p>
 
@@ -1038,7 +1038,7 @@
 
       <div style="display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
         <div style="font-size: 0.75rem; color: var(--danger); font-weight: 600;">
-          ⚠️ Perhatian: Proses ini akan memadam data slot sedia ada dalam jadual.
+          Slot sedia ada dikekalkan. Sistem hanya menambah baki jam yang belum dijadualkan.
         </div>
         <div style="display: flex; gap: 12px;">
           <button class="btn btn-light" type="button" onclick="tutupGeneratorModal()"
@@ -1073,8 +1073,8 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
   <script src="firebase-config.js"></script>
   <script src="firebase-service.js"></script>
-  <script src="timetable-workflow.js?v=17"></script>
-  <script src="timetable-print.js?v=14"></script>
+  <script src="timetable-workflow.js?v=27"></script>
+  <script src="timetable-print.js?v=20"></script>
     <script>installTimetableReportStyles();</script>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   <script>
@@ -1129,6 +1129,7 @@
     const reviewProgram = params.get('semak');
     const reviewFromTpa = params.get('dari') === 'tpa';
     const classAllowed = kelas => {
+      if (!kelas) return true;
       const program = programForClass(kelas);
       return program === programScope || (programScope === 'UPA' && ['STM', 'SLK'].includes(program));
     };
@@ -1288,6 +1289,7 @@
       const current = data || { subjek: [], slot: [] };
       const full = programmerAccess ? current : workingTimetable(current);
       bersihkanDatabase(full);
+      LOCATIONS_DATA.splice(0, LOCATIONS_DATA.length, ...timetableLocations().values());
       workingSlots = full.slot;
       workingSubjects = full.subjek;
       if (reviewProgram) {
@@ -1353,7 +1355,7 @@
             current[field] = (current[field] || []).filter((row, index) =>
               programForRow(normalized, normalized[field][index]) !== programScope)
               .concat(draft[field].map(row => {
-                if (programScope === 'UPA' && programForClass(row.kelas) !== 'UPA') return { ...row, programOwner: 'UPA' };
+                if (!row.kelas || (programScope === 'UPA' && programForClass(row.kelas) !== 'UPA')) return { ...row, programOwner: programScope };
                 return row;
               }));
           }
@@ -1405,10 +1407,10 @@
 
       // Clean up missing/undefined class and prefStart in subjects
       database.subjek.forEach(sub => {
-        if (!sub.kelas) {
+        if (sub.kelas == null) {
           // Find class from slot
           const matchingSlot = database.slot.find(sl => sl.kod === sub.kod && sl.singkatan === sub.singkatan);
-          sub.kelas = matchingSlot ? matchingSlot.kelas : 'STM 1A';
+          sub.kelas = matchingSlot ? matchingSlot.kelas : '';
           changed = true;
         }
         if (sub.prefStart === undefined) {
@@ -1481,12 +1483,12 @@
         LECTURERS_DATA.map(l => `<option value="${l.name}">${l.name} (${l.shortName}) [${l.dept}]</option>`).join('');
 
       // Classes
-      dKelas.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' +
+      dKelas.innerHTML = '<option value="">Tiada kelas</option>' +
         CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
 
       const mKelas = document.getElementById('metaKelas');
       if (mKelas) {
-        mKelas.innerHTML = '<option value="" disabled selected>Pilih Kelas</option>' +
+        mKelas.innerHTML = '<option value="">Tiada kelas</option>' +
           CLASSES_DATA.map(c => `<option value="${c}">${c}</option>`).join('');
       }
 
@@ -1649,7 +1651,7 @@
             const pPembantuInput = (findVal(row, ['pensyarahpembantu', 'pembantu', 'assistant', 'ass']) || '-').toString().trim();
             const prefStartVal = parseInt(findVal(row, ['hadmula', 'hadwaktu', 'prefstart', 'hadmulamengajar'])) || 8;
 
-            if (!kod || !subjekName || !kelas || !pUtamaInput ||
+            if (!kod || !subjekName || !pUtamaInput ||
                 (!programmerAccess && !classAllowed(kelas))) {
               skippedCount++;
               return;
@@ -1671,7 +1673,7 @@
             }
 
             // Also make sure the class is in CLASSES_DATA
-            if (!CLASSES_DATA.includes(kelas)) {
+            if (kelas && !CLASSES_DATA.includes(kelas)) {
               CLASSES_DATA.push(kelas);
               const allClasses = JSON.parse(localStorage.getItem('kkpapar_classes')) || DEFAULT_CLASSES;
               localStorage.setItem('kkpapar_classes', JSON.stringify([...new Set([...allClasses, kelas])]));
@@ -1787,6 +1789,7 @@
       const mula = val('mula');
       const tamat = val('tamat');
       if (tamat <= mula) { alert('Masa tamat mesti selepas masa mula.'); return; }
+      if (tamat > '17:00') { alert('Jadual mesti tamat selewat-lewatnya 5 petang.'); return; }
 
       const slot = {
         kod: s.kod,
@@ -1799,7 +1802,8 @@
         singkatanPembantu: s.singkatanPembantu,
         subjek: s.subjek,
         nama: s.nama,
-        namaPembantu: s.namaPembantu
+        namaPembantu: s.namaPembantu,
+        ...(s.programOwner ? { programOwner: s.programOwner } : {})
       };
 
       if (editSlotIndex === null) {
@@ -1878,6 +1882,7 @@
 
     function bertindih(a, b) { return a.hari === b.hari && toMin(a.mula) < toMin(b.tamat) && toMin(b.mula) < toMin(a.tamat); }
     function checkClash(s, o) {
+      if (sameTeachingSession(s, o)) return false;
       const isSameSubject = (s.kod === o.kod && s.kod !== '-') || (s.subjek === o.subjek);
       const isCombinedClass = isSameSubject && (s.singkatan === o.singkatan) && (s.lokasi === o.lokasi);
 
@@ -1983,7 +1988,16 @@
 
     function buatJadualGridHTML(slots) {
       return renderTimetableGrid(slots, slot => workingSlots.some(other =>
-        slot !== other && bertindih(slot, other) && checkClash(slot, other)));
+        slot !== other && strictTimetableClash(slot, other, false)), coordinatorWarningVisible, true,
+        slot => workingSlots.filter(other => slot !== other && strictTimetableClash(slot, other, false))
+          .map(other => other.kod + ' | ' + (other.kelas || 'Tiada kelas') + ' | ' +
+            other.lokasi + ' | ' + other.mula + '–' + other.tamat + ' | ' +
+            other.singkatan + ' / ' + (other.singkatanPembantu || '-')).join('\n'));
+    }
+
+    function coordinatorWarningVisible(slot) {
+      return !programmerAccess && !reviewProgram && Boolean(programScope) &&
+        programForRow(DB, slot) === programScope;
     }
 
     function cetakJadualSemasa() {
@@ -2121,11 +2135,11 @@
     function timetableReport(kind, value) {
       const report = reportKinds[kind];
       const isClass = kind === 'kelas';
-      const slots = (isClass ? classTimetableSlots() : DB.slot).filter(row => report.matches(row, value));
-      const dept = report.department(value) || 'Umum';
+      const slots = (isClass ? classTimetableSlots() : workingSlots).filter(row => report.matches(row, value));
+      const dept = (kind === 'lokasi' ? timetableLocations().get(scheduleKey(value))?.type : report.department(value)) || 'Umum';
       const contributors = new Set(slots.map(slot => programForRow(DB, slot)));
       const classPrograms = TIMETABLE_PROGRAMS.filter(program => contributors.has(program));
-      const signatory = isClass ? classPrograms : programScope || reviewProgram || timetableSignatoryProgram(dept, slots);
+      const signatory = timetableSignatoryProgram(dept, slots);
       const confirmed = isClass
         ? !DB.publicationWithdrawn && classPrograms.length > 0 && classPrograms.length === contributors.size &&
           classPrograms.every(program => workflowFor(DB, program).status === 'Approved')
@@ -2133,8 +2147,9 @@
         ? workflowFor(DB, reviewProgram || programScope).status === 'Approved' : DB.isConfirmed;
       return buildTimetableReport({
         kind, title: report.title, label: report.label.toUpperCase(), value: report.display?.(value) || value,
-        dept, data: isClass && !programmerAccess ? { ...DB, subjek: workingSubjects } : DB,
-        slots, tasks: report.tasks(value, slots), lecturers: LECTURERS_DATA, signatory, confirmed
+        dept, data: !programmerAccess ? { ...DB, subjek: workingSubjects } : DB,
+        slots, tasks: report.tasks(value, slots), lecturers: LECTURERS_DATA, signatory, confirmed,
+        warningVisible: coordinatorWarningVisible, conflictSlots: workingSlots
       });
     }
 
@@ -2151,8 +2166,9 @@
       printReports('kelas', [value]);
     }
     function locationAllowedForPrint(value) {
-      return !programScope || LOCATIONS_DATA.some(location =>
-        scheduleKey(location.name) === scheduleKey(value) && location.type === programScope);
+      return !programScope || DB.slot.some(slot => scheduleKey(slot.lokasi) === scheduleKey(value)) ||
+        LOCATIONS_DATA.some(location => scheduleKey(location.name) === scheduleKey(value) &&
+          (location.type === programScope || location.type === 'Umum'));
     }
 
     function cetakJadualLokasi(value) {
@@ -2328,7 +2344,7 @@
       let tugasHtml = '';
       Object.keys(senaraiPensyarah).forEach(singk => {
         const namaPensyarah = senaraiPensyarah[singk];
-        let slotPensyarah = DB.slot.filter(s => s.singkatan === singk || s.singkatanPembantu === singk);
+        let slotPensyarah = workingSlots.filter(s => s.singkatan === singk || s.singkatanPembantu === singk);
 
         let rangkumanTugas = {};
         slotPensyarah.forEach(s => {
@@ -2348,6 +2364,10 @@
           }
         });
 
+        rangkumanTugas = Object.fromEntries(timetableLegendTasks(slotPensyarah).map(task => [
+          scheduleKey(task.kod), { ...task, subjek: task.nama,
+            lokasi: [...new Set(task.records.map(row => row.lokasi))].join(' / ') }
+        ]));
         let jumlahKeseluruhan = 0;
         tugasHtml += `
     <div class="lecturer-section">
@@ -2487,7 +2507,13 @@
       const printSelectLoc = document.getElementById('printSelectLoc');
       if (printSelectLoc) {
         const selected = printSelectLoc.value;
-        printSelectLoc.replaceChildren(...LOCATIONS_DATA.filter(location => locationAllowedForPrint(location.name))
+        const locations = new Map(LOCATIONS_DATA.map(location => [scheduleKey(location.name), location]));
+        for (const slot of DB.slot) {
+          if (slot.lokasi && !locations.has(scheduleKey(slot.lokasi))) {
+            locations.set(scheduleKey(slot.lokasi), { name: slot.lokasi, code: locationInitials(slot.lokasi) });
+          }
+        }
+        printSelectLoc.replaceChildren(...[...locations.values()].filter(location => locationAllowedForPrint(location.name))
           .map(location => new Option(location.name + ' (' + location.code + ')', location.name, false, selected === location.name)));
         if (!printSelectLoc.options.length) {
           const empty = new Option('Tiada lokasi untuk program ini', '', true, true);
@@ -2547,15 +2573,20 @@
       const listContainer = document.getElementById('generatorSubjectsList');
       listContainer.innerHTML = '';
 
-      DB.subjek.forEach((s, idx) => {
+      const pending = remainingTimetableSubjects(DB.subjek, DB.slot);
+      if (!pending.length) {
+        alert('Semua subjek sudah lengkap dijadualkan.');
+        return;
+      }
+      pending.forEach(({ subject: s, index: idx, scheduled, remainingHours }) => {
         // Find if there is already an existing slot for this subject to guess class and location
-        const existingSlot = DB.slot.find(x => x.kod === s.kod && x.kelas === s.kelas && x.singkatan === s.singkatan);
-        const defaultClass = s.kelas || CLASSES_DATA[0];
+        const existingSlot = scheduled[0];
+        const defaultClass = s.kelas || '';
         const defaultLoc = existingSlot ? existingSlot.lokasi : (s.kod.toUpperCase().startsWith('SLK') ? 'MAKMAL LOGISTIK 1' : 'MAKMAL PENGATURCARAAN 1');
 
         // Create dropdown selections
-        const classOptions = CLASSES_DATA.map(c =>
-          `<option value="${c}" ${c === defaultClass ? 'selected' : ''}>${c}</option>`
+        const classOptions = [s.kelas || ''].map(c =>
+          `<option value="${c}" ${c === defaultClass ? 'selected' : ''}>${c || 'Tiada kelas'}</option>`
         ).join('');
 
         const locOptions = LOCATIONS_DATA.map(l =>
@@ -2568,11 +2599,11 @@
       <td style="padding: 10px;">
         <div style="font-weight: 700;">${s.kod} — ${s.subjek}</div>
         <div style="font-size: 0.7rem; color: var(--text-muted); margin-top: 2px;">
-          Pensyarah: ${s.nama} (${s.singkatan}) | ⏱️ Beban: ${s.jam} jam
+          Pensyarah: ${s.nama} (${s.singkatan}) | Baki: ${remainingHours} daripada ${s.jam} jam
         </div>
       </td>
       <td style="padding: 10px;">
-        <select id="genClass_${idx}" style="width:100%; padding: 6px; font-size: 0.75rem; border-radius: var(--border-radius-sm); border: 1px solid var(--surface-border); background: var(--surface); color: var(--text-primary);">
+        <select id="genClass_${idx}" disabled style="width:100%; padding: 6px; font-size: 0.75rem; border-radius: var(--border-radius-sm); border: 1px solid var(--surface-border); background: var(--surface); color: var(--text-primary);">
           ${classOptions}
         </select>
       </td>
@@ -2595,12 +2626,20 @@
     async function jalankanGenerator() {
       const button = document.querySelector('#generatorModal button[onclick="jalankanGenerator()"]');
       if (button.disabled) return;
-      const targets = DB.subjek.map((subject, index) => ({
-        subject,
-        kelas: document.getElementById('genClass_' + index)?.value,
+      const pending = remainingTimetableSubjects(DB.subjek, DB.slot);
+      if (!pending.length) {
+        tutupGeneratorModal();
+        alert('Semua subjek sudah lengkap dijadualkan.');
+        return;
+      }
+      const targets = pending.map(({ subject, index, remainingHours, scheduled }) => ({
+        subject: { ...subject, jam: remainingHours },
+        index,
+        kelas: subject.kelas || '',
         lokasi: document.getElementById('genLoc_' + index)?.value
       }));
-      const reserved = programmerAccess ? [] : workingSlots.filter(slot => programForRow(DB, slot) !== programScope);
+      const reserved = DB.slot.concat(programmerAccess ? [] :
+        workingSlots.filter(slot => programForRow(DB, slot) !== programScope));
       const { slots, error } = generateTimetableSlots(targets, reserved);
       if (error) {
         alert(error);
@@ -2608,8 +2647,11 @@
       }
       button.disabled = true;
       try {
-        DB.subjek = targets.map(({ subject, kelas }) => ({ ...subject, kelas }));
-        DB.slot = slots;
+        DB.subjek = DB.subjek.map((subject, index) => {
+          const target = targets.find(item => item.index === index);
+          return target ? { ...subject, kelas: target.kelas } : subject;
+        });
+        DB.slot = DB.slot.concat(slots);
         if (await simpan(true)) {
           tutupGeneratorModal();
           alert('Jadual waktu berjaya dijana tanpa pertindihan.');

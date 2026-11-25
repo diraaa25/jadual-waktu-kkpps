@@ -13,7 +13,7 @@ const coordinatorRoles = (data, code = lecturerCode()) =>
     code ? COORDINATOR_ROLES.filter(role => data.coordinators?.[role]?.[code] === true) : [];
 const programForClass = kelas => String(kelas || '').trim().toUpperCase()
     .match(/^(SLK|STM|UPA)(?=\s|\d|$)/)?.[1];
-const programForRow = (data, row) => row.programOwner === 'UPA' ? 'UPA' : programForClass(row.kelas) ||
+const programForRow = (data, row) => TIMETABLE_PROGRAMS.includes(row.programOwner) ? row.programOwner : programForClass(row.kelas) ||
     (!row.kelas && (data.slot || []).map(slot =>
         slot.kod === row.kod && slot.singkatan === row.singkatan && programForClass(slot.kelas)
     ).find(Boolean)) || (!row.kelas ? 'STM' : undefined);
@@ -42,7 +42,15 @@ const timetableMinutes = value => {
     return hours * 60 + minutes;
 };
 
-function strictTimetableClash(first, second) {
+function sameTeachingSession(first, second) {
+    const same = field => scheduleKey(first[field]) === scheduleKey(second[field]);
+    if (!first.kod || !first.lokasi || !same('kod') || !same('hari') ||
+        !same('mula') || !same('tamat') || !same('lokasi')) return false;
+    return Boolean(first.kelas && same('kelas'));
+}
+
+function strictTimetableClash(first, second, allowSharedSession = true) {
+    if (allowSharedSession && sameTeachingSession(first, second)) return false;
     if (scheduleKey(first.hari) !== scheduleKey(second.hari) ||
         !(timetableMinutes(first.mula) < timetableMinutes(second.tamat) &&
           timetableMinutes(second.mula) < timetableMinutes(first.tamat))) return false;
@@ -57,16 +65,28 @@ function strictTimetableClash(first, second) {
 const programHasReservation = (data, program) =>
     ['Induk', 'TPA', 'Approved'].includes(workflowFor(data, program).status);
 
+function remainingTimetableSubjects(subjects, slots) {
+    return subjects.map((subject, index) => {
+        const scheduled = slots.filter(slot => scheduleKey(slot.kod) === scheduleKey(subject.kod) &&
+            scheduleKey(slot.kelas) === scheduleKey(subject.kelas) &&
+            scheduleKey(slot.singkatan) === scheduleKey(subject.singkatan) &&
+            (slot.programOwner || '') === (subject.programOwner || ''));
+        const minutes = scheduled.reduce((total, slot) => total + Math.max(0,
+            timetableMinutes(slot.tamat) - timetableMinutes(slot.mula)), 0);
+        return { index, subject, scheduled, remainingHours: Math.max(0, Number(subject.jam) - minutes / 60) };
+    }).filter(item => item.remainingHours > 0 || !Number.isFinite(item.remainingHours));
+}
+
 function generateTimetableSlots(targets, reservedSlots) {
     const days = ['Isnin', 'Selasa', 'Rabu', 'Khamis', 'Jumaat'];
-    const starts = [8, 9, 10, 11, 13, 14, 15, 16, 17];
+    const starts = [8, 9, 10, 11, 13, 14, 15, 16];
     const clock = minutes => String(Math.floor(minutes / 60)).padStart(2, '0') + ':' +
         String(minutes % 60).padStart(2, '0');
     const requirements = [];
     const resources = new Map();
     for (const { subject, kelas, lokasi } of targets) {
         const total = Math.round(Number(subject.jam) * 60);
-        if (!kelas || !lokasi || !Number.isFinite(total) || total <= 0 || total > 45 * 60) {
+        if (kelas == null || !lokasi || !Number.isFinite(total) || total <= 0 || total > 45 * 60) {
             return { error: `${subject.kod}: semak kelas, lokasi dan jumlah jam mengajar.` };
         }
         const labels = [['Kelas', kelas], ['Lokasi', lokasi], ['Pensyarah', subject.singkatan],
@@ -86,7 +106,7 @@ function generateTimetableSlots(targets, reservedSlots) {
                 for (const start of starts) {
                     const end = start * 60 + duration;
                     const afternoon = hari === 'Jumaat' ? 14 : 13;
-                    if (start < (subject.prefStart || 8) || end > 18 * 60 ||
+                    if (start < (subject.prefStart || 8) || end > 17 * 60 ||
                         (end > 12 * 60 && start < afternoon)) continue;
                     const slot = {
                         kod: subject.kod, subjek: subject.subjek, kelas, lokasi, hari,
@@ -99,7 +119,7 @@ function generateTimetableSlots(targets, reservedSlots) {
                 }
             }
             if (!options.length) {
-                return { error: `${subject.kod} (${kelas}, ${lokasi}): tiada slot untuk satu blok ${duration} minit. Semak had mula dan jadual program lain.` };
+                return { error: `${subject.kod} — ${subject.subjek || ''}\nKelas ${kelas}\nLokasi ${lokasi}\nPensyarah ${subject.singkatan || '-'} / ${subject.singkatanPembantu || '-'}\nTiada pilihan masa bebas untuk blok ${duration} minit antara ${subject.prefStart || 8}:00 hingga 17:00 selepas waktu rehat dan slot sedia ada diambil kira.` };
             }
             for (const key of resourceKeys) {
                 const resource = resources.get(key);
@@ -119,29 +139,86 @@ function generateTimetableSlots(targets, reservedSlots) {
     const overloaded = [...resources.values()]
         .filter(resource => resource.required > resource.minutes.size)
         .map(({ label, required, minutes }) =>
-            `${label}: perlu ${hours.format(required / 60)} jam, tersedia sehingga ${hours.format(minutes.size / 60)} jam.`);
+            `${label}: perlu ${hours.format(required / 60)} jam, tersedia sehingga ${hours.format(minutes.size / 60)} jam, melebihi kapasiti sebanyak ${hours.format((required - minutes.size) / 60)} jam.`);
     if (overloaded.length) {
         return { error: [...overloaded, 'Semak jumlah jam subjek, pilihan kelas dan lokasi, atau agihan pensyarah.'].join('\n') };
     }
     requirements.sort((a, b) => a.length - b.length);
     const slots = [];
-    let remainingChecks = 25000;
-    function solve(index) {
-        if (index === requirements.length) return true;
-        for (const slot of requirements[index]) {
+    const maxChecks = 250000;
+    let remainingChecks = maxChecks;
+    let deepestIndex = -1;
+    let deepestSlots = [];
+    let pendingOptions = requirements[0];
+    const deadline = Date.now() + 8000;
+    let timeLimitReached = false;
+    function solve(domains) {
+        if (!domains.length) return true;
+        if (Date.now() >= deadline) {
+            timeLimitReached = true;
+            return false;
+        }
+        domains.sort((a, b) => a.length - b.length);
+        const options = domains[0];
+        if (slots.length > deepestIndex) {
+            deepestIndex = slots.length;
+            deepestSlots = [...slots];
+            pendingOptions = requirements.find(domain => domain.includes(options[0])) || options;
+        }
+        if (!options.length) return false;
+        const others = domains.slice(1);
+        // Prefer placements that leave the most options for the remaining blocks.
+        const ranked = options.map(slot => ({
+            slot, cost: others.reduce((total, domain) =>
+                total + domain.filter(other => strictTimetableClash(slot, other)).length, 0)
+        })).sort((a, b) => a.cost - b.cost);
+        for (const { slot } of ranked) {
             if (remainingChecks-- <= 0) return false;
-            if (slots.some(other => strictTimetableClash(slot, other))) continue;
+            const next = others.map(domain => domain.filter(other => !strictTimetableClash(slot, other)));
+            if (next.some(domain => !domain.length)) continue;
             slots.push(slot);
-            if (solve(index + 1)) return true;
+            if (solve(next)) return true;
             slots.pop();
-            if (remainingChecks < 0) return false;
+            if (remainingChecks < 0 || timeLimitReached) return false;
         }
         return false;
     }
-    if (solve(0)) return { slots };
-    return { error: remainingChecks < 0
-        ? 'Carian mencapai had sebelum jadual ditemui. Cuba ubah agihan lokasi atau had mula mengajar.'
-        : 'Tiada gabungan slot bebas pertindihan. Semak pilihan kelas, lokasi dan had mula mengajar.' };
+    if (solve(requirements.map(options => [...options]))) return { slots };
+    const pending = pendingOptions[0];
+    const blockers = new Map();
+    for (const option of pendingOptions) {
+        for (const placed of deepestSlots.filter(slot => strictTimetableClash(option, slot))) {
+            const labels = [];
+            if (scheduleKey(option.kelas) === scheduleKey(placed.kelas)) labels.push('Kelas ' + placed.kelas);
+            if (scheduleKey(option.lokasi) === scheduleKey(placed.lokasi)) labels.push('Lokasi ' + placed.lokasi);
+            for (const code of [option.singkatan, option.singkatanPembantu].filter(code => code && code !== '-')) {
+                if ([placed.singkatan, placed.singkatanPembantu].some(other => scheduleKey(other) === scheduleKey(code))) {
+                    labels.push('Pensyarah ' + code);
+                }
+            }
+            for (const label of labels) blockers.set(label, (blockers.get(label) || 0) + 1);
+        }
+    }
+    const resourceSummary = [...resources.values()]
+        .sort((a, b) => (b.required / b.minutes.size) - (a.required / a.minutes.size))
+        .slice(0, 5)
+        .map(({ label, required, minutes }) =>
+            `${label}: perlu ${hours.format(required / 60)} jam; pilihan masa tersedia sehingga ${hours.format(minutes.size / 60)} jam.`);
+    return { error: [
+        timeLimitReached
+            ? 'Had masa carian sistem selama 8 saat telah dicapai.'
+            : remainingChecks < 0
+            ? `Had carian sistem sebanyak ${maxChecks.toLocaleString('ms-MY')} semakan pilihan masa telah dicapai.`
+            : 'Semua gabungan pilihan masa telah diperiksa tanpa jadual lengkap.',
+        `Kemajuan terbaik: ${deepestIndex} daripada ${requirements.length} blok ditempatkan.`,
+        `Blok seterusnya dalam cubaan terbaik: ${pending.kod}, kelas ${pending.kelas}, lokasi ${pending.lokasi}, pensyarah ${pending.singkatan} / ${pending.singkatanPembantu}, ${timetableMinutes(pending.tamat) - timetableMinutes(pending.mula)} minit.`,
+        'Pertindihan dalam cubaan tersebut:',
+        ...[...blockers].sort((a, b) => b[1] - a[1]).slice(0, 5)
+            .map(([label, count]) => `${label}: terlibat dalam ${count} pertindihan pilihan masa.`),
+        'Ringkasan kapasiti baki:',
+        ...resourceSummary,
+        'Tiada lebihan kapasiti individu dikesan dalam semakan awal. Semak gabungan waktu kelas, lokasi dan pensyarah di atas.'
+    ].join('\n') };
 }
 
 function workingTimetable(data) {
@@ -226,7 +303,7 @@ function returnTimetablesToPrograms(data, revision) {
 function refreshPublication(data) {
     const populated = TIMETABLE_PROGRAMS.filter(program => canSubmitProgram(data, program));
     const slots = (data.slot || []).filter(Boolean);
-    data.isConfirmed = !data.publicationWithdrawn && populated.length > 0 && slots.every(slot => programForClass(slot.kelas)) &&
+    data.isConfirmed = !data.publicationWithdrawn && populated.length > 0 && slots.every(slot => programForClass(slot.kelas) || TIMETABLE_PROGRAMS.includes(slot.programOwner)) &&
         populated.every(program => workflowFor(data, program).status === 'Approved');
     data.approvalState = data.isConfirmed ? 'Approved' :
         populated.some(program => workflowFor(data, program).status === 'TPA') ? 'Pending' : 'Draft';
@@ -489,6 +566,6 @@ function renderTimetableEffectiveDate(data) {
 
 function timetableSignatoryProgram(dept, slots) {
     if (PROGRAM_NAMES[dept]) return dept;
-    const programs = [...new Set(slots.map(slot => programForRow({}, slot)).filter(Boolean))];
+    const programs = [...new Set(slots.map(slot => programForClass(slot.kelas)).filter(Boolean))];
     return programs;
 }

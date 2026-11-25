@@ -567,6 +567,14 @@
                     </div>
                 </section>
             <div id="sec-config" class="tab-section" style="display: none;">
+                        <div class="card">
+                            <h2>Pemetaan Lokasi</h2>
+                            <p>Semak dan ubah unit yang mengurus setiap lokasi. Pemetaan digunakan dalam senarai lokasi dan tandatangan cetakan.</p>
+                            <button type="button" class="btn btn-light" onclick="tambahLokasiDropdown()">Tambah Lokasi</button>
+                            <div class="table-responsive"><table><thead><tr>
+                                <th>Lokasi</th><th>Kod</th><th>Program atau Unit</th><th>Tindakan</th>
+                            </tr></thead><tbody id="locationMappingRows"></tbody></table></div>
+                        </div>
 
                         <!-- System Password Management Card -->
                         <div class="card">
@@ -922,8 +930,8 @@
     <script src="firebase-config.js"></script>
     <script src="firebase-service.js"></script>
     <script src="announcements.js"></script>
-  <script src="timetable-workflow.js?v=17"></script>
-  <script src="timetable-print.js"></script>
+  <script src="timetable-workflow.js?v=27"></script>
+  <script src="timetable-print.js?v=20"></script>
     <script>
         appendStatusBadge('#firebase-status-badge-container');
     </script>
@@ -1024,11 +1032,65 @@
 
         // Initialize dynamic locations dropdown
         function renderLocationsDropdown() {
+            LOCATIONS_LIST = [...timetableLocations().values()].map(item => item.name);
             const sel = document.getElementById("slotLokasi");
             if (!sel) return;
             const prev = sel.value;
             sel.innerHTML = LOCATIONS_LIST.map(l => `<option value="${l}">${l}</option>`).join('');
             if (prev) sel.value = prev;
+            renderLocationMappings();
+        }
+
+        function renderLocationMappings() {
+            const body = document.getElementById('locationMappingRows');
+            if (!body) return;
+            body.replaceChildren();
+            for (const location of timetableLocations().values()) {
+                const row = document.createElement('tr');
+                const name = row.insertCell();
+                name.textContent = location.name;
+                const code = document.createElement('input');
+                code.value = location.code;
+                code.setAttribute('aria-label', 'Kod ' + location.name);
+                row.insertCell().append(code);
+                const unit = document.createElement('select');
+                for (const type of ['STM', 'SLK', 'UPA']) {
+                    unit.add(new Option(type, type, false, location.type === type));
+                }
+                unit.setAttribute('aria-label', 'Unit ' + location.name);
+                row.insertCell().append(unit);
+                const save = document.createElement('button');
+                save.type = 'button';
+                save.className = 'btn btn-primary';
+                save.textContent = 'Simpan';
+                save.onclick = async () => {
+                    save.disabled = true;
+                    try {
+                        await saveLocationMapping({ name: location.name, code: code.value.trim().toUpperCase(), type: unit.value });
+                        showToast('Pemetaan lokasi disimpan.', 'success');
+                    } catch (error) { showToast(error.message, 'danger'); }
+                    finally { save.disabled = false; }
+                };
+                row.insertCell().append(save);
+                body.append(row);
+            }
+        }
+
+        async function saveLocationMapping(location) {
+            if (!location.code || !['STM', 'SLK', 'UPA'].includes(location.type)) {
+                throw new Error('Isi kod lokasi dan pilih unit yang sah.');
+            }
+            const key = 'loc_' + Array.from(new TextEncoder().encode(scheduleKey(location.name)))
+                .map(value => value.toString(16).padStart(2, '0')).join('');
+            const next = await updateTimetable(current => {
+                if (sessionStorage.getItem('logged_role') !== 'programmer') return;
+                current.locationMappings = { ...current.locationMappings, [key]: location };
+                return current;
+            });
+            localStorage.setItem('sijawap_location_mappings', JSON.stringify(next.locationMappings));
+            DB = next;
+            programmerBaseline = structuredClone(DB);
+            renderLocationsDropdown();
         }
 
         // Add new class option to dropdown
@@ -1060,15 +1122,17 @@
         }
 
         // Add new location option to dropdown
-        function tambahLokasiDropdown() {
+        async function tambahLokasiDropdown() {
             const newLokasi = prompt("Masukkan nama lokasi/bilik baru (cth: MAKMAL SAINS):")?.trim().toUpperCase();
             if (!newLokasi) return;
             if (LOCATIONS_LIST.includes(newLokasi)) { showToast("Lokasi ini sudah ada dalam senarai!", "danger"); return; }
-            LOCATIONS_LIST.push(newLokasi);
-            localStorage.setItem('kkpapar_locations', JSON.stringify(LOCATIONS_LIST));
-            renderLocationsDropdown();
-            document.getElementById("slotLokasi").value = newLokasi;
-            showToast(`Lokasi "${newLokasi}" berjaya ditambah!", "success`);
+            const type = prompt('Lokasi ini di bawah unit mana? STM, SLK atau UPA', 'UPA')?.trim().toUpperCase();
+            if (!type) return;
+            try {
+                await saveLocationMapping({ name: newLokasi, code: locationInitials(newLokasi), type });
+                document.getElementById('slotLokasi').value = newLokasi;
+                showToast('Lokasi berjaya ditambah.', 'success');
+            } catch (error) { showToast(error.message, 'danger'); }
         }
 
         // Theme Loading
@@ -1722,6 +1786,7 @@
                 return;
             }
 
+            if (tamat > '17:00') { showToast('Jadual mesti tamat selewat-lewatnya 5 petang.', 'danger'); return; }
             if (tamat <= mula) {
                 warningArea.style.display = 'none';
                 return;
@@ -1750,6 +1815,7 @@
                 if (bertindih(targetSlot, o)) {
                     // Combined Class Check
                     const isSameSubject = (targetSlot.kod === o.kod && targetSlot.kod !== '-') || (s.subjek === o.subjek);
+                    if (sameTeachingSession(targetSlot, o)) return false;
                     const isCombinedClass = isSameSubject && (targetSlot.singkatan === o.singkatan) && (targetSlot.lokasi === o.lokasi);
 
                     // Lecturer conflict check
@@ -1865,6 +1931,7 @@
                 showToast("Sila pilih subjek!", "danger");
                 return;
             }
+            if (tamat > '17:00') { showToast('Jadual mesti tamat selewat-lewatnya 5 petang.', 'danger'); return; }
             if (tamat <= mula) {
                 showToast("Waktu tamat mesti melebihi waktu mula!", "danger");
                 return;
@@ -1988,6 +2055,7 @@
 
         // Render System Configuration Card (Sessions & TPA)
         function renderConfigSection() {
+            renderLocationsDropdown();
             DB.sessionsList = DB.sessionsList || ["SESI 1 2026/2027", "SESI 2 2026/2027"];
             DB.activeSession = DB.activeSession || "SESI 1 2026/2027";
             DB.tpaLecturer = DB.tpaLecturer || "DT";

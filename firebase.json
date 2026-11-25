@@ -17,6 +17,7 @@
       "Template_Muat_Naik_Subjek.csv",
       ".git",
       ".gitignore",
+      ".netlify",
       "node_modules",
       "*.md"
     ],
