@@ -169,15 +169,10 @@ const firebaseWatchAnnouncements = (callback) => {
     if (isFirebaseActive()) {
         db.ref('announcements').on('value', snapshot => {
             const data = snapshot.val();
-            if (!data || (Array.isArray(data) && data.length === 0)) {
-                // Jika tiada hebahan dalam Firebase, isi dengan SEED_ANNOUNCEMENTS
-                db.ref('announcements').set(SEED_ANNOUNCEMENTS).catch(err => {
-                    console.warn("Auto-seed announcements failed:", err);
-                });
-                callback(SEED_ANNOUNCEMENTS);
-            } else {
-                callback(data);
-            }
+            const list = Array.isArray(data)
+                ? data.filter(Boolean)
+                : (data && typeof data === 'object' ? Object.values(data).filter(Boolean) : []);
+            callback(list);
         });
     }
 };

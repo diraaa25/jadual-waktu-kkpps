@@ -555,8 +555,8 @@
             <!-- SECTION 5: SYSTEM CONFIGURATION (TPA & SESSIONS) -->
                 <section id="sec-notices" class="tab-section" style="display:none;">
                     <div class="card">
-                        <h2>Hebahan Awam</h2>
-                        <p>Hebahan dipaparkan pada halaman utama, termasuk sebelum log masuk.</p>
+                        <h2>Hebahan Awam (Sepanduk Utama)</h2>
+                        <p>Hebahan ringkas dipaparkan di bahagian atas halaman utama, termasuk sebelum log masuk.</p>
                         <form id="public-notice-form" style="display:grid; gap:12px; margin:16px 0;">
                             <label>Tajuk<input name="title" class="programmer-input" required maxlength="150"></label>
                             <label>Kandungan<textarea name="desc" class="programmer-input" rows="4" required maxlength="2000"></textarea></label>
@@ -564,6 +564,40 @@
                                 <button type="button" class="btn btn-light" id="cancel-notice-edit" hidden>Batal</button></div>
                         </form>
                         <div id="public-notice-list"></div>
+                    </div>
+
+                    <div class="card" style="margin-top: 20px;">
+                        <h2>Hebahan &amp; Peringatan Terkini (Halaman Utama)</h2>
+                        <p>Urus, edit atau padam semua hebahan yang dipaparkan dalam kad <strong>Hebahan &amp; Peringatan Terkini</strong> pada halaman utama (<code>index.html</code>).</p>
+                        <form id="main-ann-form" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin:16px 0;">
+                            <label>Kategori
+                                <select name="category" class="programmer-input" required>
+                                    <option value="Pentadbiran Kolej">Pentadbiran Kolej</option>
+                                    <option value="Penyelaras STM">Penyelaras STM</option>
+                                    <option value="Penyelaras SLK">Penyelaras SLK</option>
+                                    <option value="Unit Akademik">Unit Akademik</option>
+                                    <option value="Pengambilan Pelajar">Pengambilan Pelajar</option>
+                                    <option value="Kecemerlangan Institusi">Kecemerlangan Institusi</option>
+                                    <option value="Lain-lain">Lain-lain</option>
+                                </select>
+                            </label>
+                            <label>Tarikh / Waktu<input name="date" class="programmer-input" value="Hari Ini" required></label>
+                            <label>Keutamaan
+                                <select name="priority" class="programmer-input" required>
+                                    <option value="Biasa">Biasa</option>
+                                    <option value="Penting">Penting</option>
+                                    <option value="Segera">Segera</option>
+                                </select>
+                            </label>
+                            <label>Tarikh Luput (Opsional)<input name="expiryDate" type="date" class="programmer-input"></label>
+                            <label style="grid-column: 1 / -1;">Tajuk Hebahan<input name="title" class="programmer-input" required maxlength="200"></label>
+                            <label style="grid-column: 1 / -1;">Kandungan / Butiran<textarea name="desc" class="programmer-input" rows="3" required maxlength="2000"></textarea></label>
+                            <div style="grid-column: 1 / -1; display:flex; gap:8px;">
+                                <button type="submit" class="btn btn-primary">Tambah Hebahan</button>
+                                <button type="button" class="btn btn-light" id="cancel-main-ann-edit" hidden>Batal</button>
+                            </div>
+                        </form>
+                        <div id="main-ann-list"></div>
                     </div>
                 </section>
             <div id="sec-config" class="tab-section" style="display: none;">
@@ -928,8 +962,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="firebase-service.js"></script>
-    <script src="announcements.js"></script>
+    <script src="firebase-service.js?v=12"></script>
+    <script src="announcements.js?v=2"></script>
   <script src="timetable-workflow.js?v=27"></script>
   <script src="timetable-print.js?v=20"></script>
     <script>
@@ -1410,6 +1444,118 @@
                 finally { submit.disabled = false; }
             };
             watchPublicNotices(render);
+
+            const mainForm = document.getElementById('main-ann-form');
+            const mainCancel = document.getElementById('cancel-main-ann-edit');
+            const mainSubmit = mainForm.querySelector('[type=submit]');
+            const mainList = document.getElementById('main-ann-list');
+            let originalMain;
+            const resetMain = () => {
+                originalMain = undefined;
+                mainForm.reset();
+                mainForm.elements.date.value = 'Hari Ini';
+                mainCancel.hidden = true;
+                mainSubmit.textContent = 'Tambah Hebahan';
+            };
+            const renderMain = posts => {
+                const items = normalizeAnnouncementsList(posts);
+                mainList.replaceChildren();
+                if (!items.length) {
+                    const empty = document.createElement('p');
+                    empty.textContent = 'Tiada hebahan atau peringatan buat masa ini.';
+                    empty.style.color = 'var(--text-muted)';
+                    mainList.append(empty);
+                    return;
+                }
+                for (const post of items) {
+                    const row = document.createElement('article');
+                    row.style.cssText = 'padding:12px; border:1px solid var(--border-color, #e2e8f0); border-radius:10px; margin-bottom:12px;';
+                    const meta = document.createElement('div');
+                    meta.style.cssText = 'font-size:0.78rem; color:var(--text-secondary); margin-bottom:4px;';
+                    meta.textContent = `${post.category || 'Umum'} • ${post.date || '-'} • ${post.priority || 'Biasa'} • Oleh: ${announcementPublisher(post, LECTURERS || [])}${post.expiryDate ? ' • Luput: ' + post.expiryDate : ''}`;
+                    const title = document.createElement('strong');
+                    title.textContent = post.title;
+                    const details = document.createElement('p');
+                    details.textContent = post.desc;
+                    details.style.cssText = 'margin:6px 0 10px; white-space:pre-wrap;';
+                    row.append(meta, title, details);
+                    if (ownsAnnouncement(post)) {
+                        const actions = document.createElement('div');
+                        actions.style.cssText = 'display:flex; gap:8px;';
+                        const edit = document.createElement('button');
+                        edit.type = 'button';
+                        edit.className = 'btn btn-light';
+                        edit.textContent = 'Edit';
+                        edit.onclick = () => {
+                            originalMain = post;
+                            const catSel = mainForm.elements.category;
+                            const catVal = post.category || 'Lain-lain';
+                            if (!Array.from(catSel.options).some(opt => opt.value === catVal)) {
+                                const opt = document.createElement('option');
+                                opt.value = catVal;
+                                opt.textContent = catVal;
+                                catSel.appendChild(opt);
+                            }
+                            catSel.value = catVal;
+                            mainForm.elements.date.value = post.date || 'Hari Ini';
+                            mainForm.elements.priority.value = post.priority || 'Biasa';
+                            mainForm.elements.expiryDate.value = post.expiryDate || '';
+                            mainForm.elements.title.value = post.title || '';
+                            mainForm.elements.desc.value = post.desc || '';
+                            mainCancel.hidden = false;
+                            mainSubmit.textContent = 'Simpan Kemas Kini';
+                            mainForm.elements.title.focus();
+                        };
+                        const remove = document.createElement('button');
+                        remove.type = 'button';
+                        remove.className = 'btn btn-danger';
+                        remove.textContent = 'Padam';
+                        remove.onclick = () => tanyaPengesahan('Padam hebahan ini daripada halaman utama?', async () => {
+                            try {
+                                renderMain(await saveAnnouncement({ original: post }));
+                                if (originalMain && announcementMatches(originalMain, post)) resetMain();
+                                showToast('Hebahan telah dipadam.', 'success');
+                            } catch (error) { showToast(error.message, 'danger'); }
+                        });
+                        actions.append(edit, remove);
+                        row.append(actions);
+                    }
+                    mainList.append(row);
+                }
+            };
+            mainCancel.onclick = resetMain;
+            mainForm.onsubmit = async event => {
+                event.preventDefault();
+                const fields = {
+                    category: mainForm.elements.category.value,
+                    date: mainForm.elements.date.value.trim(),
+                    priority: mainForm.elements.priority.value,
+                    expiryDate: mainForm.elements.expiryDate.value.trim(),
+                    title: mainForm.elements.title.value.trim(),
+                    desc: mainForm.elements.desc.value.trim()
+                };
+                if (!fields.title || !fields.desc) return;
+                mainSubmit.disabled = true;
+                try {
+                    renderMain(await saveAnnouncement({ original: originalMain, fields, publisherName: 'Programmer SIJAWAP' }));
+                    resetMain();
+                    showToast('Hebahan utama disimpan.', 'success');
+                } catch (error) { showToast(error.message, 'danger'); }
+                finally { mainSubmit.disabled = false; }
+            };
+            if (isFirebaseActive()) {
+                firebaseWatchAnnouncements(renderMain);
+            } else {
+                const rawMain = localStorage.getItem('kkpapar_announcements');
+                const initialMain = rawMain !== null ? JSON.parse(rawMain) : (typeof SEED_ANNOUNCEMENTS !== 'undefined' ? SEED_ANNOUNCEMENTS : []);
+                if (rawMain === null) localStorage.setItem('kkpapar_announcements', JSON.stringify(initialMain));
+                renderMain(initialMain);
+                window.addEventListener('storage', event => {
+                    if (event.key === 'kkpapar_announcements') {
+                        renderMain(event.newValue !== null ? JSON.parse(event.newValue) : []);
+                    }
+                });
+            }
         });
 
         function switchSection(secId) {

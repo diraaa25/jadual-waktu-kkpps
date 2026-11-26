@@ -668,8 +668,8 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="firebase-service.js"></script>
-    <script src="announcements.js"></script>
+    <script src="firebase-service.js?v=12"></script>
+    <script src="announcements.js?v=2"></script>
   <script src="timetable-workflow.js?v=27"></script>
   <script src="timetable-print.js?v=20"></script>
     <script>installTimetableReportStyles();</script>
@@ -872,7 +872,7 @@
                     renderAll();
                 });
                 firebaseWatchAnnouncements(data => {
-                    ANNOUNCEMENTS = (data && data.length > 0) ? data : (JSON.parse(localStorage.getItem("kkpapar_announcements") || 'null') || SEED_ANNOUNCEMENTS);
+                    ANNOUNCEMENTS = normalizeAnnouncementsList(data);
                     renderAnnouncements();
                 });
                 firebaseWatchLecturers(data => {
@@ -899,10 +899,12 @@
                 DB = JSON.parse(localStorage.getItem(KEY) || '{"subjek":[],"slot":[]}');
                 DB.slot = DB.slot || [];
                 DB.subjek = DB.subjek || [];
-                ANNOUNCEMENTS = JSON.parse(localStorage.getItem(ANN_KEY) || 'null') || SEED_ANNOUNCEMENTS;
+                const storedAnn = localStorage.getItem(ANN_KEY);
+                ANNOUNCEMENTS = storedAnn !== null ? normalizeAnnouncementsList(JSON.parse(storedAnn)) : [...SEED_ANNOUNCEMENTS];
+                if (storedAnn === null) localStorage.setItem(ANN_KEY, JSON.stringify(ANNOUNCEMENTS));
                 window.addEventListener('storage', event => {
                     if (event.key !== ANN_KEY) return;
-                    ANNOUNCEMENTS = JSON.parse(event.newValue || 'null') || SEED_ANNOUNCEMENTS;
+                    ANNOUNCEMENTS = event.newValue !== null ? normalizeAnnouncementsList(JSON.parse(event.newValue)) : [];
                     renderAnnouncements();
                 });
                 LECTURERS = JSON.parse(localStorage.getItem('kkpapar_lecturers')) || [];
@@ -1386,7 +1388,8 @@
         async function simpanHebahan(event) {
             event.preventDefault();
             const original = editingAnnouncement;
-            const publisherName = LECTURERS.find(person => person.short === lecturerCode())?.name;
+            const code = (lecturerCode() || '').trim().toUpperCase();
+            const publisherName = LECTURERS.find(person => (person.short || person.shortName || '').trim().toUpperCase() === code)?.name || code;
             if (!publisherName) return showToast('Profil pensyarah tidak ditemui.', 'danger');
             const fields = Object.fromEntries(['Category', 'Date', 'Title', 'Desc', 'Priority', 'ExpiryDate']
                 .map(name => [name[0].toLowerCase() + name.slice(1), document.getElementById('ann' + name).value.trim()]));
@@ -1468,10 +1471,18 @@
             const a = ANNOUNCEMENTS[idx];
             if (!ownsAnnouncement(a)) return;
             editingAnnouncement = a;
-            document.getElementById("annCategory").value = a.category;
-            document.getElementById("annDate").value = a.date;
-            document.getElementById("annTitle").value = a.title;
-            document.getElementById("annDesc").value = a.desc;
+            const catSelect = document.getElementById("annCategory");
+            const catVal = a.category || "Lain-lain";
+            if (!Array.from(catSelect.options).some(opt => opt.value === catVal)) {
+                const opt = document.createElement("option");
+                opt.value = catVal;
+                opt.textContent = catVal;
+                catSelect.appendChild(opt);
+            }
+            catSelect.value = catVal;
+            document.getElementById("annDate").value = a.date || "Hari Ini";
+            document.getElementById("annTitle").value = a.title || "";
+            document.getElementById("annDesc").value = a.desc || "";
             document.getElementById("annPriority").value = a.priority || "Biasa";
             document.getElementById("annExpiryDate").value = a.expiryDate || "";
             document.getElementById("editIndex").value = idx;

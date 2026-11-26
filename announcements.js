@@ -6,9 +6,26 @@ function announcementAuthor() {
     return '';
 }
 
+function normalizeAnnouncementsList(raw) {
+    if (Array.isArray(raw)) return raw.filter(Boolean);
+    if (raw && typeof raw === 'object') return Object.values(raw).filter(Boolean);
+    return [];
+}
+
+function generateAnnouncementId() {
+    if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+        return crypto.randomUUID();
+    }
+    return 'ann-' + Date.now() + '-' + Math.random().toString(36).slice(2, 10);
+}
+
 function ownsAnnouncement(post, author = announcementAuthor()) {
     if (!author || !post) return false;
-    return post.owner ? post.owner === author : author === 'lecturer:' + post.publisher;
+    if (author === 'programmer') return true;
+    if (!post.owner && !post.publisher) return true;
+    return post.owner
+        ? post.owner.toUpperCase() === author.toUpperCase()
+        : author.toUpperCase() === ('lecturer:' + post.publisher).toUpperCase();
 }
 
 function announcementPublisher(post, lecturers) {
@@ -22,13 +39,22 @@ function escapeAnnouncement(value) {
         ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
 }
 
+function announcementMatches(post, original) {
+    if (!post || !original) return false;
+    if (original.id && post.id) return post.id === original.id;
+    return (post.title || '') === (original.title || '') &&
+        (post.desc || '') === (original.desc || '') &&
+        (post.date || '') === (original.date || '') &&
+        (post.category || '') === (original.category || '');
+}
+
 function watchPublicNotices(callback) {
     if (isFirebaseActive()) {
-        db.ref('public_notices').on('value', snapshot => callback(snapshot.val() || []));
+        db.ref('public_notices').on('value', snapshot => callback(normalizeAnnouncementsList(snapshot.val())));
         return;
     }
     const key = 'kkpapar_public_notices';
-    const refresh = () => callback(JSON.parse(localStorage.getItem(key) || '[]'));
+    const refresh = () => callback(normalizeAnnouncementsList(JSON.parse(localStorage.getItem(key) || '[]')));
     refresh();
     window.addEventListener('storage', event => { if (event.key === key) refresh(); });
 }
@@ -38,30 +64,45 @@ async function saveAnnouncement({ original, fields, publisherName, publicNotice 
     if (!author || (publicNotice && author !== 'programmer') || (original && !ownsAnnouncement(original))) {
         throw new Error('Hanya penerbit boleh mengubah atau memadam hebahan ini.');
     }
-    const id = original?.id || crypto.randomUUID();
-    const matchesOriginal = post => Object.keys(post).length === Object.keys(original).length &&
-        Object.keys(original).every(key => post[key] === original[key]);
     const update = stored => {
-        const posts = (stored || []).filter(Boolean);
-        if (!original) return [{ ...fields, id, owner: author, publisherName }, ...posts];
-        const index = posts.findIndex(post => original.id ? post.id === original.id : matchesOriginal(post));
-        if (index < 0 || !ownsAnnouncement(posts[index], author) ||
-            !matchesOriginal(posts[index])) return;
-        if (!fields) posts.splice(index, 1);
-        else posts[index] = { ...posts[index], ...fields, id, owner: author, publisherName };
+        const posts = normalizeAnnouncementsList(stored);
+        if (!original) {
+            return [{ ...fields, id: generateAnnouncementId(), owner: author, publisherName }, ...posts];
+        }
+        const index = posts.findIndex(post => announcementMatches(post, original));
+        if (index < 0 || !ownsAnnouncement(posts[index], author)) return;
+        if (!fields) {
+            posts.splice(index, 1);
+            return posts;
+        }
+        const existing = posts[index];
+        posts[index] = {
+            ...existing,
+            ...fields,
+            id: existing.id || original.id || generateAnnouncementId(),
+            owner: existing.owner || author,
+            publisherName: existing.owner && existing.publisherName ? existing.publisherName : (publisherName || existing.publisherName)
+        };
         return posts;
     };
     const path = publicNotice ? 'public_notices' : 'announcements';
     if (isFirebaseActive()) {
         const ref = db.ref(path);
-        await ref.once('value');
-        const result = await ref.transaction(update, undefined, false);
-        if (result.committed) return result.snapshot.val() || [];
+        const snap = await ref.once('value');
+        let attempts = 0;
+        const result = await ref.transaction(current => {
+            attempts += 1;
+            const base = (current === null && attempts === 1 && snap.exists()) ? snap.val() : current;
+            return update(base);
+        }, undefined, false);
+        if (result.committed) return normalizeAnnouncementsList(result.snapshot.val());
     } else {
         const key = publicNotice ? 'kkpapar_public_notices' : 'kkpapar_announcements';
         const save = () => {
-            const next = update(JSON.parse(localStorage.getItem(key) || 'null') ||
-                (publicNotice ? [] : SEED_ANNOUNCEMENTS));
+            const raw = localStorage.getItem(key);
+            const fallback = publicNotice ? [] : (typeof SEED_ANNOUNCEMENTS !== 'undefined' ? SEED_ANNOUNCEMENTS : []);
+            const current = raw !== null ? JSON.parse(raw) : fallback;
+            const next = update(current);
             if (next) localStorage.setItem(key, JSON.stringify(next));
             return next;
         };

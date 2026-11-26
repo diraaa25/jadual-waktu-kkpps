@@ -128,7 +128,7 @@ function toggleTheme() {
 function initDatabase() {
     if (isFirebaseActive()) {
         firebaseWatchAnnouncements(data => {
-            announcements = (data && data.length > 0) ? data : [...DEFAULT_ANNOUNCEMENTS];
+            announcements = normalizeAnnouncementsList(data);
             renderAnnouncements();
             renderStats();
         });
@@ -157,8 +157,8 @@ function initDatabase() {
     } else {
         // Load announcements
         const storedAnnouncements = localStorage.getItem("kkpapar_announcements");
-        if (storedAnnouncements) {
-            announcements = JSON.parse(storedAnnouncements);
+        if (storedAnnouncements !== null) {
+            announcements = normalizeAnnouncementsList(JSON.parse(storedAnnouncements));
         } else {
             announcements = [...DEFAULT_ANNOUNCEMENTS];
             localStorage.setItem("kkpapar_announcements", JSON.stringify(announcements));
@@ -538,31 +538,150 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-function renderAnnouncements() {
-    const isDummy = (title) => {
-        if (!title) return false;
-        return title.includes("Penyediaan Jadual Waktu Sesi 2026/2027") ||
-               title.includes("Kemas kini Pakej Kursus Sijil Teknologi Maklumat") ||
-               title.includes("Pertemuan Mingguan Pensyarah");
-    };
+let editingMainAnnouncement = null;
+let pendingConfirmAction = null;
 
-    if (!isFirebaseActive() || !announcements || announcements.length === 0) {
-        const storedAnnouncements = localStorage.getItem("kkpapar_announcements");
-        if (storedAnnouncements) {
-            try {
-                const parsed = JSON.parse(storedAnnouncements);
-                if (Array.isArray(parsed) && parsed.length > 0) {
-                    announcements = parsed.filter(a => !isDummy(a.title));
-                }
-            } catch (e) {}
+function currentMainPublisherName() {
+    const role = sessionStorage.getItem('logged_role');
+    if (role === 'programmer') return 'Programmer SIJAWAP';
+    const code = (sessionStorage.getItem('logged_lecturer') || '').trim().toUpperCase();
+    const list = lecturersList.length ? lecturersList : (JSON.parse(localStorage.getItem('kkpapar_lecturers') || 'null') || INITIAL_LECTURERS);
+    return list.find(l => (l.shortName || l.short || '').trim().toUpperCase() === code)?.name || code;
+}
+
+function renderAnnouncementHeaderActions() {
+    const headerActions = document.getElementById("announcements-header-actions");
+    if (!headerActions) return;
+    headerActions.replaceChildren();
+    const role = sessionStorage.getItem('logged_role');
+    if (!announcementAuthor()) return;
+
+    const addBtn = document.createElement("button");
+    addBtn.type = "button";
+    addBtn.textContent = "+ Tambah Hebahan";
+    addBtn.style.cssText = "padding:6px 12px; border-radius:8px; border:none; background:var(--primary); color:#fff; font-size:0.75rem; font-weight:700; cursor:pointer;";
+    addBtn.onclick = () => bukaModalHebahanUtama(null);
+
+    const portalLink = document.createElement("a");
+    portalLink.href = role === 'programmer' ? 'Programmer.html' : 'Pensyarah.html';
+    portalLink.textContent = "Urus di Portal";
+    portalLink.style.cssText = "padding:6px 12px; border-radius:8px; border:1px solid var(--border-color, #cbd5e1); background:transparent; color:var(--text-primary); font-size:0.75rem; font-weight:600; text-decoration:none;";
+
+    headerActions.append(addBtn, portalLink);
+}
+
+function bukaModalHebahanUtama(ann = null) {
+    const modal = document.getElementById("modalEditAnnouncement");
+    const form = document.getElementById("formEditAnnouncement");
+    if (!modal || !form) return;
+    if (ann && !ownsAnnouncement(ann)) {
+        showToast('Hanya penerbit atau Programmer boleh mengubah hebahan ini.', 'danger');
+        return;
+    }
+    editingMainAnnouncement = ann;
+    document.getElementById("modalEditAnnTitle").textContent = ann ? "Edit Hebahan & Peringatan" : "Tambah Hebahan Baru";
+    const catSelect = form.elements.category;
+    const catVal = ann?.category || "Pentadbiran Kolej";
+    if (!Array.from(catSelect.options).some(opt => opt.value === catVal)) {
+        const opt = document.createElement("option");
+        opt.value = catVal;
+        opt.textContent = catVal;
+        catSelect.appendChild(opt);
+    }
+    catSelect.value = catVal;
+    form.elements.date.value = ann?.date || "Hari Ini";
+    form.elements.priority.value = ann?.priority || "Biasa";
+    form.elements.expiryDate.value = ann?.expiryDate || "";
+    form.elements.title.value = ann?.title || "";
+    form.elements.desc.value = ann?.desc || "";
+    modal.style.display = "flex";
+    form.elements.title.focus();
+}
+
+function tutupModalHebahanUtama() {
+    const modal = document.getElementById("modalEditAnnouncement");
+    if (modal) modal.style.display = "none";
+    editingMainAnnouncement = null;
+}
+
+function tutupModalConfirmAnnouncement() {
+    const modal = document.getElementById("modalConfirmAnnouncement");
+    if (modal) modal.style.display = "none";
+    pendingConfirmAction = null;
+}
+
+async function simpanHebahanUtama(event) {
+    event.preventDefault();
+    const form = event.target;
+    const fields = {
+        category: form.elements.category.value,
+        date: form.elements.date.value.trim(),
+        priority: form.elements.priority.value,
+        expiryDate: form.elements.expiryDate.value.trim(),
+        title: form.elements.title.value.trim(),
+        desc: form.elements.desc.value.trim()
+    };
+    if (!fields.title || !fields.desc) return;
+    const submitBtn = form.querySelector('[type="submit"]');
+    submitBtn.disabled = true;
+    try {
+        announcements = await saveAnnouncement({
+            original: editingMainAnnouncement,
+            fields,
+            publisherName: currentMainPublisherName()
+        });
+        tutupModalHebahanUtama();
+        renderAnnouncements();
+        showToast('Hebahan disimpan.', 'success');
+    } catch (error) {
+        showToast(error.message, 'danger');
+    } finally {
+        submitBtn.disabled = false;
+    }
+}
+
+function padamHebahanUtama(ann) {
+    if (!ownsAnnouncement(ann)) {
+        showToast('Hanya penerbit atau Programmer boleh memadam hebahan ini.', 'danger');
+        return;
+    }
+    const modal = document.getElementById("modalConfirmAnnouncement");
+    const msg = document.getElementById("confirmAnnMessage");
+    const yesBtn = document.getElementById("btnConfirmAnnYes");
+    if (!modal || !msg || !yesBtn) return;
+    msg.textContent = `Adakah anda pasti mahu memadam hebahan "${ann.title}"?`;
+    pendingConfirmAction = async () => {
+        yesBtn.disabled = true;
+        try {
+            announcements = await saveAnnouncement({ original: ann });
+            tutupModalConfirmAnnouncement();
+            renderAnnouncements();
+            showToast('Hebahan telah dipadam.', 'success');
+        } catch (error) {
+            showToast(error.message, 'danger');
+        } finally {
+            yesBtn.disabled = false;
         }
-        if (!announcements || announcements.length === 0) {
-            announcements = [...DEFAULT_ANNOUNCEMENTS];
+    };
+    yesBtn.onclick = () => pendingConfirmAction && pendingConfirmAction();
+    modal.style.display = "flex";
+}
+
+function renderAnnouncements() {
+    if (!isFirebaseActive()) {
+        const storedAnnouncements = localStorage.getItem("kkpapar_announcements");
+        if (storedAnnouncements !== null) {
+            try {
+                announcements = normalizeAnnouncementsList(JSON.parse(storedAnnouncements));
+            } catch (e) {
+                announcements = [];
+            }
         }
     } else {
-        // Tapis keluar sebarang hebahan contoh lama jika masih ada
-        announcements = announcements.filter(a => !isDummy(a.title));
+        announcements = normalizeAnnouncementsList(announcements);
     }
+
+    renderAnnouncementHeaderActions();
 
     const board = document.getElementById("announcements-display-list");
     if (!board) return;
@@ -570,23 +689,26 @@ function renderAnnouncements() {
     board.innerHTML = "";
 
     // Gabungkan dengan aktiviti KKPPS (SPAK) jika ada
-    let displayList = [...announcements];
+    const displayList = announcements.map(ann => ({ ann, fromSpak: false }));
     if (Array.isArray(spakActivities) && spakActivities.length > 0) {
-        const existingTitles = new Set(displayList.map(a => (a.title || '').trim().toLowerCase()));
+        const existingTitles = new Set(displayList.map(entry => (entry.ann.title || '').trim().toLowerCase()));
         spakActivities.forEach(act => {
             if (!act || !act.title) return;
             const normTitle = act.title.trim().toLowerCase();
             if (!existingTitles.has(normTitle)) {
                 existingTitles.add(normTitle);
                 displayList.push({
-                    category: act.category === 'Penting' ? 'Aktiviti Penting KKPPS' : 'Aktiviti KKPPS',
-                    date: act.date && !act.date.startsWith('60') ? act.date : 'Sesi 2026/2027',
-                    title: act.title,
-                    desc: (act.description ? act.description + ' ' : '') + 
-                          (act.location ? `(Lokasi: ${act.location}` : '') + 
-                          (act.startTime ? `, Masa: ${act.startTime} - ${act.endTime || ''})` : act.location ? ')' : ''),
-                    publisherName: act.coordinator || 'Pengurusan KKPPS',
-                    priority: act.category === 'Penting' ? 'Penting' : 'Biasa'
+                    fromSpak: true,
+                    ann: {
+                        category: act.category === 'Penting' ? 'Aktiviti Penting KKPPS' : 'Aktiviti KKPPS',
+                        date: act.date && !act.date.startsWith('60') ? act.date : 'Sesi 2026/2027',
+                        title: act.title,
+                        desc: (act.description ? act.description + ' ' : '') +
+                              (act.location ? `(Lokasi: ${act.location}` : '') +
+                              (act.startTime ? `, Masa: ${act.startTime} - ${act.endTime || ''})` : act.location ? ')' : ''),
+                        publisherName: act.coordinator || 'Pengurusan KKPPS',
+                        priority: act.category === 'Penting' ? 'Penting' : 'Biasa'
+                    }
                 });
             }
         });
@@ -596,19 +718,19 @@ function renderAnnouncements() {
     const now = new Date();
     const todayStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
 
-    const activeAnnouncements = displayList.filter(ann => {
+    const activeEntries = displayList.filter(({ ann }) => {
         if (ann.expiryDate) {
             return ann.expiryDate >= todayStr;
         }
         return true;
     });
 
-    if (activeAnnouncements.length === 0) {
+    if (activeEntries.length === 0) {
         board.innerHTML = `<p style="text-align:center; padding: 2rem 0; color: var(--text-muted);">Tiada hebahan atau peringatan buat masa ini.</p>`;
         return;
     }
 
-    activeAnnouncements.forEach(ann => {
+    activeEntries.forEach(({ ann, fromSpak }) => {
         const item = document.createElement("div");
 
         let itemClass = "announcement-item";
@@ -625,11 +747,11 @@ function renderAnnouncements() {
 
         item.className = itemClass;
 
-        const pubText = ann.publisher || ann.publisherName ? `<span class="announcement-pub" style="font-size:0.75rem; color:var(--text-secondary); margin-left:10px;">👤 Oleh: ${escapeAnnouncement(announcementPublisher(ann, lecturersList.length ? lecturersList : (JSON.parse(localStorage.getItem('kkpapar_lecturers') || 'null') || INITIAL_LECTURERS)))}</span>` : '';
+        const pubText = (ann.publisher || ann.publisherName || ann.owner) ? `<span class="announcement-pub" style="font-size:0.75rem; color:var(--text-secondary); margin-left:10px;">👤 Oleh: ${escapeAnnouncement(announcementPublisher(ann, lecturersList.length ? lecturersList : (JSON.parse(localStorage.getItem('kkpapar_lecturers') || 'null') || INITIAL_LECTURERS)))}</span>` : '';
         const expText = ann.expiryDate ? `<span style="font-size:0.75rem; color:var(--danger); margin-left:10px; font-weight:600;">(Luput: ${escapeAnnouncement(ann.expiryDate)})</span>` : '';
 
         item.innerHTML = `
-            <div class="announcement-meta">
+            <div class="announcement-meta" style="display:flex; flex-wrap:wrap; align-items:center; gap:6px;">
                 <strong>${escapeAnnouncement(ann.category)}</strong>
                 <span>📅 ${escapeAnnouncement(ann.date)}</span>
                 ${pubText}
@@ -638,6 +760,30 @@ function renderAnnouncements() {
             <div class="announcement-title">${escapeAnnouncement(ann.title)}${badgeHtml}</div>
             <div class="announcement-desc">${escapeAnnouncement(ann.desc)}</div>
         `;
+
+        if (!fromSpak && ownsAnnouncement(ann)) {
+            const meta = item.querySelector('.announcement-meta');
+            const actions = document.createElement('div');
+            actions.style.cssText = 'margin-left:auto; display:inline-flex; gap:6px;';
+
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.title = 'Edit Hebahan';
+            editBtn.textContent = '✏️ Edit';
+            editBtn.style.cssText = 'padding:3px 9px; font-size:0.72rem; font-weight:600; border-radius:6px; border:1px solid #bfdbfe; background:#eff6ff; color:#1d4ed8; cursor:pointer;';
+            editBtn.onclick = () => bukaModalHebahanUtama(ann);
+
+            const delBtn = document.createElement('button');
+            delBtn.type = 'button';
+            delBtn.title = 'Padam Hebahan';
+            delBtn.textContent = '🗑️ Padam';
+            delBtn.style.cssText = 'padding:3px 9px; font-size:0.72rem; font-weight:600; border-radius:6px; border:1px solid #fecaca; background:#fef2f2; color:#dc2626; cursor:pointer;';
+            delBtn.onclick = () => padamHebahanUtama(ann);
+
+            actions.append(editBtn, delBtn);
+            meta.appendChild(actions);
+        }
+
         board.appendChild(item);
     });
 }
