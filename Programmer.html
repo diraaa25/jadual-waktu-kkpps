@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
         rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=17">
+    <link rel="stylesheet" href="style.css?v=18">
     <!-- SheetJS for Excel Import -->
     <script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
     <style>
@@ -98,7 +98,7 @@
             padding: 16px;
             box-sizing: border-box;
         }
-        
+
         .confirm-card {
             background-color: var(--surface);
             color: var(--text-primary);
@@ -106,7 +106,7 @@
             max-width: 400px;
             border-radius: var(--border-radius-lg);
             border: 1px solid var(--surface-border);
-            box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
             padding: 24px;
             font-family: var(--font-sans);
             text-align: left;
@@ -115,12 +115,12 @@
             opacity: 0;
             transition: transform 0.2s ease, opacity 0.2s ease;
         }
-        
+
         .confirm-card.active {
             transform: scale(1);
             opacity: 1;
         }
-        
+
         .confirm-title {
             margin-top: 0;
             font-size: 1.15rem;
@@ -130,7 +130,7 @@
             align-items: center;
             gap: 8px;
         }
-        
+
         .confirm-desc {
             font-size: 0.88rem;
             color: var(--text-secondary);
@@ -138,7 +138,7 @@
             margin-bottom: 24px;
             line-height: 1.5;
         }
-        
+
         .confirm-actions {
             display: flex;
             justify-content: flex-end;
@@ -184,7 +184,8 @@
                     <button class="nav-item" onclick="switchSection('config')">
                         🛠️ Konfigurasi Sistem
                     </button>
-                    <a href="index.html" onclick="sessionStorage.clear();" class="nav-item" style="margin-top: 2rem; color: var(--danger);">
+                    <a href="index.html" onclick="sessionStorage.clear();" class="nav-item"
+                        style="margin-top: 2rem; color: var(--danger);">
                         🚪 Log Keluar
                     </a>
                 </nav>
@@ -228,14 +229,21 @@
                     <div class="card">
                         <h2>➕ Tambah Pensyarah Baru</h2>
                         <!-- Import Excel Section -->
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; padding: 14px 16px; background: var(--surface-hover); border: 1px dashed var(--surface-border); border-radius: var(--border-radius-md);">
-                            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">📥 Import dari Excel:</span>
-                            <label for="importLecExcel" class="btn btn-light" style="padding: 6px 14px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                        <div
+                            style="display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; padding: 14px 16px; background: var(--surface-hover); border: 1px dashed var(--surface-border); border-radius: var(--border-radius-md);">
+                            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">📥 Import
+                                dari Excel:</span>
+                            <label for="importLecExcel" class="btn btn-light"
+                                style="padding: 6px 14px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
                                 📂 Pilih Fail Excel
-                                <input type="file" id="importLecExcel" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importLecturerExcel(this)">
+                                <input type="file" id="importLecExcel" accept=".xlsx,.xls,.csv" style="display: none;"
+                                    onchange="importLecturerExcel(this)">
                             </label>
-                            <a class="btn btn-light" href="templates/Template_Pensyarah.xlsx" download>Muat Turun Templat Pensyarah</a>
-                            <span id="importLecStatus" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama | Singkatan | Jawatan | Emel | Program | Kata Laluan</span>
+                            <a class="btn btn-light" href="templates/Template_Pensyarah.xlsx" download>Muat Turun
+                                Templat Pensyarah</a>
+                            <span id="importLecStatus"
+                                style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama |
+                                Singkatan | Jawatan | Emel | Program | Kata Laluan</span>
                         </div>
                         <form id="formLecturer" onsubmit="tambahPensyarah(event)">
                             <div class="form-group-wrapper">
@@ -447,7 +455,8 @@
                                 style="display: inline-flex; align-items: center; gap: 0.5rem; font-weight: 700;">
                                 Sahkan & Terbit Jadual
                             </button>
-                            <div id="programmer-cancellation" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
+                            <div id="programmer-cancellation"
+                                style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div>
                         </div>
                     </div>
 
@@ -463,11 +472,16 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                         <label for="slotKelas" style="margin-bottom: 0;">Kelas Pelajar</label>
                                         <div style="display: flex; gap: 4px;">
-                                            <button type="button" onclick="tambahKelasDropdown()" class="btn btn-light" style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px;">➕ Tambah Kelas</button>
-                                            <button type="button" onclick="padamKelasDropdown()" class="btn btn-light" style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px; color: var(--danger);">🗑️ Buang Kelas</button>
+                                            <button type="button" onclick="tambahKelasDropdown()" class="btn btn-light"
+                                                style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px;">➕
+                                                Tambah Kelas</button>
+                                            <button type="button" onclick="padamKelasDropdown()" class="btn btn-light"
+                                                style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px; color: var(--danger);">🗑️
+                                                Buang Kelas</button>
                                         </div>
                                     </div>
                                     <select id="slotKelas" class="programmer-select" required>
@@ -475,9 +489,12 @@
                                     </select>
                                 </div>
                                 <div class="form-group">
-                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div
+                                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
                                         <label for="slotLokasi" style="margin-bottom: 0;">Lokasi / Bilik</label>
-                                        <button type="button" onclick="tambahLokasiDropdown()" class="btn btn-light" style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px;">➕ Tambah Lokasi</button>
+                                        <button type="button" onclick="tambahLokasiDropdown()" class="btn btn-light"
+                                            style="padding: 2px 8px; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 4px;">➕
+                                            Tambah Lokasi</button>
                                     </div>
                                     <select id="slotLokasi" class="programmer-select" required>
                                         <!-- Rendered dynamically -->
@@ -548,28 +565,33 @@
                                     <!-- Dynamic -->
                                 </tbody>
                             </table>
+                        </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- SECTION 5: SYSTEM CONFIGURATION (TPA & SESSIONS) -->
+                <!-- SECTION 5: SYSTEM CONFIGURATION (TPA & SESSIONS) -->
                 <section id="sec-notices" class="tab-section" style="display:none;">
                     <div class="card">
                         <h2>Hebahan Awam (Sepanduk Utama)</h2>
                         <p>Hebahan ringkas dipaparkan di bahagian atas halaman utama, termasuk sebelum log masuk.</p>
                         <form id="public-notice-form" style="display:grid; gap:12px; margin:16px 0;">
                             <label>Tajuk<input name="title" class="programmer-input" required maxlength="150"></label>
-                            <label>Kandungan<textarea name="desc" class="programmer-input" rows="4" required maxlength="2000"></textarea></label>
+                            <label>Kandungan<textarea name="desc" class="programmer-input" rows="4" required
+                                    maxlength="2000"></textarea></label>
                             <div><button type="submit" class="btn btn-primary">Terbitkan Hebahan</button>
-                                <button type="button" class="btn btn-light" id="cancel-notice-edit" hidden>Batal</button></div>
+                                <button type="button" class="btn btn-light" id="cancel-notice-edit"
+                                    hidden>Batal</button>
+                            </div>
                         </form>
                         <div id="public-notice-list"></div>
                     </div>
 
                     <div class="card" style="margin-top: 20px;">
                         <h2>Hebahan &amp; Peringatan Terkini (Halaman Utama)</h2>
-                        <p>Urus, edit atau padam semua hebahan yang dipaparkan dalam kad <strong>Hebahan &amp; Peringatan Terkini</strong> pada halaman utama (<code>index.html</code>).</p>
-                        <form id="main-ann-form" style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin:16px 0;">
+                        <p>Urus, edit atau padam semua hebahan yang dipaparkan dalam kad <strong>Hebahan &amp;
+                                Peringatan Terkini</strong> pada halaman utama (<code>index.html</code>).</p>
+                        <form id="main-ann-form"
+                            style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap:12px; margin:16px 0;">
                             <label>Kategori
                                 <select name="category" class="programmer-input" required>
                                     <option value="Pentadbiran Kolej">Pentadbiran Kolej</option>
@@ -581,7 +603,8 @@
                                     <option value="Lain-lain">Lain-lain</option>
                                 </select>
                             </label>
-                            <label>Tarikh / Waktu<input name="date" class="programmer-input" value="Hari Ini" required></label>
+                            <label>Tarikh / Waktu<input name="date" class="programmer-input" value="Hari Ini"
+                                    required></label>
                             <label>Keutamaan
                                 <select name="priority" class="programmer-input" required>
                                     <option value="Biasa">Biasa</option>
@@ -589,216 +612,143 @@
                                     <option value="Segera">Segera</option>
                                 </select>
                             </label>
-                            <label>Tarikh Luput (Opsional)<input name="expiryDate" type="date" class="programmer-input"></label>
-                            <label style="grid-column: 1 / -1;">Tajuk Hebahan<input name="title" class="programmer-input" required maxlength="200"></label>
-                            <label style="grid-column: 1 / -1;">Kandungan / Butiran<textarea name="desc" class="programmer-input" rows="3" required maxlength="2000"></textarea></label>
+                            <label>Tarikh Luput (Opsional)<input name="expiryDate" type="date"
+                                    class="programmer-input"></label>
+                            <label style="grid-column: 1 / -1;">Tajuk Hebahan<input name="title"
+                                    class="programmer-input" required maxlength="200"></label>
+                            <label style="grid-column: 1 / -1;">Kandungan / Butiran<textarea name="desc"
+                                    class="programmer-input" rows="3" required maxlength="2000"></textarea></label>
                             <div style="grid-column: 1 / -1; display:flex; gap:8px;">
                                 <button type="submit" class="btn btn-primary">Tambah Hebahan</button>
-                                <button type="button" class="btn btn-light" id="cancel-main-ann-edit" hidden>Batal</button>
+                                <button type="button" class="btn btn-light" id="cancel-main-ann-edit"
+                                    hidden>Batal</button>
                             </div>
                         </form>
                         <div id="main-ann-list"></div>
                     </div>
                 </section>
-            <div id="sec-config" class="tab-section" style="display: none;">
-                        <div class="card">
-                            <h2>Pemetaan Lokasi</h2>
-                            <p>Semak dan ubah unit yang mengurus setiap lokasi. Pemetaan digunakan dalam senarai lokasi dan tandatangan cetakan.</p>
-                            <button type="button" class="btn btn-light" onclick="tambahLokasiDropdown()">Tambah Lokasi</button>
-                            <div class="table-responsive"><table><thead><tr>
-                                <th>Lokasi</th><th>Kod</th><th>Program atau Unit</th><th>Tindakan</th>
-                            </tr></thead><tbody id="locationMappingRows"></tbody></table></div>
+                <div id="sec-config" class="tab-section" style="display: none;">
+                    <div class="card">
+                        <h2>Pemetaan Lokasi</h2>
+                        <p>Semak dan ubah unit yang mengurus setiap lokasi. Pemetaan digunakan dalam senarai lokasi dan
+                            tandatangan cetakan.</p>
+                        <button type="button" class="btn btn-light" onclick="tambahLokasiDropdown()">Tambah
+                            Lokasi</button>
+                        <div class="table-responsive">
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Lokasi</th>
+                                        <th>Kod</th>
+                                        <th>Program atau Unit</th>
+                                        <th>Tindakan</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="locationMappingRows"></tbody>
+                            </table>
                         </div>
-
-                        <!-- System Password Management Card -->
-                        <div class="card">
-                            <h2>🔐 Pengurusan Kata Laluan Sistem (Admin & Programmer)</h2>
-                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                                Kemaskini kata laluan untuk akaun Admin dan Programmer bagi mengelakkan akses tidak sah jika pelajar mengetahui kata laluan lalai.
-                            </p>
-                            <form id="formSystemPasswords" onsubmit="simpanKataLaluanSistem(event)" style="max-width: 500px;">
-                                <div class="form-group-wrapper" style="grid-template-columns: 1fr; gap: 1rem;">
-                                    <div class="form-group">
-                                        <label for="inputAdminPassword">Kata Laluan Admin Baru</label>
-                                        <input type="text" id="inputAdminPassword" class="programmer-input" placeholder="Masukkan kata laluan admin baru..." required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="inputProgrammerPassword">Kata Laluan Programmer Baru</label>
-                                        <input type="text" id="inputProgrammerPassword" class="programmer-input" placeholder="Masukkan kata laluan programmer baru..." required>
-                                    </div>
-                                </div>
-                                <div class="actions" style="margin-top: 1.25rem;">
-                                    <button type="submit" class="btn btn-primary">Simpan Kata Laluan Baru</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Choose TPA Card -->
-                        <div class="card">
-                            <h2>👤 Lantikan Timbalan Pengarah Akademik (TPA)</h2>
-                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                                Pilih pensyarah yang akan memegang jawatan Timbalan Pengarah Akademik (TPA).
-                                TPA bertanggungjawab menyemak dan meluluskan deraf jadual waktu sebelum ia diterbitkan
-                                secara rasmi kepada pensyarah dan pelajar.
-                            </p>
-                            <form id="formChooseTpa" onsubmit="simpanTpa(event)" style="max-width: 500px;">
-                                <div class="form-group">
-                                    <label for="selectTpaLec">Pilih Pensyarah TPA</label>
-                                    <select id="selectTpaLec" class="programmer-select" required>
-                                        <!-- Dynamic list of lecturers -->
-                                    </select>
-                                </div>
-                                <div class="actions" style="margin-top: 1.25rem;">
-                                    <button type="submit" class="btn btn-primary">Kemaskini Lantikan TPA</button>
-                                </div>
-                            </form>
-                        </div>
-
-                        <!-- Manage Sessions Card -->
-                        <div class="card">
-                            <h2>📅 Urus Sesi Pengajian</h2>
-                            <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                                Daftar sesi akademik baru, pilih sesi semasa, atau buang sesi yang tidak lagi
-                                aktif.
-                            </p>
-
-                            <!-- Active Session Config Form -->
-                            <form id="formActiveSession" onsubmit="simpanActiveSession(event)"
-                                style="max-width: 500px; margin-bottom: 2rem; border-bottom: 1px dashed var(--surface-border); padding-bottom: 1.5rem;">
-                                <div class="form-group">
-                                    <label for="selectActiveSession">Pilih Sesi Semasa</label>
-                                    <select id="selectActiveSession" class="programmer-select" required>
-                                        <!-- Dynamic list of sessions -->
-                                    </select>
-                                </div>
-                                <div class="actions" style="margin-top: 1rem;">
-                                    <button type="submit" class="btn btn-primary">Tetapkan Sesi Semasa</button>
-                                </div>
-                            </form>
-
-                            <!-- Add Session Form -->
-                            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">➕ Daftar Sesi Pengajian
-                                Baru</h3>
-                            <form id="formAddSession" onsubmit="tambahSesi(event)"
-                                style="max-width: 500px; margin-bottom: 2rem;">
-                                <div class="form-group">
-                                    <label for="inputNewSession">Nama / Kod Sesi</label>
-                                    <input id="inputNewSession" class="programmer-input"
-                                        placeholder="cth: SESI 1 2026/2027" required style="text-transform: uppercase;">
-                                </div>
-                                <div class="actions" style="margin-top: 1rem;">
-                                    <button type="submit" class="btn btn-accent">Tambah Sesi</button>
-                                </div>
-                            </form>
-
-                            <!-- Registered Sessions List Table -->
-                            <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">📋 Senarai Sesi
-                                Pengajian</h3>
-                            <div
-                                class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
-                                <table class="custom-table">
-                                    <thead>
-                                        <tr>
-                                            <th>Nama Sesi</th>
-                                            <th>Status Sesi</th>
-                                            <th style="text-align: center; width: 100px;">Tindakan</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="sessionsTableBody">
-                                        <!-- Dynamic session rows -->
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
                     </div>
 
-                </div>
-
-                <!-- SECTION 6: URUS PELAJAR (PROGRAMMER ONLY) -->
-                <div id="sec-pelajar" class="tab-section" style="display: none;">
-                    
-                    <!-- Registration Form Card -->
+                    <!-- System Password Management Card -->
                     <div class="card">
-                        <h2>🎓 Daftar Pelajar Baru</h2>
-                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
-                            Masukkan maklumat pelajar baru untuk didaftarkan ke dalam direktori pelajar sistem.
+                        <h2>🔐 Pengurusan Kata Laluan Sistem (Admin & Programmer)</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            Kemaskini kata laluan untuk akaun Admin dan Programmer bagi mengelakkan akses tidak sah jika
+                            pelajar mengetahui kata laluan lalai.
                         </p>
-                        <!-- Import Excel Section -->
-                        <div style="display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; padding: 14px 16px; background: var(--surface-hover); border: 1px dashed var(--surface-border); border-radius: var(--border-radius-md);">
-                            <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">📥 Import dari Excel:</span>
-                            <label for="importStudentExcelProg" class="btn btn-light" style="padding: 6px 14px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
-                                📂 Pilih Fail Excel
-                                <input type="file" id="importStudentExcelProg" accept=".xlsx,.xls,.csv" style="display: none;" onchange="importStudentExcelProg(this)">
-                            </label>
-                            <a class="btn btn-light" href="templates/Template_Pelajar.xlsx" download>Muat Turun Templat Pelajar</a>
-                            <span id="importStudProgStatus" style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama | No. IC | Jantina | Alamat | No. Matrik</span>
-                        </div>
-                        <form id="formAddStudentProg" onsubmit="tambahPelajarProg(event)">
-                            <div class="form-group-wrapper">
+                        <form id="formSystemPasswords" onsubmit="simpanKataLaluanSistem(event)"
+                            style="max-width: 500px;">
+                            <div class="form-group-wrapper" style="grid-template-columns: 1fr; gap: 1rem;">
                                 <div class="form-group">
-                                    <label for="progStudName">Nama Penuh</label>
-                                    <input id="progStudName" class="programmer-input" placeholder="cth: AHMAD BIN ALI" required style="text-transform: uppercase;">
+                                    <label for="inputAdminPassword">Kata Laluan Admin Baru</label>
+                                    <input type="text" id="inputAdminPassword" class="programmer-input"
+                                        placeholder="Masukkan kata laluan admin baru..." required>
                                 </div>
                                 <div class="form-group">
-                                    <label for="progStudIc">No. Kad Pengenalan (12 Digit)</label>
-                                    <input id="progStudIc" class="programmer-input" placeholder="cth: 080512125011" maxlength="12" required>
-                                </div>
-                                <div class="form-group">
-                                    <label for="progStudMatrik">No. Kad Matrik</label>
-                                    <input id="progStudMatrik" class="programmer-input" placeholder="cth: STM2026001">
-                                </div>
-                                <div class="form-group">
-                                    <label for="progStudGender">Jantina</label>
-                                    <select id="progStudGender" class="programmer-select" required>
-                                        <option value="Lelaki">Lelaki</option>
-                                        <option value="Perempuan">Perempuan</option>
-                                    </select>
+                                    <label for="inputProgrammerPassword">Kata Laluan Programmer Baru</label>
+                                    <input type="text" id="inputProgrammerPassword" class="programmer-input"
+                                        placeholder="Masukkan kata laluan programmer baru..." required>
                                 </div>
                             </div>
-                            <div class="form-group" style="margin-top: 1rem;">
-                                <label for="progStudAddress">Alamat Tetap</label>
-                                <textarea id="progStudAddress" class="programmer-input" placeholder="Masukkan alamat lengkap..." rows="2" required style="resize: none; font-family: inherit; font-size: 0.9rem;"></textarea>
-                            </div>
-                            <input type="hidden" id="editStudProgIndex" value="-1">
-                            <div class="actions" style="margin-top: 1.5rem; display: flex; gap: 10px;">
-                                <button class="btn btn-accent" type="submit" id="btnSubmitStudProg">Daftar Pelajar</button>
-                                <button class="btn btn-light" type="button" id="btnCancelStudProgEdit" onclick="cancelStudProgEdit()" style="display: none;">Batal Edit</button>
+                            <div class="actions" style="margin-top: 1.25rem;">
+                                <button type="submit" class="btn btn-primary">Simpan Kata Laluan Baru</button>
                             </div>
                         </form>
                     </div>
 
-                    <!-- Students Directory list -->
+                    <!-- Choose TPA Card -->
                     <div class="card">
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-                            <h2 style="margin: 0; padding: 0; border: none;">📋 Direktori Pelajar Berdaftar</h2>
-                            <button onclick="cetakSenaraiPelajarProg()" class="btn btn-light" style="padding: 6px 14px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
-                                🖨️ Cetak Senarai
-                            </button>
-                        </div>
+                        <h2>👤 Lantikan Timbalan Pengarah Akademik (TPA)</h2>
                         <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
-                            Semak, edit dan padam maklumat pelajar berdaftar dalam sistem.
+                            Pilih pensyarah yang akan memegang jawatan Timbalan Pengarah Akademik (TPA).
+                            TPA bertanggungjawab menyemak dan meluluskan deraf jadual waktu sebelum ia diterbitkan
+                            secara rasmi kepada pensyarah dan pelajar.
                         </p>
-                        
-                        <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
-                            <input id="searchStudentsProg" oninput="filterStudentsProg()" placeholder="Cari nama, no. IC, no. matrik atau alamat..." style="flex: 1; max-width: 500px; padding: 0.75rem 1rem; border: 1px solid var(--surface-border); border-radius: var(--border-radius-md); background: var(--surface); color: var(--text-primary);">
-                        </div>
+                        <form id="formChooseTpa" onsubmit="simpanTpa(event)" style="max-width: 500px;">
+                            <div class="form-group">
+                                <label for="selectTpaLec">Pilih Pensyarah TPA</label>
+                                <select id="selectTpaLec" class="programmer-select" required>
+                                    <!-- Dynamic list of lecturers -->
+                                </select>
+                            </div>
+                            <div class="actions" style="margin-top: 1.25rem;">
+                                <button type="submit" class="btn btn-primary">Kemaskini Lantikan TPA</button>
+                            </div>
+                        </form>
+                    </div>
 
-                        <div class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
+                    <!-- Manage Sessions Card -->
+                    <div class="card">
+                        <h2>📅 Urus Sesi Pengajian</h2>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                            Daftar sesi akademik baru, pilih sesi semasa, atau buang sesi yang tidak lagi
+                            aktif.
+                        </p>
+
+                        <!-- Active Session Config Form -->
+                        <form id="formActiveSession" onsubmit="simpanActiveSession(event)"
+                            style="max-width: 500px; margin-bottom: 2rem; border-bottom: 1px dashed var(--surface-border); padding-bottom: 1.5rem;">
+                            <div class="form-group">
+                                <label for="selectActiveSession">Pilih Sesi Semasa</label>
+                                <select id="selectActiveSession" class="programmer-select" required>
+                                    <!-- Dynamic list of sessions -->
+                                </select>
+                            </div>
+                            <div class="actions" style="margin-top: 1rem;">
+                                <button type="submit" class="btn btn-primary">Tetapkan Sesi Semasa</button>
+                            </div>
+                        </form>
+
+                        <!-- Add Session Form -->
+                        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">➕ Daftar Sesi Pengajian
+                            Baru</h3>
+                        <form id="formAddSession" onsubmit="tambahSesi(event)"
+                            style="max-width: 500px; margin-bottom: 2rem;">
+                            <div class="form-group">
+                                <label for="inputNewSession">Nama / Kod Sesi</label>
+                                <input id="inputNewSession" class="programmer-input" placeholder="cth: SESI 1 2026/2027"
+                                    required style="text-transform: uppercase;">
+                            </div>
+                            <div class="actions" style="margin-top: 1rem;">
+                                <button type="submit" class="btn btn-accent">Tambah Sesi</button>
+                            </div>
+                        </form>
+
+                        <!-- Registered Sessions List Table -->
+                        <h3 style="font-size: 1rem; font-weight: 700; margin-bottom: 1rem;">📋 Senarai Sesi
+                            Pengajian</h3>
+                        <div
+                            class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
                             <table class="custom-table">
                                 <thead>
                                     <tr>
-                                        <th style="width: 4%;">Bil</th>
-                                        <th style="width: 20%;">Nama Penuh</th>
-                                        <th style="width: 12%;">No. IC</th>
-                                        <th style="width: 11%;">No. Matrik</th>
-                                        <th style="width: 8%;">Jantina</th>
-                                        <th style="width: 30%;">Alamat Tetap</th>
-                                        <th style="text-align: center; width: 15%;">Tindakan</th>
+                                        <th>Nama Sesi</th>
+                                        <th>Status Sesi</th>
+                                        <th style="text-align: center; width: 100px;">Tindakan</th>
                                     </tr>
                                 </thead>
-                                <tbody id="studentsProgTableBody">
-                                    <!-- Dynamic list of student rows -->
+                                <tbody id="sessionsTableBody">
+                                    <!-- Dynamic session rows -->
                                 </tbody>
                             </table>
                         </div>
@@ -806,139 +756,294 @@
 
                 </div>
 
-                <!-- SECTION 7: URUS AKTIVITI KKPPS -->
-                <div id="sec-spak" class="tab-section" style="display: none;">
-                    <div class="card">
-                        <h2>📅 Urus Kalendar & Aktiviti KKPPS</h2>
-                        
-                        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8" style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
-                            <!-- Left: Calendar view -->
-                            <div class="spak-calendar-card" style="border: 1px solid var(--surface-border); border-radius: var(--border-radius-lg); padding: 20px;">
-                                <div class="spak-calendar-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
-                                    <button type="button" onclick="navMonth(-1)" class="spak-btn-nav">&lt;</button>
-                                    <h3 id="calendarMonthYear">Julai 2026</h3>
-                                    <button type="button" onclick="navMonth(1)" class="spak-btn-nav">&gt;</button>
-                                </div>
-                                <div class="spak-weekdays">
-                                    <div>Ahd</div>
-                                    <div>Isn</div>
-                                    <div>Sel</div>
-                                    <div>Rab</div>
-                                    <div>Kha</div>
-                                    <div>Jum</div>
-                                    <div>Sab</div>
-                                </div>
-                                <div id="calendarDaysGrid" class="spak-days-grid">
-                                    <!-- Populated dynamically -->
-                                </div>
+            </div>
+
+            <!-- SECTION 6: URUS PELAJAR (PROGRAMMER ONLY) -->
+            <div id="sec-pelajar" class="tab-section" style="display: none;">
+
+                <!-- Registration Form Card -->
+                <div class="card">
+                    <h2>🎓 Daftar Pelajar Baru</h2>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem;">
+                        Masukkan maklumat pelajar baru untuk didaftarkan ke dalam direktori pelajar sistem.
+                    </p>
+                    <!-- Import Excel Section -->
+                    <div
+                        style="display: flex; gap: 10px; align-items: center; margin-bottom: 1.5rem; padding: 14px 16px; background: var(--surface-hover); border: 1px dashed var(--surface-border); border-radius: var(--border-radius-md);">
+                        <span style="font-size: 0.82rem; font-weight: 600; color: var(--text-secondary);">📥 Import dari
+                            Excel:</span>
+                        <label for="importStudentExcelProg" class="btn btn-light"
+                            style="padding: 6px 14px; font-size: 0.78rem; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; margin: 0;">
+                            📂 Pilih Fail Excel
+                            <input type="file" id="importStudentExcelProg" accept=".xlsx,.xls,.csv"
+                                style="display: none;" onchange="importStudentExcelProg(this)">
+                        </label>
+                        <a class="btn btn-light" href="templates/Template_Pelajar.xlsx" download>Muat Turun Templat
+                            Pelajar</a>
+                        <span id="importStudProgStatus"
+                            style="font-size: 0.78rem; font-weight: 600; color: var(--text-muted);">Format: Nama | No.
+                            IC | Jantina | Alamat | No. Matrik</span>
+                    </div>
+                    <form id="formAddStudentProg" onsubmit="tambahPelajarProg(event)">
+                        <div class="form-group-wrapper">
+                            <div class="form-group">
+                                <label for="progStudName">Nama Penuh</label>
+                                <input id="progStudName" class="programmer-input" placeholder="cth: AHMAD BIN ALI"
+                                    required style="text-transform: uppercase;">
                             </div>
-                            
-                            <!-- Right: List and Add/Edit Form -->
-                            <div style="display: flex; flex-direction: column; gap: 20px;">
-                                <!-- Subtabs -->
-                                <div style="display: flex; gap: 8px; border-bottom: 1px solid var(--surface-border); padding-bottom: 8px;">
-                                    <button type="button" id="tabSpakListBtn" onclick="switchSpakSubTab('list')" class="btn btn-primary" style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
-                                        📋 Senarai Makluman
-                                    </button>
-                                    <button type="button" id="tabSpakFormBtn" onclick="switchSpakSubTab('form')" class="btn" style="padding: 6px 12px; font-size: 0.8rem; background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--surface-border); cursor: pointer;">
-                                        ➕ Tambah / Edit
-                                    </button>
-                                </div>
-                                
-                                <!-- List Pane -->
-                                <div id="spakListPane" style="display: block;">
-                                    <h4 id="spakInfoTitle" style="font-size: 0.85rem; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; text-transform: uppercase;">Makluman pada tarikh...</h4>
-                                    <div id="spakEventList" class="spak-event-list">
-                                        <!-- Populated dynamically -->
-                                    </div>
-                                </div>
-                                
-                                <!-- Form Pane -->
-                                <div id="spakFormPane" style="display: none;">
-                                    <form id="spakForm" onsubmit="simpanAktivitiSpak(event)" style="display: flex; flex-direction: column; gap: 12px;">
-                                        <div class="form-group">
-                                            <label>Tajuk Aktiviti / Makluman</label>
-                                            <input type="text" id="spakTitle" placeholder="cth: Taklimat Latihan Industri Sesi 2:26/27" required class="programmer-input">
-                                        </div>
-                                        <div class="form-group-wrapper">
-                                            <div class="form-group">
-                                                <label>Tarikh Terpilih</label>
-                                                <input type="date" id="spakDate" required class="programmer-input">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Kategori / Keutamaan</label>
-                                                <select id="spakCategory" required class="programmer-select">
-                                                    <option value="Biasa">📢 Makluman Umum</option>
-                                                    <option value="Penting">⚠️ Penting</option>
-                                                </select>
-                                            </div>
-                                        </div>
-                                        <div class="form-group-wrapper">
-                                            <div class="form-group">
-                                                <label>Masa Mula</label>
-                                                <input type="time" id="spakStartTime" required class="programmer-input">
-                                            </div>
-                                            <div class="form-group">
-                                                <label>Masa Tamat</label>
-                                                <input type="time" id="spakEndTime" required class="programmer-input">
-                                            </div>
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Lokasi Aktiviti</label>
-                                            <input type="text" id="spakLocation" placeholder="cth: Dewan Rafflesia / Bilik TECC" required class="programmer-input">
-                                        </div>
-                                        <div class="form-group">
-                                            <label>Penyelaras</label>
-                                            <input type="text" id="spakCoordinator" placeholder="cth: Programmer / Penyelaras SPAK" required class="programmer-input" value="Programmer">
-                                        </div>
-                                        <div class="form-group" style="grid-column: 1 / -1;">
-                                            <label>Ulasan / Perincian Makluman</label>
-                                            <textarea id="spakDescription" class="programmer-input" placeholder="Masukkan ulasan, agenda atau maklumat lanjut tentang aktiviti ini..." rows="3" style="resize: vertical; font-family: inherit; font-size: 0.88rem;"></textarea>
-                                        </div>
-                                        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
-                                            <button type="button" onclick="cancelSpakEdit()" class="btn" style="background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--surface-border); cursor: pointer;">Batal</button>
-                                            <button type="submit" id="btnSubmitSpak" class="btn btn-primary" style="cursor: pointer;">Tambah Aktiviti</button>
-                                        </div>
-                                    </form>
-                                </div>
+                            <div class="form-group">
+                                <label for="progStudIc">No. Kad Pengenalan (12 Digit)</label>
+                                <input id="progStudIc" class="programmer-input" placeholder="cth: 080512125011"
+                                    maxlength="12" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="progStudMatrik">No. Kad Matrik</label>
+                                <input id="progStudMatrik" class="programmer-input" placeholder="cth: STM2026001">
+                            </div>
+                            <div class="form-group">
+                                <label for="progStudGender">Jantina</label>
+                                <select id="progStudGender" class="programmer-select" required>
+                                    <option value="Lelaki">Lelaki</option>
+                                    <option value="Perempuan">Perempuan</option>
+                                </select>
                             </div>
                         </div>
+                        <div class="form-group" style="margin-top: 1rem;">
+                            <label for="progStudAddress">Alamat Tetap</label>
+                            <textarea id="progStudAddress" class="programmer-input"
+                                placeholder="Masukkan alamat lengkap..." rows="2" required
+                                style="resize: none; font-family: inherit; font-size: 0.9rem;"></textarea>
+                        </div>
+                        <input type="hidden" id="editStudProgIndex" value="-1">
+                        <div class="actions" style="margin-top: 1.5rem; display: flex; gap: 10px;">
+                            <button class="btn btn-accent" type="submit" id="btnSubmitStudProg">Daftar Pelajar</button>
+                            <button class="btn btn-light" type="button" id="btnCancelStudProgEdit"
+                                onclick="cancelStudProgEdit()" style="display: none;">Batal Edit</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Students Directory list -->
+                <div class="card">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h2 style="margin: 0; padding: 0; border: none;">📋 Direktori Pelajar Berdaftar</h2>
+                        <button onclick="cetakSenaraiPelajarProg()" class="btn btn-light"
+                            style="padding: 6px 14px; font-size: 0.8rem; display: inline-flex; align-items: center; gap: 6px;">
+                            🖨️ Cetak Senarai
+                        </button>
+                    </div>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1.5rem;">
+                        Semak, edit dan padam maklumat pelajar berdaftar dalam sistem.
+                    </p>
+
+                    <div style="margin-bottom: 1.5rem; display: flex; gap: 1rem;">
+                        <input id="searchStudentsProg" oninput="filterStudentsProg()"
+                            placeholder="Cari nama, no. IC, no. matrik atau alamat..."
+                            style="flex: 1; max-width: 500px; padding: 0.75rem 1rem; border: 1px solid var(--surface-border); border-radius: var(--border-radius-md); background: var(--surface); color: var(--text-primary);">
+                    </div>
+
+                    <div
+                        class="table-responsive border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden mt-4">
+                        <table class="custom-table">
+                            <thead>
+                                <tr>
+                                    <th style="width: 4%;">Bil</th>
+                                    <th style="width: 20%;">Nama Penuh</th>
+                                    <th style="width: 12%;">No. IC</th>
+                                    <th style="width: 11%;">No. Matrik</th>
+                                    <th style="width: 8%;">Jantina</th>
+                                    <th style="width: 30%;">Alamat Tetap</th>
+                                    <th style="text-align: center; width: 15%;">Tindakan</th>
+                                </tr>
+                            </thead>
+                            <tbody id="studentsProgTableBody">
+                                <!-- Dynamic list of student rows -->
+                            </tbody>
+                        </table>
                     </div>
                 </div>
 
             </div>
-        </main>
+
+            <!-- SECTION 7: URUS AKTIVITI KKPPS -->
+            <div id="sec-spak" class="tab-section" style="display: none;">
+                <div class="card">
+                    <h2>📅 Urus Kalendar & Aktiviti KKPPS</h2>
+
+                    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8"
+                        style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 24px;">
+                        <!-- Left: Calendar view -->
+                        <div class="spak-calendar-card"
+                            style="border: 1px solid var(--surface-border); border-radius: var(--border-radius-lg); padding: 20px;">
+                            <div class="spak-calendar-header"
+                                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                                <button type="button" onclick="navMonth(-1)" class="spak-btn-nav">&lt;</button>
+                                <h3 id="calendarMonthYear">Julai 2026</h3>
+                                <button type="button" onclick="navMonth(1)" class="spak-btn-nav">&gt;</button>
+                            </div>
+                            <div class="spak-weekdays">
+                                <div>Ahd</div>
+                                <div>Isn</div>
+                                <div>Sel</div>
+                                <div>Rab</div>
+                                <div>Kha</div>
+                                <div>Jum</div>
+                                <div>Sab</div>
+                            </div>
+                            <div id="calendarDaysGrid" class="spak-days-grid">
+                                <!-- Populated dynamically -->
+                            </div>
+                        </div>
+
+                        <!-- Right: List and Add/Edit Form -->
+                        <div style="display: flex; flex-direction: column; gap: 20px;">
+                            <!-- Subtabs -->
+                            <div
+                                style="display: flex; gap: 8px; border-bottom: 1px solid var(--surface-border); padding-bottom: 8px;">
+                                <button type="button" id="tabSpakListBtn" onclick="switchSpakSubTab('list')"
+                                    class="btn btn-primary"
+                                    style="padding: 6px 12px; font-size: 0.8rem; cursor: pointer;">
+                                    📋 Senarai Makluman
+                                </button>
+                                <button type="button" id="tabSpakFormBtn" onclick="switchSpakSubTab('form')" class="btn"
+                                    style="padding: 6px 12px; font-size: 0.8rem; background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--surface-border); cursor: pointer;">
+                                    ➕ Tambah / Edit
+                                </button>
+                            </div>
+
+                            <!-- List Pane -->
+                            <div id="spakListPane" style="display: block;">
+                                <h4 id="spakInfoTitle"
+                                    style="font-size: 0.85rem; font-weight: 800; color: var(--text-primary); margin-bottom: 10px; text-transform: uppercase;">
+                                    Makluman pada tarikh...</h4>
+                                <div id="spakEventList" class="spak-event-list">
+                                    <!-- Populated dynamically -->
+                                </div>
+                            </div>
+
+                            <!-- Form Pane -->
+                            <div id="spakFormPane" style="display: none;">
+                                <form id="spakForm" onsubmit="simpanAktivitiSpak(event)"
+                                    style="display: flex; flex-direction: column; gap: 12px;">
+                                    <div class="form-group">
+                                        <label>Tajuk Aktiviti / Makluman</label>
+                                        <input type="text" id="spakTitle"
+                                            placeholder="cth: Taklimat Latihan Industri Sesi 2:26/27" required
+                                            class="programmer-input">
+                                    </div>
+                                    <div class="form-group-wrapper">
+                                        <div class="form-group">
+                                            <label>Tarikh Terpilih</label>
+                                            <input type="date" id="spakDate" required class="programmer-input">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Kategori / Keutamaan</label>
+                                            <select id="spakCategory" required class="programmer-select">
+                                                <option value="Biasa">📢 Makluman Umum</option>
+                                                <option value="Penting">⚠️ Penting</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="form-group-wrapper">
+                                        <div class="form-group">
+                                            <label>Masa Mula</label>
+                                            <input type="time" id="spakStartTime" required class="programmer-input">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>Masa Tamat</label>
+                                            <input type="time" id="spakEndTime" required class="programmer-input">
+                                        </div>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Lokasi Aktiviti</label>
+                                        <input type="text" id="spakLocation"
+                                            placeholder="cth: Dewan Rafflesia / Bilik TECC" required
+                                            class="programmer-input">
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Penyelaras</label>
+                                        <input type="text" id="spakCoordinator"
+                                            placeholder="cth: Programmer / Penyelaras SPAK" required
+                                            class="programmer-input" value="Programmer">
+                                    </div>
+                                    <div class="form-group" style="grid-column: 1 / -1;">
+                                        <label>Ulasan / Perincian Makluman</label>
+                                        <textarea id="spakDescription" class="programmer-input"
+                                            placeholder="Masukkan ulasan, agenda atau maklumat lanjut tentang aktiviti ini..."
+                                            rows="3"
+                                            style="resize: vertical; font-family: inherit; font-size: 0.88rem;"></textarea>
+                                    </div>
+                                    <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 10px;">
+                                        <button type="button" onclick="cancelSpakEdit()" class="btn"
+                                            style="background: var(--surface-hover); color: var(--text-primary); border: 1px solid var(--surface-border); cursor: pointer;">Batal</button>
+                                        <button type="submit" id="btnSubmitSpak" class="btn btn-primary"
+                                            style="cursor: pointer;">Tambah Aktiviti</button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+    </div>
+    </main>
     </div>
 
     <!-- Modal Perincian Makluman SPAK -->
-    <div id="modalSpakDetailProg" style="display: none; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px;">
-        <div style="background: #ffffff; border: 2px solid #06b6d4; border-radius: 20px; max-width: 560px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.2); padding: 28px; position: relative; display: flex; flex-direction: column; gap: 16px; text-align: left;">
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px;">
-                <span id="progSpakModalBadge" style="font-size: 0.72rem; font-weight: 800; padding: 4px 12px; border-radius: 50px; letter-spacing: 0.3px;"></span>
+    <div id="modalSpakDetailProg"
+        style="display: none; z-index: 10000; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(6px); align-items: center; justify-content: center; padding: 20px;">
+        <div
+            style="background: #ffffff; border: 2px solid #06b6d4; border-radius: 20px; max-width: 560px; width: 100%; box-shadow: 0 25px 60px rgba(0,0,0,0.2); padding: 28px; position: relative; display: flex; flex-direction: column; gap: 16px; text-align: left;">
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; padding-bottom: 14px;">
+                <span id="progSpakModalBadge"
+                    style="font-size: 0.72rem; font-weight: 800; padding: 4px 12px; border-radius: 50px; letter-spacing: 0.3px;"></span>
                 <div style="display: flex; gap: 8px; align-items: center;">
-                    <button onclick="editSpakFromModal()" title="Edit Aktiviti" style="background: #f0fdfa; border: 1px solid #5eead4; color: #0d9488; cursor: pointer; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">✏️ Edit</button>
-                    <button onclick="tutupModalSpakProg()" title="Tutup" style="background: transparent; border: none; cursor: pointer; color: #94a3b8; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
-                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="width: 20px; height: 20px;"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+                    <button onclick="editSpakFromModal()" title="Edit Aktiviti"
+                        style="background: #f0fdfa; border: 1px solid #5eead4; color: #0d9488; cursor: pointer; padding: 5px 12px; border-radius: 8px; font-size: 0.75rem; font-weight: 700;">✏️
+                        Edit</button>
+                    <button onclick="tutupModalSpakProg()" title="Tutup"
+                        style="background: transparent; border: none; cursor: pointer; color: #94a3b8; padding: 6px; border-radius: 8px; display: flex; align-items: center; justify-content: center;"
+                        onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='transparent'">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                            stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"
+                            style="width: 20px; height: 20px;">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
                     </button>
                 </div>
             </div>
-            
-            <h3 id="progSpakModalTitle" style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.4;"></h3>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; color: #475569;">
-                <div>📅 <b style="color:#334155">Tarikh:</b> <span id="progSpakModalDate" style="color:#0f172a; font-weight:600;"></span></div>
-                <div>⏱️ <b style="color:#334155">Masa:</b> <span id="progSpakModalTime" style="color:#0f172a; font-weight:600;"></span></div>
-                <div>🏫 <b style="color:#334155">Lokasi:</b> <span id="progSpakModalLocation" style="color:#0f172a; font-weight:600;"></span></div>
-                <div>👤 <b style="color:#334155">Penyelaras:</b> <span id="progSpakModalCoordinator" style="color:#0f172a; font-weight:600;"></span></div>
+
+            <h3 id="progSpakModalTitle"
+                style="font-size: 1.1rem; font-weight: 800; color: #0f172a; margin: 0; line-height: 1.4;"></h3>
+
+            <div
+                style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 0.8rem; background: #f8fafc; padding: 14px; border-radius: 12px; border: 1px solid #e2e8f0; color: #475569;">
+                <div>📅 <b style="color:#334155">Tarikh:</b> <span id="progSpakModalDate"
+                        style="color:#0f172a; font-weight:600;"></span></div>
+                <div>⏱️ <b style="color:#334155">Masa:</b> <span id="progSpakModalTime"
+                        style="color:#0f172a; font-weight:600;"></span></div>
+                <div>🏫 <b style="color:#334155">Lokasi:</b> <span id="progSpakModalLocation"
+                        style="color:#0f172a; font-weight:600;"></span></div>
+                <div>👤 <b style="color:#334155">Penyelaras:</b> <span id="progSpakModalCoordinator"
+                        style="color:#0f172a; font-weight:600;"></span></div>
             </div>
-            
+
             <div>
-                <label style="display: block; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.6px;">Ulasan / Perincian:</label>
-                <div id="progSpakModalDescription" style="font-size: 0.82rem; line-height: 1.65; color: #334155; background: #f8fafc; border-left: 4px solid #06b6d4; padding: 12px 16px; border-radius: 0 10px 10px 0; white-space: pre-wrap; font-family: inherit; min-height: 40px;"></div>
+                <label
+                    style="display: block; font-size: 0.68rem; font-weight: 800; text-transform: uppercase; color: #94a3b8; margin-bottom: 8px; letter-spacing: 0.6px;">Ulasan
+                    / Perincian:</label>
+                <div id="progSpakModalDescription"
+                    style="font-size: 0.82rem; line-height: 1.65; color: #334155; background: #f8fafc; border-left: 4px solid #06b6d4; padding: 12px 16px; border-radius: 0 10px 10px 0; white-space: pre-wrap; font-family: inherit; min-height: 40px;">
+                </div>
             </div>
-            
-            <div style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 0.68rem; color: #94a3b8;">
+
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #e2e8f0; padding-top: 12px; font-size: 0.68rem; color: #94a3b8;">
                 <span>ID: <span id="progSpakModalId" style="font-family: monospace;"></span></span>
                 <span>Kemaskini: <span id="progSpakModalUpdated"></span></span>
             </div>
@@ -948,7 +1053,8 @@
     <!-- Toast Notifications Container -->
     <div id="toastContainer" class="fixed bottom-6 right-6 z-50 flex flex-col gap-3 pointer-events-none no-print"></div>
 
-    <dialog id="coordinator-dialog" style="border:1px solid #94a3b8; border-radius:12px; padding:24px; max-width:95vw; color:#0f172a; background:white;">
+    <dialog id="coordinator-dialog"
+        style="border:1px solid #94a3b8; border-radius:12px; padding:24px; max-width:95vw; color:#0f172a; background:white;">
         <form method="dialog">
             <h2 style="font-weight:700;">Peranan Admin</h2>
             <p id="coordinator-lecturer"></p>
@@ -962,10 +1068,10 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="firebase-service.js?v=12"></script>
-    <script src="announcements.js?v=2"></script>
-  <script src="timetable-workflow.js?v=27"></script>
-  <script src="timetable-print.js?v=20"></script>
+    <script src="firebase-service.js?v=13"></script>
+    <script src="announcements.js?v=3"></script>
+    <script src="timetable-workflow.js?v=27"></script>
+    <script src="timetable-print.js?v=20"></script>
     <script>
         appendStatusBadge('#firebase-status-badge-container');
     </script>
@@ -988,20 +1094,20 @@
 
         // Dynamic Classes List
         let CLASSES_LIST = JSON.parse(localStorage.getItem('kkpapar_classes')) || [
-            "STM 1A","STM 1B","STM 1C","STM 2A","STM 2B","STM 2C","STM 3A","STM 3B","STM 3C",
-            "SLK 1A","SLK 1B","SLK 2A","SLK 2B","SLK 3A","SLK 3B"
+            "STM 1A", "STM 1B", "STM 1C", "STM 2A", "STM 2B", "STM 2C", "STM 3A", "STM 3B", "STM 3C",
+            "SLK 1A", "SLK 1B", "SLK 2A", "SLK 2B", "SLK 3A", "SLK 3B"
         ];
 
         // Dynamic Locations List
         let LOCATIONS_LIST = JSON.parse(localStorage.getItem('kkpapar_locations')) || [
-            "DEWAN KULIAH","MAKMAL BAHASA",
+            "DEWAN KULIAH", "MAKMAL BAHASA",
             "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 1",
             "TECHNOLOGY ENABLE COLLABORATIVE CLASSROOM 2",
-            "MAKMAL PENGATURCARAAN 1","MAKMAL PENGATURCARAAN 2",
-            "MAKMAL MULTIMEDIA","MAKMAL BAIKPULIH DAN PEMASANGAN",
-            "MAKMAL RANGKAIAN","MAKMAL PENDAWAIAN RANGKAIAN",
-            "MAKMAL AI","MAKMAL IOT","MAKMAL LOGISTIK 1",
-            "MAKMAL LOGISTIK 2","MAKMAL SIMULASI LOGISTIK"
+            "MAKMAL PENGATURCARAAN 1", "MAKMAL PENGATURCARAAN 2",
+            "MAKMAL MULTIMEDIA", "MAKMAL BAIKPULIH DAN PEMASANGAN",
+            "MAKMAL RANGKAIAN", "MAKMAL PENDAWAIAN RANGKAIAN",
+            "MAKMAL AI", "MAKMAL IOT", "MAKMAL LOGISTIK 1",
+            "MAKMAL LOGISTIK 2", "MAKMAL SIMULASI LOGISTIK"
         ];
 
         // Currently opened SPAK event id (for modal edit)
@@ -1146,7 +1252,7 @@
                 showToast("Tiada kelas dipilih untuk dibuang!", "danger");
                 return;
             }
-            
+
             tanyaPengesahan(`Adakah anda pasti mahu membuang kelas "${currentKelas}" dari senarai pilihan dropdown?`, () => {
                 CLASSES_LIST = CLASSES_LIST.filter(c => c !== currentKelas);
                 localStorage.setItem('kkpapar_classes', JSON.stringify(CLASSES_LIST));
@@ -2264,12 +2370,12 @@
             e.preventDefault();
             const adminPass = document.getElementById("inputAdminPassword").value.trim();
             const progPass = document.getElementById("inputProgrammerPassword").value.trim();
-            
+
             if (adminPass.length < 4 || progPass.length < 4) {
                 showToast("Kata laluan mestilah sekurang-kurangnya 4 aksara!", "danger");
                 return;
             }
-            
+
             DB.adminPassword = adminPass;
             DB.programmerPassword = progPass;
             saveDB();
@@ -2328,7 +2434,7 @@
             const body = document.getElementById("studentsProgTableBody");
             if (!body) return;
             body.innerHTML = "";
-            
+
             STUDENTS.forEach((s, idx) => {
                 const tr = document.createElement("tr");
                 tr.className = "stud-row-item";
@@ -2354,13 +2460,13 @@
         function filterStudentsProg() {
             const query = document.getElementById("searchStudentsProg").value.toLowerCase().trim();
             const rows = document.querySelectorAll(".stud-row-item");
-            
+
             rows.forEach(row => {
                 const name = row.querySelector(".stud-name").textContent.toLowerCase();
                 const ic = row.querySelector(".stud-ic").textContent.toLowerCase();
                 const matrik = row.querySelector(".stud-matrik").textContent.toLowerCase();
                 const address = row.querySelector(".stud-address").textContent.toLowerCase();
-                
+
                 if (name.includes(query) || ic.includes(query) || matrik.includes(query) || address.includes(query)) {
                     row.style.display = "";
                 } else {
@@ -2397,7 +2503,7 @@
             const gender = document.getElementById("progStudGender").value;
             const address = document.getElementById("progStudAddress").value.trim();
             const editIdx = parseInt(document.getElementById("editStudProgIndex").value);
-            
+
             if (editIdx === -1) {
                 // ADD mode
                 if (STUDENTS.some(s => s.ic === ic)) {
@@ -2416,7 +2522,7 @@
                 showToast("Rekod pelajar berjaya dikemaskini!", "success");
                 cancelStudProgEdit();
             }
-            
+
             saveStudentsProg();
             renderStudentsProg();
         }
@@ -2447,17 +2553,17 @@
             statusEl.textContent = "Memproses fail...";
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 try {
                     const wb = XLSX.read(e.target.result, { type: 'binary' });
                     const ws = wb.Sheets[wb.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-                    
+
                     let added = 0, skipped = 0;
                     for (let i = 1; i < rows.length; i++) {
                         const row = rows[i];
                         if (!row || row.length < 2) continue;
-                        
+
                         // Map columns flexibly
                         const headers = rows[0].map(h => String(h).toLowerCase().trim());
                         const get = (keys) => {
@@ -2468,11 +2574,11 @@
                             return '';
                         };
 
-                        const name = get(['nama','name']).toUpperCase();
-                        const ic = get(['ic','kad pengenalan','no. ic','no ic','kad']);
-                        const matrik = get(['matrik','no. matrik','nombor matrik','matrix']);
-                        const gender = get(['jantina','gender']);
-                        const address = get(['alamat','address']);
+                        const name = get(['nama', 'name']).toUpperCase();
+                        const ic = get(['ic', 'kad pengenalan', 'no. ic', 'no ic', 'kad']);
+                        const matrik = get(['matrik', 'no. matrik', 'nombor matrik', 'matrix']);
+                        const gender = get(['jantina', 'gender']);
+                        const address = get(['alamat', 'address']);
 
                         if (!name || !ic) continue;
                         if (STUDENTS.some(s => s.ic === ic)) { skipped++; continue; }
@@ -2504,12 +2610,12 @@
             statusEl.textContent = "Memproses fail...";
 
             const reader = new FileReader();
-            reader.onload = function(e) {
+            reader.onload = function (e) {
                 try {
                     const wb = XLSX.read(e.target.result, { type: 'binary' });
                     const ws = wb.Sheets[wb.SheetNames[0]];
                     const rows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
-                    
+
                     const headers = rows[0].map(h => String(h).toLowerCase().trim());
                     const get = (row, keys) => {
                         for (const k of keys) {
@@ -2523,12 +2629,12 @@
                     for (let i = 1; i < rows.length; i++) {
                         const row = rows[i];
                         if (!row || row.length < 2) continue;
-                        const name = get(row, ['nama','name']).toUpperCase();
-                        const shortName = get(row, ['singkatan','short','kod']).toUpperCase();
-                        const designation = get(row, ['jawatan','designation','gred']);
-                        const email = get(row, ['emel','email','e-mel']);
-                        const program = get(row, ['program','jabatan']).toUpperCase() || 'STM';
-                        const password = get(row, ['kata laluan','password','kata']) || 'pensyarah123';
+                        const name = get(row, ['nama', 'name']).toUpperCase();
+                        const shortName = get(row, ['singkatan', 'short', 'kod']).toUpperCase();
+                        const designation = get(row, ['jawatan', 'designation', 'gred']);
+                        const email = get(row, ['emel', 'email', 'e-mel']);
+                        const program = get(row, ['program', 'jabatan']).toUpperCase() || 'STM';
+                        const password = get(row, ['kata laluan', 'password', 'kata']) || 'pensyarah123';
 
                         if (!name || !shortName) continue;
                         if (LECTURERS.some(l => l.shortName === shortName)) { skipped++; continue; }
@@ -2710,7 +2816,7 @@
                     selectedDateStr = dayStr;
                     document.querySelectorAll("#calendarDaysGrid .spak-day-cell").forEach(c => c.classList.remove("selected"));
                     cell.classList.add("selected");
-                    
+
                     document.getElementById("spakDate").value = selectedDateStr;
                     renderSpakEventList();
                 });
@@ -2940,7 +3046,7 @@
                 if (!t) return '';
                 const [h, m] = t.split(':').map(Number);
                 const ampm = h >= 12 ? 'PTG' : 'PG';
-                return `${h % 12 || 12}:${String(m).padStart(2,'0')} ${ampm}`;
+                return `${h % 12 || 12}:${String(m).padStart(2, '0')} ${ampm}`;
             };
             const fStart = format12(evt.startTime);
             const fEnd = format12(evt.endTime);
@@ -2968,7 +3074,7 @@
         }
 
         // Close modal on backdrop click
-        window.addEventListener("click", function(e) {
+        window.addEventListener("click", function (e) {
             const modal = document.getElementById("modalSpakDetailProg");
             if (modal && e.target === modal) tutupModalSpakProg();
         });

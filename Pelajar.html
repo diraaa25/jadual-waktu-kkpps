@@ -329,9 +329,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-database-compat.js"></script>
     <script src="firebase-config.js"></script>
-    <script src="firebase-service.js?v=12"></script>
-  <script src="timetable-workflow.js?v=27"></script>
-  <script src="timetable-print.js?v=20"></script>
+    <script src="firebase-service.js?v=13"></script>
+    <script src="timetable-workflow.js?v=27"></script>
+    <script src="timetable-print.js?v=20"></script>
     <script>installTimetableReportStyles();</script>
     <script>
         appendStatusBadge('#firebase-status-badge-container');
@@ -947,13 +947,13 @@
         function dapatkanTugasMengajarKelas(namaKelas, combinedSchedule) {
             const tugasList = [];
             const keys = new Set();
-            
+
             combinedSchedule.forEach(s => {
                 const key = `${s.kod}_${s.kelas}`;
                 if (!keys.has(key)) {
                     keys.add(key);
                     const jamSlot = combinedSchedule.filter(x => x.kod === s.kod && x.kelas === s.kelas)
-                                    .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
+                        .reduce((t, x) => t + (toMin(x.tamat) - toMin(x.mula)) / 60, 0);
                     tugasList.push({
                         kod: s.kod,
                         nama: s.subjek,

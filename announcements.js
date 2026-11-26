@@ -21,11 +21,7 @@ function generateAnnouncementId() {
 
 function ownsAnnouncement(post, author = announcementAuthor()) {
     if (!author || !post) return false;
-    if (author === 'programmer') return true;
-    if (!post.owner && !post.publisher) return true;
-    return post.owner
-        ? post.owner.toUpperCase() === author.toUpperCase()
-        : author.toUpperCase() === ('lecturer:' + post.publisher).toUpperCase();
+    return author === 'programmer' || author.startsWith('lecturer:');
 }
 
 function announcementPublisher(post, lecturers) {
